@@ -1,0 +1,16 @@
+{
+    "media": [
+        {
+            "description": "Listen with us!",
+            "link": "https://open.spotify.com/album/2e3CuXNmlLd5d8OoI2naop?si=4p7vM0N9QOiH9noFq3utog",
+            "platform": "Spotify",
+            "thumbnail_gs_location": "gs://wpa-app-test.appspot.com/media_thumbnails/spotify.jpg"
+        },
+        {
+            "description": "Get our Podcasts!",
+            "link": "https://podcasts.google.com/feed/aHR0cHM6Ly9hbmNob3IuZm0vcy9mNzE3ZWVjL3BvZGNhc3QvcnNz",
+            "platform": "Google Podcasts",
+            "thumbnail_gs_location": "gs://wpa-app-test.appspot.com/media_thumbnails/google_podcasts.jpg"
+        }
+    ]
+}
