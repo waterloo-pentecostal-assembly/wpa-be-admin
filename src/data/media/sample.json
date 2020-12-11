@@ -4,13 +4,19 @@
             "description": "Listen with us!",
             "link": "https://open.spotify.com/album/2e3CuXNmlLd5d8OoI2naop?si=4p7vM0N9QOiH9noFq3utog",
             "platform": "Spotify",
-            "thumbnail_gs_location": "gs://wpa-app-test.appspot.com/media_thumbnails/spotify.jpg"
+            "thumbnail_gs_location": "gs://wpa-be-app-dev.appspot.com/media/spotify.jpg"
         },
         {
             "description": "Get our Podcasts!",
             "link": "https://podcasts.google.com/feed/aHR0cHM6Ly9hbmNob3IuZm0vcy9mNzE3ZWVjL3BvZGNhc3QvcnNz",
             "platform": "Google Podcasts",
-            "thumbnail_gs_location": "gs://wpa-app-test.appspot.com/media_thumbnails/google_podcasts.jpg"
+            "thumbnail_gs_location": "gs://wpa-be-app-dev.appspot.com/media/google_podcasts.jpg"
+        },
+        {
+            "description": "This week's playlist",
+            "link": "https://www.youtube.com/playlist?list=PLlyBfg3f2lxI0Eq4yDdNnOs0Xsi515Imi",
+            "platform": "Youtube",
+            "thumbnail_gs_location": "gs://wpa-be-app-dev.appspot.com/media/youtube.png"
         }
     ]
 }

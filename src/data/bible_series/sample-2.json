@@ -2,7 +2,7 @@
     "bible_series": {
         "title": "Sample Series 2",
         "sub_title": "Sample Sub Title",
-        "image_gs_location": "gs://wpa-app-test.appspot.com/bible_series/sample_2/sample_2_image.jpg"
+        "image_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_2/sample_2.jpg"
     },
     "series_content": [
         {
@@ -11,7 +11,7 @@
             "content_type": "listen",
             "body": [
                 {
-                    "audio_file_gs_location": "gs://wpa-app-test.appspot.com/bible_series/sample_2/sample-2-audio.mp3",
+                    "audio_file_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_2/sample_2_audio.mp3",
                     "body_type": "audio"
                 }
             ]

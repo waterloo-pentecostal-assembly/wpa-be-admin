@@ -1,6 +1,7 @@
 const { DateTime } = require('luxon');
 
-const { Timestamp } = require('../../index');
+const Timestamp = require("firebase-admin").firestore.Timestamp;
+
 
 // TODO: make this more robust. e.g. check for data duplication 
 
