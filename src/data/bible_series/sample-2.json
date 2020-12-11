@@ -2,7 +2,8 @@
     "bible_series": {
         "title": "Sample Series 2",
         "sub_title": "Sample Sub Title",
-        "image_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_2/sample_2.jpg"
+        "image_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_2/sample_2.jpg",
+        "is_active": true
     },
     "series_content": [
         {
