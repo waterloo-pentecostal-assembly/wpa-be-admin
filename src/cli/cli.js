@@ -2,7 +2,7 @@
 
 const inquirer = require('inquirer');
 
-const { firestore, auth } = require('../index');
+const { firestore, auth, env } = require('../index');
 const { DataLoaderCli } = require('./dataLoader');
 const { DevHelpersCli } = require('./devHelpers');
 const { UserManagerCli } = require('./userManager');
@@ -25,13 +25,14 @@ class AdminCli {
         const userManagerOption = 'Manage Users';
         const dataLoaderOption = 'Load Data';
         const devHelperOption = 'Development Assist';
+        const options = [userManagerOption, dataLoaderOption, devHelperOption];
 
         const option = await inquirer.prompt(
             {
                 type: 'list',
                 name: 'option',
-                message: 'Choose Operation: ',
-                choices: [userManagerOption, dataLoaderOption, devHelperOption],
+                message: `[ENV: ${env}] Choose Option: `,
+                choices: options,
             }
         );
 
@@ -62,6 +63,7 @@ class AdminCli {
     }
 }
 
+// Inject dependencies
 const dataLoaderService = new DataLoaderService(firestore);
 const userManagerService = new UserManagerService(firestore, auth);
 
