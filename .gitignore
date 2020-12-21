@@ -114,4 +114,4 @@ dist
 .vscode-test
 
 # Custom
-service-account.json
+service-account*.json

@@ -68,7 +68,7 @@ const dataLoaderService = new DataLoaderService(firestore);
 const userManagerService = new UserManagerService(firestore, auth);
 
 const dataLoaderCli = new DataLoaderCli(dataLoaderService);
-const devHelpersCli = new DevHelpersCli(userManagerService);
+const devHelpersCli = new DevHelpersCli(userManagerService, env);
 const userManagerCli = new UserManagerCli(userManagerService);
 
 const adminCli = new AdminCli(dataLoaderCli, devHelpersCli, userManagerCli);

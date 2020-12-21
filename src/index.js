@@ -5,16 +5,13 @@ const env = process.env.WPA_BE_ENV || 'local_dev';
 
 const config = require("./config/config").getConfig(env);
 
-admin.initializeApp({
-    credential: admin.credential.cert(config.serviceAccount),
-    databaseURL: config.databaseURL,
-});
+admin.initializeApp({ credential: admin.credential.cert(config.serviceAccount) });
 
 const firestore = admin.firestore();
 const auth = admin.auth();
 
 module.exports = {
     firestore,
-    auth, 
+    auth,
     env
 };

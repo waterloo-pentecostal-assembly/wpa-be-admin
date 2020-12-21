@@ -2,12 +2,22 @@ const inquirer = require('inquirer');
 const ora = require('ora');
 
 class DevHelpersCli {
-    constructor(userManagerService) {
+
+    constructor(userManagerService, env) {
         this.userManagerService = userManagerService;
+        this.allowedEnvs = ['dev', 'local_dev'];
+        this.env = env;
     }
 
     async run() {
+        this.canRunInEnv();
         return this.promptForOptions();
+    }
+
+    canRunInEnv() {
+        if (!(this.env in this.allowedEnvs)) {
+            throw new Error(`Cannot run in ${env}`);
+        }
     }
 
     async promptForOptions() {
