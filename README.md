@@ -29,7 +29,7 @@ To simplify usage and development, follow [these instructions](https://docs.micr
 3. Ensure that you are using Node 12 by running `node -v`. 
 3. Run `npm install`.
 
-## Access Setup
+## Setting up Access
 
 In order to run this application, you need to have appropriate access to the `wpa-be-app-dev` Firebase Project. Once this is configured, do the following. 
 
