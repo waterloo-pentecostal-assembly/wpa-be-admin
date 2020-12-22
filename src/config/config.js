@@ -9,7 +9,7 @@ exports.getConfig = (env) => {
         // TODO: Use this once Dart auth package is updated to allow app
         // to point to local auth emulator
         // process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
-        process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080";
+        process.env.FIRESTORE_EMULATOR_HOST = "localhost:8081";
 
         // Use environment variable is it exists
         if (process.env.SERVICE_ACCOUNT_CREDENTIALS) {
