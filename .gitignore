@@ -115,3 +115,4 @@ dist
 
 # Custom
 service-account*.json
+.DS_Store
