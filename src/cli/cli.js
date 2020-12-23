@@ -6,8 +6,8 @@ const { firestore, auth, env } = require('../index');
 const { DataLoaderCli } = require('./dataLoader');
 const { DevHelpersCli } = require('./devHelpers');
 const { UserManagerCli } = require('./userManager');
-const { DataLoaderService } = require('../services/dataLoader');
-const { UserManagerService } = require('../services/userManager');
+const { DataLoaderService } = require('../services/dataLoaderService');
+const { UserManagerService } = require('../services/userManagerService');
 
 class AdminCli {
     constructor(dataLoaderCli, devHelpersCli, userManagerCli) {
