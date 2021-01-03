@@ -1,0 +1,19 @@
+name: WPA BE Admin CI
+on: 
+  pull_request:
+    branches: 
+      - dev
+      - master
+jobs:
+  main:
+    name: Main CI Job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12"
+      - name: Install dependencies
+        run: npm install
+      - name: Linting
+        run: npm run lint
