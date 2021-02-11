@@ -7,18 +7,17 @@ class UserManagerService {
     }
 
     async verifyUserByEmail(email) {
-        // Find user by email
+        // Find uid by email
         const userRecordBefore = await this.auth.getUserByEmail(email);
         const uid = userRecordBefore.uid;
 
-        // Verify user
-        const userRecordAfter = await this.auth.updateUser(uid, { emailVerified: true });
-        return userRecordAfter;
-    }
-
-    async verifyUserById(uid) {
-        const userRecordAfter = await this.auth.updateUser(uid, { emailVerified: true });
-        return userRecordAfter;
+        // Verify user using transaction 
+        const userRef = this.firestore.collection('users').doc(uid);
+        await this.firestore.runTransaction(async (t) => {
+            const doc = await t.get(userRef);
+            t.update(userRef, { is_verified: true });
+        });
+        return true;
     }
 
     async deleteUserByEmail(email) {
@@ -34,27 +33,21 @@ class UserManagerService {
         await this.auth.deleteUser(uid);
     }
 
-    async createVerifiedUser(email, password) {
-        // Create auth user
+    async createVerifiedUser(email, password, firstName, lastName) {
         const userRecord = await this.auth.createUser({
             email,
-            emailVerified: true,
             password,
         });
 
-        return userRecord;
-    }
-
-    async createUserDocument(email, firstName, lastName) {
-        // Find user by email
-        const userRecordBefore = await this.auth.getUserByEmail(email);
-        const uid = userRecordBefore.uid;
+        const uid = userRecord.uid;
 
         // Add information to firestore 
         await this.firestore.collection('users').doc(uid).set({
             "email": email,
             "first_name": firstName,
             "last_name": lastName,
+            "is_verified": true,
+            "is_admin": false,
             "reports": 0
         });
 
