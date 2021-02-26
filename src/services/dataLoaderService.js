@@ -32,7 +32,8 @@ class DataLoaderService {
 
     async loadSeriesContent(data, bibleSeriesId) {
         try {
-            data.forEach(async (seriesContent) => {
+            for (const seriesContent of data) {
+
                 // Convert date from string to millis with America/Toronto timezone
                 const contentDate = DateTime
                     .fromFormat(seriesContent.date, 'yyyy-MM-dd', { zone: 'America/Toronto' })
@@ -41,12 +42,13 @@ class DataLoaderService {
                 const contentFirebaseTimestamp = Timestamp.fromMillis(contentDate);
                 seriesContent.date = contentFirebaseTimestamp;
 
+                // eslint-disable-next-line no-await-in-loop
                 await this.firestore
                     .collection('bible_series')
                     .doc(bibleSeriesId)
                     .collection('series_content')
                     .add(seriesContent);
-            });
+            }
         } catch (e) {
             throw Error(`Unable to load bible series content: ${e}`);
         }
