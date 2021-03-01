@@ -11,6 +11,8 @@ class UserManagerService {
         const userRecordBefore = await this.auth.getUserByEmail(email);
         const uid = userRecordBefore.uid;
 
+        await this.auth.updateUser(uid, { emailVerified: true });
+
         // Verify user using transaction 
         const userRef = this.firestore.collection('users').doc(uid);
         await this.firestore.runTransaction(async (t) => {
