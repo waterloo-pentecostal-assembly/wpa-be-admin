@@ -41,7 +41,7 @@ In order to run this application, you need to have appropriate access to the `wp
 
 1. `cd` to `wpa-be-admin` on the terminal. 
 2. Ensure that the Firebase Emulator is running. See the `README` in the `wpa-be-firebase` repository. 
-3. Run `npm cli`. This defaults the environment to `local_dev` such that the application runs against the local Firebase Emulator. You can also specify the environment by running `WPA_BE_ENV=local_dev bash -c 'npm run cli'`.
+3. Run `npm run cli`. This defaults the environment to `local_dev` such that the application runs against the local Firebase Emulator. You can also specify the environment by running `WPA_BE_ENV=local_dev bash -c 'npm run cli'`.
 4. Navigate CLI options to perform desired operation.
 
 ## Running the CLI on Linux/macOS against remote `wpa-be-app-dev` Firebase Project

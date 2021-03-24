@@ -3,20 +3,10 @@
         "title": "Sample Series 2",
         "sub_title": "Sample Sub Title",
         "image_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_2/sample_2.jpg",
-        "is_active": true
+        "is_active": false,
+        "is_visible": true
     },
     "series_content": [
-        {
-            "title": "Listen Engagement Sample",
-            "date": "2020-10-10",
-            "content_type": "listen",
-            "body": [
-                {
-                    "audio_file_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_2/sample_2_audio.mp3",
-                    "body_type": "audio"
-                }
-            ]
-        },
         {
             "title": "Prayer Engagement Sample",
             "date": "2020-10-11",
@@ -91,12 +81,6 @@
                     "body_type": "text"
                 },
                 {
-                    "paragraphs": [
-                        "Upload a photo of your drawing!"
-                    ],
-                    "body_type": "text"
-                },
-                {
                     "body_type": "image_input"
                 }
             ]
@@ -128,12 +112,6 @@
                             }
                         }
                     ]
-                },
-                {
-                    "paragraphs": [
-                        "Upload a photo of your scribe!"
-                    ],
-                    "body_type": "text"
                 },
                 {
                     "body_type": "image_input"
