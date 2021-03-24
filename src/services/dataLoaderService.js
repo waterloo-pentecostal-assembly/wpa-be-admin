@@ -1,7 +1,7 @@
 const { DateTime } = require('luxon');
 
 const Timestamp = require("firebase-admin").firestore.Timestamp;
-
+ 
 
 // TODO: make this more robust. e.g. check for data duplication 
 
@@ -32,22 +32,21 @@ class DataLoaderService {
 
     async loadSeriesContent(data, bibleSeriesId) {
         try {
-            for (const seriesContent of data) {
-
+            for(var i = 0; i < data.length; i++){
                 // Convert date from string to millis with America/Toronto timezone
                 const contentDate = DateTime
-                    .fromFormat(seriesContent.date, 'yyyy-MM-dd', { zone: 'America/Toronto' })
+                    .fromFormat(data[i].date, 'yyyy-MM-dd', { zone: 'America/Toronto' })
                     .toMillis();
 
                 const contentFirebaseTimestamp = Timestamp.fromMillis(contentDate);
-                seriesContent.date = contentFirebaseTimestamp;
+                data[i].date = contentFirebaseTimestamp;
 
                 // eslint-disable-next-line no-await-in-loop
                 await this.firestore
                     .collection('bible_series')
                     .doc(bibleSeriesId)
                     .collection('series_content')
-                    .add(seriesContent);
+                    .add(data[i]);
             }
         } catch (e) {
             throw Error(`Unable to load bible series content: ${e}`);
