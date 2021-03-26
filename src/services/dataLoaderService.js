@@ -2,6 +2,11 @@ const { DateTime } = require('luxon');
 
 const Timestamp = require("firebase-admin").firestore.Timestamp;
  
+function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
 
 // TODO: make this more robust. e.g. check for data duplication 
 
@@ -47,6 +52,7 @@ class DataLoaderService {
                     .doc(bibleSeriesId)
                     .collection('series_content')
                     .add(data[i]);
+                await sleep(2000);
             }
         } catch (e) {
             throw Error(`Unable to load bible series content: ${e}`);
