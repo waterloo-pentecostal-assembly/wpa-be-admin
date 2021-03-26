@@ -15,8 +15,8 @@ class DevHelpersCli {
     }
 
     canRunInEnv() {
-        if (!(this.env in this.allowedEnvs)) {
-            throw new Error(`Cannot run in ${env}`);
+        if (!(this.allowedEnvs.includes(this.env))) {
+            throw new Error(`Cannot run in ${this.env}`);
         }
     }
 
@@ -94,22 +94,10 @@ class DevHelpersCli {
         // Create verified auth user
         try {
             spinner = ora('Creating verified user').start();
-            userRecord = await this.userManagerService.createVerifiedUser(email, password);
+            userRecord = await this.userManagerService.createVerifiedUser(email, password, firstName, lastName);
             spinner.succeed();
         } catch (e) {
             spinner.fail(`Error creating verified user: ${e}`);
-            return;
-        }
-
-        // Create user document
-        try {
-            spinner = ora('Creating user document').start();
-            await this.userManagerService.createUserDocument(email, firstName, lastName);
-            spinner.succeed();
-        } catch (e) {
-            spinner.fail(`User document creation failed. Error: ${e}.
-                          Please manually delete auth user 
-                          (UID: ${userRecord.uid}) and try again`);
             return;
         }
 

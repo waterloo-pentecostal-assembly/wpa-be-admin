@@ -1,19 +1,24 @@
 {
     "bible_series": {
         "title": "Sample Series 1",
-        "sub_title": "Sample Sub Title",
+        "sub_title": "A Past Series",
         "image_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_1/sample_1.jpg",
-        "is_active": true
+        "is_active": false,
+        "is_visible": true
     },
     "series_content": [
         {
             "title": "Listen Engagement Sample",
             "date": "2020-01-13",
-            "content_type": "listen",
+            "content_type": "devotional",
             "body": [
                 {
-                    "audio_file_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/sample_1/sample-1-audio.mp3",
-                    "body_type": "audio"
+                    "paragraphs": [
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+                    ],
+                    "body_type": "text"
                 }
             ]
         },
@@ -38,10 +43,53 @@
             "content_type": "reflect",
             "body": [
                 {
+                    "paragraphs": [
+                        "Read the passage below and reflect on the questions that follow."
+                    ],
+                    "body_type": "text"
+                },
+                {
+                    "attribution": "The Holy Bible, New International Version® NIV® Copyright © 1973",
+                    "bible_version": "New Living Translation",
+                    "body_type": "scripture",
+                    "scriptures": [
+                        {
+                            "book": "1 Kings",
+                            "chapter": "2",
+                            "title": "David’s Charge to Solomon",
+                            "verses": {
+                                "1": "When the time drew near for David to die, he gave a charge to Solomon his son.",
+                                "2": "“I am about to go the way of all the earth,” he said. “So be strong, act like a man,",
+                                "3": "and observe what the Lord your God requires: Walk in obedience to him, and keep his decrees and commands, his laws and regulations, as written in the Law of Moses."
+                            }
+                        },
+                        {
+                            "book": "1 Kings",
+                            "chapter": "1",
+                            "verses": {
+                                "10": "but he did not invite Nathan the prophet or Benaiah or the special guard or his brother Solomon.",
+                                "11": "Then Nathan asked Bathsheba, Solomon’s mother, “Have you not heard that Adonijah, the son of Haggith, has become king, and our lord David knows nothing about it?"
+                            }
+                        }
+                    ]
+                },
+                {
                     "questions": [
                         "Sample question 1?",
                         "Sample question 2?",
                         "Sample question 3?"
+                    ],
+                    "body_type": "question"
+                },
+                {
+                    "paragraphs": [
+                        "Some followup reading"
+                    ],
+                    "body_type": "text"
+                },
+                {
+                    "questions": [
+                        "Another question?"
                     ],
                     "body_type": "question"
                 }
@@ -91,12 +139,6 @@
                     "body_type": "text"
                 },
                 {
-                    "paragraphs": [
-                        "Upload a photo of your drawing!"
-                    ],
-                    "body_type": "text"
-                },
-                {
                     "body_type": "image_input"
                 }
             ]
@@ -130,19 +172,13 @@
                     ]
                 },
                 {
-                    "paragraphs": [
-                        "Upload a photo of your scribe!"
-                    ],
-                    "body_type": "text"
-                },
-                {
                     "body_type": "image_input"
                 }
             ]
         },
         {
             "title": "Devotional Engagement Sample",
-            "date": "2020-01-16",
+            "date": "2020-01-18",
             "content_type": "devotional",
             "body": [
                 {
@@ -174,7 +210,7 @@
         },
         {
             "title": "Memorize Engagement Sample",
-            "date": "2020-01-16",
+            "date": "2020-01-18",
             "content_type": "memorize",
             "body": [
                 {
