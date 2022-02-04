@@ -1,12 +1,12 @@
 const { DateTime } = require('luxon');
 
 const Timestamp = require("firebase-admin").firestore.Timestamp;
- 
+
 function sleep(ms) {
     return new Promise((resolve) => {
-      setTimeout(resolve, ms);
+        setTimeout(resolve, ms);
     });
-  }
+}
 
 // TODO: make this more robust. e.g. check for data duplication 
 
@@ -37,7 +37,7 @@ class DataLoaderService {
 
     async loadSeriesContent(data, bibleSeriesId) {
         try {
-            for(var i = 0; i < data.length; i++){
+            for (var i = 0; i < data.length; i++) {
                 // Convert date from string to millis with America/Toronto timezone
                 const contentDate = DateTime
                     .fromFormat(data[i].date, 'yyyy-MM-dd', { zone: 'America/Toronto' })
@@ -52,6 +52,7 @@ class DataLoaderService {
                     .doc(bibleSeriesId)
                     .collection('series_content')
                     .add(data[i]);
+                // eslint-disable-next-line no-await-in-loop
                 await sleep(2000);
             }
         } catch (e) {
