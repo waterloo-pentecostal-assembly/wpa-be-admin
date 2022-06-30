@@ -1,0 +1,2327 @@
+{
+  "bible_series": {
+    "title": "Ezra & Nehemiah",
+    "sub_title": "A Theological Study",
+    "image_gs_location": "gs://wpa-be-app.appspot.com/bible_series/ezra_nehemiah/ezra-nehemiah.jpg",
+    "is_active": false,
+    "is_visible": false
+  },
+  "series_content": [
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-07-04",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Ezra 1:1-11 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "1",
+              "verses": {
+                "1": "In the first year of Cyrus king of Persia, in order to fulfill the word of the LORD spoken by Jeremiah, the LORD moved the heart of Cyrus king of Persia to make a proclamation throughout his realm and to put it in writing:",
+                "2": "\"This is what Cyrus king of Persia says: \"'The LORD, the God of heaven, has given me all the kingdoms of the earth and he has appointed me to build a temple for him at Jerusalem in Judah.",
+                "3": "Anyone of his people among you-may his God be with him, and let him go up to Jerusalem in Judah and build the temple of the LORD, the God of Israel, the God who is in Jerusalem.",
+                "4": "And the people of any place where survivors may now be living are to provide him with silver and gold, with goods and livestock, and with freewill offerings for the temple of God in Jerusalem.'\"",
+                "5": "Then the family heads of Judah and Benjamin, and the priests and Levites-everyone whose heart God had moved-prepared to go up and build the house of the LORD in Jerusalem.",
+                "6": "All their neighbors assisted them with articles of silver and gold, with goods and livestock, and with valuable gifts, in addition to all the freewill offerings.",
+                "7": "Moreover, King Cyrus brought out the articles belonging to the temple of the LORD, which Nebuchadnezzar had carried away from Jerusalem and had placed in the temple of his god.",
+                "8": "Cyrus king of Persia had them brought by Mithredath the treasurer, who counted them out to Sheshbazzar the prince of Judah.",
+                "9": "This was the inventory: gold dishes 30 silver dishes 1,000 silver pans 29",
+                "10": "gold bowls 30 matching silver bowls 410 other articles 1,000",
+                "11": "In all, there were 5,400 articles of gold and of silver. Sheshbazzar brought all these along when the exiles came up from Babylon to Jerusalem."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "It Starts With The Heart",
+            "When we refer to the heart, we generally think of it from a biological standpoint. As a vital organ, if the heart ever stops pumping blood to the rest of our body, we would cease to live. The ancients referred to the heart as the emotional core and motivator for action, as opposed to the mind. Not only did God create us with a heart, but as King Solomon wrote in Ecclesiastes 3:11, “He has also set eternity in the human heart”. Furthermore, the Apostle Paul viewed the heart as a home in Ephesians 3:17, “Christ may dwell in your heart through faith”. It is in Ezra 1 where we see God moving upon human hearts and this is my prayer for you as you begin this bible engagement series through the books of Ezra & Nehemiah.",
+            "In Ezra 1: 1 (cf. 2 Chronicles 36: 22), “The Lord moved the heart of Cyrus king of Persia to make a proclamation throughout his realm and also to put it in writing.” Here we see God at work in the heart of a foreign king. Our God is the God of the nations. He ministers to the hearts of different people in different ways. We observe a series of exiles in scripture. Assyria took over Israel, Babylon took over Judah, Babylon took over Assyria and Persia-Media took over Babylon. King Cyrus was of the Persia-Media empire. What was so special about him? Nothing! God simply selected him to liberate the people of God and allow them to return to Jerusalem. How was that possible? God got a hold of his heart. I would also add that God moved upon King Cyrus's heart in order to fulfill the word of the Lord spoken through Jeremiah. Though Jeremiah felt like an unsuccessful prophet, God fulfilled every word spoken through him.", 
+            "In Ezra 1: 5, we read, “Then the family heads of Judah and Benjamin, and the priests and Levites—everyone whose heart God had moved—prepared to go up and build the house of the Lord in Jerusalem.” I find this to be a very encouraging scripture because it means that God can still move the hearts of families and God can still move the hearts of spiritual leaders like pastors. What could happen if God got a hold of the heart of every person at WPA? What could we do or rebuild for the Lord? God does not only move on a singular heart, but on collective hearts.", 
+            "As you read this devotional, here's the main point: In order for God's purposes to move forward in partnership with people, hearts need to be moved! Does the Lord have your heart; not part of it; all of it? Does the Lord have our hearts? Not one or two hearts; but all of our hearts? I encourage you to let God move your heart(s) today, for if He has your heart, He will have your mind, He will have your hands and feet, He will have your everything.",
+
+            "Pastor Chris Padiath"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-07-05",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "2",
+              "verses": {
+                "1": "Now these are the people of the province who came up from the captivity of the exiles, whom Nebuchadnezzar king of Babylon had taken captive to Babylon (they returned to Jerusalem and Judah, each to his own town,",
+                "2": "in company with Zerubbabel, Jeshua, Nehemiah, Seraiah, Reelaiah, Mordecai, Bilshan, Mispar, Bigvai, Rehum and Baanah): The list of the men of the people of Israel:",
+                "3": "the descendants of Parosh 2,172",
+                "4": "of Shephatiah 372",
+                "5": "of Arah 775",
+                "6": "of Pahath-Moab (through the line of Jeshua and Joab) 2,812",
+                "7": "of Elam 1,254",
+                "8": "of Zattu 945",
+                "9": "of Zaccai 760",
+                "10": "of Bani 642",
+                "11": "of Bebai 623",
+                "12": "of Azgad 1,222",
+                "13": "of Adonikam 666",
+                "14": "of Bigvai 2,056",
+                "15": "of Adin 454",
+                "16": "of Ater (through Hezekiah) 98",
+                "17": "of Bezai 323",
+                "18": "of Jorah 112",
+                "19": "of Hashum 223",
+                "20": "of Gibbar 95",
+                "21": "the men of Bethlehem 123",
+                "22": "of Netophah 56",
+                "23": "of Anathoth 128",
+                "24": "of Azmaveth 42",
+                "25": "of Kiriath Jearim, Kephirah and Beeroth 743",
+                "26": "of Ramah and Geba 621",
+                "27": "of Micmash 122",
+                "28": "of Bethel and Ai 223",
+                "29": "of Nebo 52",
+                "30": "of Magbish 156",
+                "31": "of the other Elam 1,254",
+                "32": "of Harim 320",
+                "33": "of Lod, Hadid and Ono 725",
+                "34": "of Jericho 345",
+                "35": "of Senaah 3,630",
+                "36": "The priests: the descendants of Jedaiah (through the family of Jeshua) 973",
+                "37": "of Immer 1,052",
+                "38": "of Pashhur 1,247",
+                "39": "of Harim 1,017",
+                "40": "The Levites: the descendants of Jeshua and Kadmiel (through the line of Hodaviah) 74",
+                "41": "The singers: the descendants of Asaph 128",
+                "42": "The gatekeepers of the temple: the descendants of Shallum, Ater, Talmon, Akkub, Hatita and Shobai 139",
+                "43": "The temple servants: the descendants of Ziha, Hasupha, Tabbaoth,",
+                "44": "Keros, Siaha, Padon,",
+                "45": "Lebanah, Hagabah, Akkub,",
+                "46": "Hagab, Shalmai, Hanan,",
+                "47": "Giddel, Gahar, Reaiah,",
+                "48": "Rezin, Nekoda, Gazzam,",
+                "49": "Uzza, Paseah, Besai,",
+                "50": "Asnah, Meunim, Nephussim,",
+                "51": "Bakbuk, Hakupha, Harhur,",
+                "52": "Bazluth, Mehida, Harsha,",
+                "53": "Barkos, Sisera, Temah,",
+                "54": "Neziah and Hatipha"
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Ezra 2:1-54 by hand. This will help you slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-07-06",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "2",
+              "verses": {
+                "55": "The descendants of the servants of Solomon: the descendants of Sotai, Hassophereth, Peruda,",
+                "56": "Jaala, Darkon, Giddel,",
+                "57": "Shephatiah, Hattil, Pokereth-Hazzebaim and Ami",
+                "58": "The temple servants and the descendants of the servants of Solomon 392",
+                "59": "The following came up from the towns of Tel Melah, Tel Harsha, Kerub, Addon and Immer, but they could not show that their families were descended from Israel:",
+                "60": "The descendants of Delaiah, Tobiah and Nekoda 652",
+                "61": "And from among the priests: The descendants of Hobaiah, Hakkoz and Barzillai (a man who had married a daughter of Barzillai the Gileadite and was called by that name).",
+                "62": "These searched for their family records, but they could not find them and so were excluded from the priesthood as unclean.",
+                "63": "The governor ordered them not to eat any of the most sacred food until there was a priest ministering with the Urim and Thummim.",
+                "64": "The whole company numbered 42,360,",
+                "65": "besides their 7,337 menservants and maidservants; and they also had 200 men and women singers.",
+                "66": "They had 736 horses, 245 mules,",
+                "67": "435 camels and 6,720 donkeys.",
+                "68": "When they arrived at the house of the LORD in Jerusalem, some of the heads of the families gave freewill offerings toward the rebuilding of the house of God on its site.",
+                "69": "According to their ability they gave to the treasury for this work 61,000 drachmas of gold, 5,000 minas of silver and 100 priestly garments.",
+                "70": "The priests, the Levites, the singers, the gatekeepers and the temple servants settled in their own towns, along with some of the other people, and the rest of the Israelites settled in their towns."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Ezra 2:68-69 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "2",
+              "verses": {
+                "68": "When they arrived at the house of the LORD in Jerusalem, some of the heads of the families gave freewill offerings toward the rebuilding of the house of God on its site.",
+                "69": "According to their ability they gave to the treasury for this work 61,000 drachmas of gold, 5,000 minas of silver and 100 priestly garments.\""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-07-07",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "3",
+              "verses": {
+                "1": "When the seventh month came and the Israelites had settled in their towns, the people assembled as one man in Jerusalem.",
+                "2": "Then Jeshua son of Jozadak and his fellow priests and Zerubbabel son of Shealtiel and his associates began to build the altar of the God of Israel to sacrifice burnt offerings on it, in accordance with what is written in the Law of Moses the man of God.",
+                "3": "Despite their fear of the peoples around them, they built the altar on its foundation and sacrificed burnt offerings on it to the LORD, both the morning and evening sacrifices.",
+                "4": "Then in accordance with what is written, they celebrated the Feast of Tabernacles with the required number of burnt offerings prescribed for each day.",
+                "5": "After that, they presented the regular burnt offerings, the New Moon sacrifices and the sacrifices for all the appointed sacred feasts of the LORD, as well as those brought as freewill offerings to the LORD.",
+                "6": "On the first day of the seventh month they began to offer burnt offerings to the LORD, though the foundation of the LORD's temple had not yet been laid."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "questions": [
+            "Scripture: Read Ezra 3:1-6. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application:: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ],
+          "body_type": "question"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-07-08",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "3",
+              "verses": {
+                "7": "Then they gave money to the masons and carpenters, and gave food and drink and oil to the people of Sidon and Tyre, so that they would bring cedar logs by sea from Lebanon to Joppa, as authorized by Cyrus king of Persia.",
+                "8": "In the second month of the second year after their arrival at the house of God in Jerusalem, Zerubbabel son of Shealtiel, Jeshua son of Jozadak and the rest of their brothers (the priests and the Levites and all who had returned from the captivity to Jerusalem) began the work, appointing Levites twenty years of age and older to supervise the building of the house of the LORD.",
+                "9": "Jeshua and his sons and brothers and Kadmiel and his sons (descendants of Hodaviah ) and the sons of Henadad and their sons and brothers-all Levites-joined together in supervising those working on the house of God.",
+                "10": "When the builders laid the foundation of the temple of the LORD, the priests in their vestments and with trumpets, and the Levites (the sons of Asaph) with cymbals, took their places to praise the LORD, as prescribed by David king of Israel.",
+                "11": "With praise and thanksgiving they sang to the LORD: \"He is good; his love to Israel endures forever.\" And all the people gave a great shout of praise to the LORD, because the foundation of the house of the LORD was laid.",
+                "12": "But many of the older priests and Levites and family heads, who had seen the former temple, wept aloud when they saw the foundation of this temple being laid, while many others shouted for joy.",
+                "13": "No one could distinguish the sound of the shouts of joy from the sound of weeping, because the people made so much noise. And the sound was heard far away."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Ezra 3 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Lord God, we exalt You.",
+            "You are great and above all else. You are sovereign. There is no other God but You. Lord, we are thankful that we can worship You regardless of where we are and we no longer have to worship You in a temple.",
+            "Father God, thank You that we can come to You no matter what our circumstances are; even if we have messed up, Your love for us never ceases and Your mercies never come to an end (Lamentations 3:22)./ We can rejoice and look to the future with hope knowing that You can make all things new.", 
+            "In Jesus' name, amen and hallelujah!"
+
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-07-11",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Ezra 4 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "4",
+              "verses": {
+                "1": "When the enemies of Judah and Benjamin heard that the exiles were building a temple for the LORD, the God of Israel,",
+                "2": "they came to Zerubbabel and to the heads of the families and said, \"Let us help you build because, like you, we seek your God and have been sacrificing to him since the time of Esarhaddon king of Assyria, who brought us here.\"",
+                "3": "But Zerubbabel, Jeshua and the rest of the heads of the families of Israel answered, \"You have no part with us in building a temple to our God. We alone will build it for the LORD, the God of Israel, as King Cyrus, the king of Persia, commanded us.\"",
+                "4": "Then the peoples around them set out to discourage the people of Judah and make them afraid to go on building.",
+                "5": "They hired counselors to work against them and frustrate their plans during the entire reign of Cyrus king of Persia and down to the reign of Darius king of Persia.",
+                "6": "At the beginning of the reign of Xerxes, they lodged an accusation against the people of Judah and Jerusalem.",
+                "7": "And in the days of Artaxerxes king of Persia, Bishlam, Mithredath, Tabeel and the rest of his associates wrote a letter to Artaxerxes. The letter was written in Aramaic script and in the Aramaic language.,",
+                "8": "Rehum the commanding officer and Shimshai the secretary wrote a letter against Jerusalem to Artaxerxes the king as follows:",
+                "9": "Rehum the commanding officer and Shimshai the secretary, together with the rest of their associates-the judges and officials over the men from Tripolis, Persia, Erech and Babylon, the Elamites of Susa,",
+                "10": "and the other people whom the great and honorable Ashurbanipal deported and settled in the city of Samaria and elsewhere in Trans-Euphrates."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "The Battle is the Lord's!",
+            "After laying down the foundation and celebrating with the priests in rebuilding the temple of God in Jerusalem, the tribes of Judah and Benjamin continued their task to rebuild the temple of the Lord as prophesied by the prophet Jeremiah, however, they encountered  opposition from adversaries. The adversaries were Samaritans who lived in Jerusalem at the time. The adversaries first came in an attempt to help, however, when their offer was wisely rejected by the builders, they took extra measures to oppose the building of the temple of the God of Israel. They now opposed them using influence and politics.",
+            "The God we serve is a loving and merciful God. He is always willing to forgive us of our sins. If we keep on living in sin, expecting that His grace will continually cover over our iniquity, this could lead to a dangerous lifestyle of continuous backsliding. Jeremiah 8 describes a gory picture of the result of Israel's continuous backsliding into idolatry (Jer. 8:19). Backsliding, just like idolatry, leads into bondage and eventual destruction of the life and destiny of a child of God. God does not take pleasure in the life of those who set their hand on the plough of the gospel and turn away (Heb. 10:38-39).", 
+            "Despite experiencing the awesome power and salvation of God in Egypt and during the wilderness journey, Israel disobeyed God's commands and successive generations continuously crave other foreign gods and worship these idols made with human hands. This prompted God to teach erring Israel some lifetime lessons through hardships, wars and exiles. They used influence by engaging in bribery, creating fear and discouragement to cause the people of Judah to not continue their work. This was done over some time, through the reign of King Cyrus and King Darius of Persia.", 
+            "When King Artaxerxes of Persia was in rule, the adversaries intensified their efforts by now using politics. They wrote a letter to King Artaxerxes with false claims against the people of Judah and Benjamin.",
+            "This pattern of using different ways to oppose the plans of God over extended periods is aligned with how the enemy attacks us in our everyday lives. Our adversary, the devil, attacks our call to love God, obey His commandments, parent in a godly way, serve God, love others and more. The goal of the enemy is to hinder us from fulfilling our God-given destiny like the people who were trying to rebuild the temple. As we continue to read the book of Ezra, with God's plans, no resource or political power of the adversary can stop the plans of God.",
+            "So how can we stay consistent when the opposition is so big and prolonged? We need to rely on God as He will restore us. We need to be wise, discerning and bold to resist when the enemy comes in sheep's clothing. We must be persistent and have faith to hold onto the prophecies of God over us even during attacks from the enemy.",
+            "We put ourselves in a position to do this by being in fellowship with our fellow believers, listening to God's instructions as taught by our pastors and increasing our knowledge of God by reading His word.",
+            "Remember, just like the rebuilding of the temple project was ordained by God, so our lives have been ordained in God's plans and so the battle belongs to the Lord. We only need to trust Him and follow His lead.",
+            "We pray for you to be steadfast through any opposition of the enemy and read through this devotional series with the church so that we may grow in faith and knowledge of the Lord Jesus Christ.",
+
+            "Steven Uhoutu (Deacon)"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-07-12",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "4",
+              "verses": {
+                "11": "(This is a copy of the letter they sent him.) To King Artaxerxes, From your servants, the men of Trans-Euphrates:",
+                "12": "The king should know that the Jews who came up to us from you have gone to Jerusalem and are rebuilding that rebellious and wicked city. They are restoring the walls and repairing the foundations.",
+                "13": "Furthermore, the king should know that if this city is built and its walls are restored, no more taxes, tribute or duty will be paid, and the royal revenues will suffer.",
+                "14": "Now since we are under obligation to the palace and it is not proper for us to see the king dishonored, we are sending this message to inform the king,",
+                "15": "so that a search may be made in the archives of your predecessors. In these records you will find that this city is a rebellious city, troublesome to kings and provinces, a place of rebellion from ancient times. That is why this city was destroyed.",
+                "16": "We inform the king that if this city is built and its walls are restored, you will be left with nothing in Trans-Euphrates.",
+                "17": "The king sent this reply: To Rehum the commanding officer, Shimshai the secretary and the rest of their associates living in Samaria and elsewhere in Trans-Euphrates: Greetings.",
+                "18": "The letter you sent us has been read and translated in my presence.",
+                "19": "I issued an order and a search was made, and it was found that this city has a long history of revolt against kings and has been a place of rebellion and sedition.",
+                "20": "Jerusalem has had powerful kings ruling over the whole of Trans-Euphrates, and taxes, tribute and duty were paid to them.",
+                "21": "Now issue an order to these men to stop work, so that this city will not be rebuilt until I so order.",
+                "22": "Be careful not to neglect this matter. Why let this threat grow, to the detriment of the royal interests?",
+                "23": "As soon as the copy of the letter of King Artaxerxes was read to Rehum and Shimshai the secretary and their associates, they went immediately to the Jews in Jerusalem and compelled them by force to stop.",
+                "24": "Thus the work on the house of God in Jerusalem came to a standstill until the second year of the reign of Darius king of Persia."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Ezra 4:11-24 by hand. This will help you slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-07-13",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "5",
+              "verses": {
+                "1": "Now Haggai the prophet and Zechariah the prophet, a descendant of Iddo, prophesied to the Jews in Judah and Jerusalem in the name of the God of Israel, who was over them.",
+                "2": "Then Zerubbabel son of Shealtiel and Jeshua son of Jozadak set to work to rebuild the house of God in Jerusalem. And the prophets of God were with them, helping them.",
+                "3": "At that time Tattenai, governor of Trans-Euphrates, and Shethar-Bozenai and their associates went to them and asked, \"Who authorized you to rebuild this temple and restore this structure?\"",
+                "4": "They also asked, \"What are the names of the men constructing this building?\"",
+                "5": "But the eye of their God was watching over the elders of the Jews, and they were not stopped until a report could go to Darius and his written reply be received.",
+                "6": "This is a copy of the letter that Tattenai, governor of Trans-Euphrates, and Shethar-Bozenai and their associates, the officials of Trans-Euphrates, sent to King Darius.",
+                "7": "The report they sent him read as follows: To King Darius: Cordial greetings.",
+                "8": "The king should know that we went to the district of Judah, to the temple of the great God. The people are building it with large stones and placing the timbers in the walls. The work is being carried on with diligence and is making rapid progress under their direction.",
+                "9": "We questioned the elders and asked them, \"Who authorized you to rebuild this temple and restore this structure?\"",
+                "10": "We also asked them their names, so that we could write down the names of their leaders for your information.",
+                "11": "This is the answer they gave us: \"We are the servants of the God of heaven and earth, and we are rebuilding the temple that was built many years ago, one that a great king of Israel built and finished.",
+                "12": "But because our fathers angered the God of heaven, he handed them over to Nebuchadnezzar the Chaldean, king of Babylon, who destroyed this temple and deported the people to Babylon.",
+                "13": "\"However, in the first year of Cyrus king of Babylon, King Cyrus issued a decree to rebuild this house of God.",
+                "14": "He even removed from the temple of Babylon the gold and silver articles of the house of God, which Nebuchadnezzar had taken from the temple in Jerusalem and brought to the temple in Babylon. \"Then King Cyrus gave them to a man named Sheshbazzar, whom he had appointed governor,",
+                "15": "and he told him, 'Take these articles and go and deposit them in the temple in Jerusalem. And rebuild the house of God on its site.'",
+                "16": "So this Sheshbazzar came and laid the foundations of the house of God in Jerusalem. From that day to the present it has been under construction but is not yet finished.\"",
+                "17": "Now if it pleases the king, let a search be made in the royal archives of Babylon to see if King Cyrus did in fact issue a decree to rebuild this house of God in Jerusalem. Then let the king send us his decision in this matter."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Ezra 5:5 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "5",
+              "verses": {
+                "5": "But the eye of their God was watching over the elders of the Jews, and they were not stopped until a report could go to Darius and his written reply be received."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-07-14",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "6",
+              "verses": {
+                "1": "King Darius then issued an order, and they searched in the archives stored in the treasury at Babylon.",
+                "2": "A scroll was found in the citadel of Ecbatana in the province of Media, and this was written on it: Memorandum:",
+                "3": "In the first year of King Cyrus, the king issued a decree concerning the temple of God in Jerusalem: Let the temple be rebuilt as a place to present sacrifices, and let its foundations be laid. It is to be ninety feet high and ninety feet wide,",
+                "4": "with three courses of large stones and one of timbers. The costs are to be paid by the royal treasury.",
+                "5": "Also, the gold and silver articles of the house of God, which Nebuchadnezzar took from the temple in Jerusalem and brought to Babylon, are to be returned to their places in the temple in Jerusalem; they are to be deposited in the house of God.",
+                "6": "Now then, Tattenai, governor of Trans-Euphrates, and Shethar-Bozenai and you, their fellow officials of that province, stay away from there.",
+                "7": "Do not interfere with the work on this temple of God. Let the governor of the Jews and the Jewish elders rebuild this house of God on its site.",
+                "8": "Moreover, I hereby decree what you are to do for these elders of the Jews in the construction of this house of God: The expenses of these men are to be fully paid out of the royal treasury, from the revenues of Trans-Euphrates, so that the work will not stop.",
+                "9": "Whatever is needed-young bulls, rams, male lambs for burnt offerings to the God of heaven, and wheat, salt, wine and oil, as requested by the priests in Jerusalem-must be given them daily without fail,",
+                "10": "so that they may offer sacrifices pleasing to the God of heaven and pray for the well-being of the king and his sons.",
+                "11": "Furthermore, I decree that if anyone changes this edict, a beam is to be pulled from his house and he is to be lifted up and impaled on it. And for this crime his house is to be made a pile of rubble.",
+                "12": "May God, who has caused his Name to dwell there, overthrow any king or people who lifts a hand to change this decree or to destroy this temple in Jerusalem. I Darius have decreed it. Let it be carried out with diligence."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________",
+            "Today's reflection is based on Ezra 6."
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "question",
+          "questions": [
+            "Scripture: Read Ezra 6:1-12. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-07-15",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "6",
+              "verses": {
+                "13": "Then, because of the decree King Darius had sent, Tattenai, governor of Trans-Euphrates, and Shethar-Bozenai and their associates carried it out with diligence.",
+                "14": "So the elders of the Jews continued to build and prosper under the preaching of Haggai the prophet and Zechariah, a descendant of Iddo. They finished building the temple according to the command of the God of Israel and the decrees of Cyrus, Darius and Artaxerxes, kings of Persia.",
+                "15": "The temple was completed on the third day of the month Adar, in the sixth year of the reign of King Darius.",
+                "16": "Then the people of Israel-the priests, the Levites and the rest of the exiles-celebrated the dedication of the house of God with joy.",
+                "17": "For the dedication of this house of God they offered a hundred bulls, two hundred rams, four hundred male lambs and, as a sin offering for all Israel, twelve male goats, one for each of the tribes of Israel.",
+                "18": "And they installed the priests in their divisions and the Levites in their groups for the service of God at Jerusalem, according to what is written in the Book of Moses.",
+                "19": "On the fourteenth day of the first month, the exiles celebrated the Passover.",
+                "20": "The priests and Levites had purified themselves and were all ceremonially clean. The Levites slaughtered the Passover lamb for all the exiles, for their brothers the priests and for themselves.",
+                "21": "So the Israelites who had returned from the exile ate it, together with all who had separated themselves from the unclean practices of their Gentile neighbors in order to seek the LORD, the God of Israel.",
+                "22": "For seven days they celebrated with joy the Feast of Unleavened Bread, because the LORD had filled them with joy by changing the attitude of the king of Assyria, so that he assisted them in the work on the house of God, the God of Israel."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Ezra 6 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "O Heavenly Father,",
+            "There is none like You. You are awesome and majestic. You are sovereign and You are in control. You, Lord, foil the plans of the nations and thwart the purposes of the peoples (Psalm 33:10). Lord God, strengthen our faith as we obey Your word. Thwart the plans and the works of the enemy. We know Your plan will come to fruition in ways we cannot imagine. Oh, what a time of celebration it will be! Thank You, Lord, for Your faithfulness and goodness. In Jesus Name, Amen."
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-07-18",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Ezra 7 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "7",
+              "verses": {
+                "1": "After these things, during the reign of Artaxerxes king of Persia, Ezra son of Seraiah, the son of Azariah, the son of Hilkiah,",
+                "2": "the son of Shallum, the son of Zadok, the son of Ahitub,",
+                "3": "the son of Amariah, the son of Azariah, the son of Meraioth,",
+                "4": "the son of Zerahiah, the son of Uzzi, the son of Bukki,",
+                "5": "the son of Abishua, the son of Phinehas, the son of Eleazar, the son of Aaron the chief priest-",
+                "6": "this Ezra came up from Babylon. He was a teacher well versed in the Law of Moses, which the LORD, the God of Israel, had given. The king had granted him everything he asked, for the hand of the LORD his God was on him.",
+                "7": "Some of the Israelites, including priests, Levites, singers, gatekeepers and temple servants, also came up to Jerusalem in the seventh year of King Artaxerxes.",
+                "8": "Ezra arrived in Jerusalem in the fifth month of the seventh year of the king.",
+                "9": "He had begun his journey from Babylon on the first day of the first month, and he arrived in Jerusalem on the first day of the fifth month, for the gracious hand of his God was on him.",
+                "10": "For Ezra had devoted himself to the study and observance of the Law of the LORD, and to teaching its decrees and laws in Israel."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "After These Things",
+            "“After these things” begins this chapter.  Spanning several generations of Achaemenid Kings, three words that sum up a signed and sealed royal decree of Cyrus, ordering the construction of the House of God in Jerusalem. The Archimedean Kings had supplied it all and once completed, worship began.  Onto such a stage, in 458 BC, steps Ezra, a priest of God, with a lineage to Aaron, the chief priest in the time of Moses.  As we should do with our spiritual heritage, Ezra knew his priestly pedigree and valued it. Intergenerational blessing is a real thing. We can wonder at it and should, for the prayers of those who have gone before us into eternity, do continue in their effectiveness in our lifetime.",
+            "Under the authority of King Artaxerxes, leaving Babylon, Ezra and his entourage of temple ministers, travelled five months to reach Jerusalem. Though enjoying the protection of an earthly king and his power, Ezra rightly attributed the blessing on his life ultimately to the “gracious hand of God.” Friends, despite all that we may be “given” by the hands of power in this world, as Christians, we must recognize and believe that it is all from God. We need to acknowledge Him in “all our ways.",
+            "Ezra was a man of God of singular focus. His priorities were “study and observance”. He was devoted to the Word and the way of the Word. To have learned under his teaching was to hear the theology of the Word as well as the practical application of the Word.  As James, the Apostle encouraged us about the Word, “Do what it says.” Something remarkable will then follow.",
+            "Does “study and observance” produce something in our lives? The world tells us the contrary, that it is a waste of time, but our author tells us that a lifestyle in and about the Word, changes things. The beginning of verse ten says “For”. This tiny word links lifestyle to favour. It is therefore implicitly understood that a lifestyle of devotion to God is the reason for the presence of His favour on Ezra's life. This is a profound and powerful revelation to us that our devotion to God, His Word, and the teaching of it, is directly proportional to the favour of the Lord in our life. This is not about a works-based salvation, but rather about pursuing a Word-based life with the Living God. Walk close to God and the things of life change in context before our eyes. Though this favour does not preclude the common pains and tragedies that may occur in life, it does however, supply the grace that we need to see it through until our last breath and into His eternal presence.", 
+            "Ezra 7, among many lessons, tells us to proceed, to continue and to persevere. The completion of the temple was not the end, but rather a new beginning. “Bless the Lord”, God is not finished with you or I.",
+
+            "Jeffrey Young (Elder)"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-07-19",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "7",
+              "verses": {
+                "11": "This is a copy of the letter King Artaxerxes had given to Ezra the priest and teacher, a man learned in matters concerning the commands and decrees of the LORD for Israel:",
+                "12": "Artaxerxes, king of kings, To Ezra the priest, a teacher of the Law of the God of heaven: Greetings.",
+                "13": "Now I decree that any of the Israelites in my kingdom, including priests and Levites, who wish to go to Jerusalem with you, may go.",
+                "14": "You are sent by the king and his seven advisers to inquire about Judah and Jerusalem with regard to the Law of your God, which is in your hand.",
+                "15": "Moreover, you are to take with you the silver and gold that the king and his advisers have freely given to the God of Israel, whose dwelling is in Jerusalem,",
+                "16": "together with all the silver and gold you may obtain from the province of Babylon, as well as the freewill offerings of the people and priests for the temple of their God in Jerusalem.",
+                "17": "With this money be sure to buy bulls, rams and male lambs, together with their grain offerings and drink offerings, and sacrifice them on the altar of the temple of your God in Jerusalem.",
+                "18": "You and your brother Jews may then do whatever seems best with the rest of the silver and gold, in accordance with the will of your God.",
+                "19": "Deliver to the God of Jerusalem all the articles entrusted to you for worship in the temple of your God.",
+                "20": "And anything else needed for the temple of your God that you may have occasion to supply, you may provide from the royal treasury.",
+                "21": "Now I, King Artaxerxes, order all the treasurers of Trans-Euphrates to provide with diligence whatever Ezra the priest, a teacher of the Law of the God of heaven, may ask of you-",
+                "22": "up to a hundred talents of silver, a hundred cors of wheat, a hundred baths of wine, a hundred baths of olive oil, and salt without limit.",
+                "23": "Whatever the God of heaven has prescribed, let it be done with diligence for the temple of the God of heaven. Why should there be wrath against the realm of the king and of his sons?",
+                "24": "You are also to know that you have no authority to impose taxes, tribute or duty on any of the priests, Levites, singers, gatekeepers, temple servants or other workers at this house of God.",
+                "25": "And you, Ezra, in accordance with the wisdom of your God, which you possess, appoint magistrates and judges to administer justice to all the people of Trans-Euphrates-all who know the laws of your God. And you are to teach any who do not know them.",
+                "26": "Whoever does not obey the law of your God and the law of the king must surely be punished by death, banishment, confiscation of property, or imprisonment.",
+                "27": "Praise be to the LORD, the God of our fathers, who has put it into the king's heart to bring honor to the house of the LORD in Jerusalem in this way",
+                "28": "and who has extended his good favor to me before the king and his advisers and all the king's powerful officials. Because the hand of the LORD my God was on me, I took courage and gathered leading men from Israel to go up with me."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Ezra 7:11-28 by hand. This will help you slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-07-20",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "8",
+              "verses": {
+                "11": "of the descendants of Bebai, Zechariah son of Bebai, and with him 28 men;",
+                "12": "of the descendants of Azgad, Johanan son of Hakkatan, and with him 110 men;",
+                "13": "of the descendants of Adonikam, the last ones, whose names were Eliphelet, Jeuel and Shemaiah, and with them 60 men;",
+                "14": "of the descendants of Bigvai, Uthai and Zaccur, and with them 70 men.",
+                "15": "I assembled them at the canal that flows toward Ahava, and we camped there three days. When I checked among the people and the priests, I found no Levites there.",
+                "16": "So I summoned Eliezer, Ariel, Shemaiah, Elnathan, Jarib, Elnathan, Nathan, Zechariah and Meshullam, who were leaders, and Joiarib and Elnathan, who were men of learning,",
+                "17": "and I sent them to Iddo, the leader in Casiphia. I told them what to say to Iddo and his kinsmen, the temple servants in Casiphia, so that they might bring attendants to us for the house of our God.",
+                "18": "Because the gracious hand of our God was on us, they brought us Sherebiah, a capable man, from the descendants of Mahli son of Levi, the son of Israel, and Sherebiah's sons and brothers, 18 men;",
+                "19": "and Hashabiah, together with Jeshaiah from the descendants of Merari, and his brothers and nephews, 20 men.",
+                "20": "They also brought 220 of the temple servants-a body that David and the officials had established to assist the Levites. All were registered by name.",
+                "21": "There, by the Ahava Canal, I proclaimed a fast, so that we might humble ourselves before our God and ask him for a safe journey for us and our children, with all our possessions.",
+                "22": "I was ashamed to ask the king for soldiers and horsemen to protect us from enemies on the road, because we had told the king, \"The gracious hand of our God is on everyone who looks to him, but his great anger is against all who forsake him.\"",
+                "23": "So we fasted and petitioned our God about this, and he answered our prayer.",
+                "24": "Then I set apart twelve of the leading priests, together with Sherebiah, Hashabiah and ten of their brothers,",
+                "25": "and I weighed out to them the offering of silver and gold and the articles that the king, his advisers, his officials and all Israel present there had donated for the house of our God.",
+                "26": "I weighed out to them 650 talents of silver, silver articles weighing 100 talents, 100 talents of gold,",
+                "27": "20 bowls of gold valued at 1,000 darics, and two fine articles of polished bronze, as precious as gold.",
+                "28": "I said to them, \"You as well as these articles are consecrated to the LORD. The silver and gold are a freewill offering to the LORD, the God of your fathers."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Ezra 7:10 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "7",
+              "verses": {
+                "10": "For Ezra had devoted himself to the study and observance of the Law of the LORD, and to teaching its decrees and laws in Israel."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-07-21",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "8",
+              "verses": {
+                "15": "I assembled them at the canal that flows toward Ahava, and we camped there three days. When I checked among the people and the priests, I found no Levites there.",
+                "16": "So I summoned Eliezer, Ariel, Shemaiah, Elnathan, Jarib, Elnathan, Nathan, Zechariah and Meshullam, who were leaders, and Joiarib and Elnathan, who were men of learning,",
+                "17": "and I sent them to Iddo, the leader in Casiphia. I told them what to say to Iddo and his kinsmen, the temple servants in Casiphia, so that they might bring attendants to us for the house of our God.",
+                "18": "Because the gracious hand of our God was on us, they brought us Sherebiah, a capable man, from the descendants of Mahli son of Levi, the son of Israel, and Sherebiah's sons and brothers, 18 men;",
+                "19": "and Hashabiah, together with Jeshaiah from the descendants of Merari, and his brothers and nephews, 20 men.",
+                "20": "They also brought 220 of the temple servants-a body that David and the officials had established to assist the Levites. All were registered by name.",
+                "21": "There, by the Ahava Canal, I proclaimed a fast, so that we might humble ourselves before our God and ask him for a safe journey for us and our children, with all our possessions.",
+                "22": "I was ashamed to ask the king for soldiers and horsemen to protect us from enemies on the road, because we had told the king, \"The gracious hand of our God is on everyone who looks to him, but his great anger is against all who forsake him.\"",
+                "23": "So we fasted and petitioned our God about this, and he answered our prayer.",
+                "24": "Then I set apart twelve of the leading priests, together with Sherebiah, Hashabiah and ten of their brothers,",
+                "25": "and I weighed out to them the offering of silver and gold and the articles that the king, his advisers, his officials and all Israel present there had donated for the house of our God.",
+                "26": "I weighed out to them 650 talents of silver, silver articles weighing 100 talents, 100 talents of gold,",
+                "27": "20 bowls of gold valued at 1,000 darics, and two fine articles of polished bronze, as precious as gold.",
+                "28": "I said to them, \"You as well as these articles are consecrated to the LORD. The silver and gold are a freewill offering to the LORD, the God of your fathers.",
+                "29": "Guard them carefully until you weigh them out in the chambers of the house of the LORD in Jerusalem before the leading priests and the Levites and the family heads of Israel.\"",
+                "30": "Then the priests and Levites received the silver and gold and sacred articles that had been weighed out to be taken to the house of our God in Jerusalem.",
+                "31": "On the twelfth day of the first month we set out from the Ahava Canal to go to Jerusalem. The hand of our God was on us, and he protected us from enemies and bandits along the way.",
+                "32": "So we arrived in Jerusalem, where we rested three days.",
+                "33": "On the fourth day, in the house of our God, we weighed out the silver and gold and the sacred articles into the hands of Meremoth son of Uriah, the priest. Eleazar son of Phinehas was with him, and so were the Levites Jozabad son of Jeshua and Noadiah son of Binnui.",
+                "34": "Everything was accounted for by number and weight, and the entire weight was recorded at that time.",
+                "35": "Then the exiles who had returned from captivity sacrificed burnt offerings to the God of Israel: twelve bulls for all Israel, ninety-six rams, seventy-seven male lambs and, as a sin offering, twelve male goats. All this was a burnt offering to the LORD.",
+                "36": "They also delivered the king's orders to the royal satraps and to the governors of Trans-Euphrates, who then gave assistance to the people and to the house of God."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "question",
+          "questions": [
+            "Scripture: Read Ezra 8:15-36. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-07-22",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "9",
+              "verses": {
+                "1": "After these things had been done, the leaders came to me and said, \"The people of Israel, including the priests and the Levites, have not kept themselves separate from the neighboring peoples with their detestable practices, like those of the Canaanites, Hittites, Perizzites, Jebusites, Ammonites, Moabites, Egyptians and Amorites.",
+                "2": "They have taken some of their daughters as wives for themselves and their sons, and have mingled the holy race with the peoples around them. And the leaders and officials have led the way in this unfaithfulness.\"",
+                "3": "When I heard this, I tore my tunic and cloak, pulled hair from my head and beard and sat down appalled.",
+                "4": "Then everyone who trembled at the words of the God of Israel gathered around me because of this unfaithfulness of the exiles. And I sat there appalled until the evening sacrifice.",
+                "5": "Then, at the evening sacrifice, I rose from my self-abasement, with my tunic and cloak torn, and fell on my knees with my hands spread out to the LORD my God",
+                "6": "and prayed: \"O my God, I am too ashamed and disgraced to lift up my face to you, my God, because our sins are higher than our heads and our guilt has reached to the heavens.",
+                "7": "From the days of our forefathers until now, our guilt has been great. Because of our sins, we and our kings and our priests have been subjected to the sword and captivity, to pillage and humiliation at the hand of foreign kings, as it is today.",
+                "8": "\"But now, for a brief moment, the LORD our God has been gracious in leaving us a remnant and giving us a firm place in his sanctuary, and so our God gives light to our eyes and a little relief in our bondage.",
+                "9": "Though we are slaves, our God has not deserted us in our bondage. He has shown us kindness in the sight of the kings of Persia: He has granted us new life to rebuild the house of our God and repair its ruins, and he has given us a wall of protection in Judah and Jerusalem.",
+                "10": "\"But now, O our God, what can we say after this? For we have disregarded the commands",
+                "11": "you gave through your servants the prophets when you said: 'The land you are entering to possess is a land polluted by the corruption of its peoples. By their detestable practices they have filled it with their impurity from one end to the other.",
+                "12": "Therefore, do not give your daughters in marriage to their sons or take their daughters for your sons. Do not seek a treaty of friendship with them at any time, that you may be strong and eat the good things of the land and leave it to your children as an everlasting inheritance.'",
+                "13": "\"What has happened to us is a result of our evil deeds and our great guilt, and yet, our God, you have punished us less than our sins have deserved and have given us a remnant like this.",
+                "14": "Shall we again break your commands and intermarry with the peoples who commit such detestable practices? Would you not be angry enough with us to destroy us, leaving us no remnant or survivor?",
+                "15": "O LORD, God of Israel, you are righteous! We are left this day as a remnant. Here we are before you in our guilt, though because of it not one of us can stand in your presence.\""
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Ezra 9 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Dear God,",
+            "You are holy and righteous. You alone are perfect. There is no one holy but You. Thank You, Lord, that by Your great love we can come to Your throne of grace.",
+            "Lord God, just as You have convicted the Israelites of their sin, we also humbly ask You to convict us of our sins. Reveal anything that is not pleasing to You. Lord, forgive us if we have not been a good witness for You. God, we confess and repent of our sins. We commit to walk in Your ways.",
+            "In Jesus name, Amen."
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-07-25",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Ezra 10:1-17 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "10",
+              "verses": {
+                "1": "While Ezra was praying and confessing, weeping and throwing himself down before the house of God, a large crowd of Israelites-men, women and children-gathered around him. They too wept bitterly.",
+                "2": "Then Shecaniah son of Jehiel, one of the descendants of Elam, said to Ezra, \"We have been unfaithful to our God by marrying foreign women from the peoples around us. But in spite of this, there is still hope for Israel.",
+                "3": "Now let us make a covenant before our God to send away all these women and their children, in accordance with the counsel of my lord and of those who fear the commands of our God. Let it be done according to the Law.",
+                "4": "Rise up; this matter is in your hands. We will support you, so take courage and do it.\"",
+                "5": "So Ezra rose up and put the leading priests and Levites and all Israel under oath to do what had been suggested. And they took the oath.",
+                "6": "Then Ezra withdrew from before the house of God and went to the room of Jehohanan son of Eliashib. While he was there, he ate no food and drank no water, because he continued to mourn over the unfaithfulness of the exiles.",
+                "7": "A proclamation was then issued throughout Judah and Jerusalem for all the exiles to assemble in Jerusalem.",
+                "8": "Anyone who failed to appear within three days would forfeit all his property, in accordance with the decision of the officials and elders, and would himself be expelled from the assembly of the exiles.",
+                "9": "Within the three days, all the men of Judah and Benjamin had gathered in Jerusalem. And on the twentieth day of the ninth month, all the people were sitting in the square before the house of God, greatly distressed by the occasion and because of the rain.",
+                "10": "Then Ezra the priest stood up and said to them, \"You have been unfaithful; you have married foreign women, adding to Israel's guilt.",
+                "11": "Now make confession to the LORD, the God of your fathers, and do his will. Separate yourselves from the peoples around you and from your foreign wives.\"",
+                "12": "The whole assembly responded with a loud voice: \"You are right! We must do as you say.",
+                "13": "But there are many people here and it is the rainy season; so we cannot stand outside. Besides, this matter cannot be taken care of in a day or two, because we have sinned greatly in this thing.",
+                "14": "Let our officials act for the whole assembly. Then let everyone in our towns who has married a foreign woman come at a set time, along with the elders and judges of each town, until the fierce anger of our God in this matter is turned away from us.\"",
+                "15": "Only Jonathan son of Asahel and Jahzeiah son of Tikvah, supported by Meshullam and Shabbethai the Levite, opposed this.",
+                "16": "So the exiles did as was proposed. Ezra the priest selected men who were family heads, one from each family division, and all of them designated by name. On the first day of the tenth month they sat down to investigate the cases,",
+                "17": "and by the first day of the first month they finished dealing with all the men who had married foreign women."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Collective Accountability & Repentance",
+            "“Ezra prayed and confessed, weeping and falling face down before the house of God, an extremely large assembly of Israelite men, women, and children gathered around him. The people also wept bitterly.” (Ezra 10:1)",
+            "When we think of accountability, this is perhaps one of the last pictures that our minds paint for us. Many would think of accountability as sharing a deep hurt or sin with one trusted friend, small group leader, discipleship partner or pastor. The Israelites example of collective sin, brokenness, repentance and reconciliation before God provides an essential picture of a profoundly accountable community.",
+            "Collectively, this community sinned against God. Instead of keeping God's command “to separate themselves from the surrounding peoples with detestable practices” (Ezra 9:1-2), they willingly chose union with them in the deepest sense, through marriage. Once their sin was revealed, they didn't fight against it, try to hide it or point out the other sins of people around them. They sinned together and then welcomed conviction and accountability together. To right their mistakes, they responded with collective brokenness and repentance together.",
+            "When was the last time you participated in collective accountability and repentance? Have you ever participated in this type of accountability? I recall a time in my twenties when my church held a repentance and reconciliation service to foster stronger accountability within the church body. We prayed, cried, confessed and then we repented. Since that experience, I have returned to the practice many times. God convicts and transforms my life every time I return, restoring me and providing deep healing.",
+            "Can we try it today? Even though we are in individual spaces instead of a communal service, we can seek collective repentance. Individually, in your home, carve out time to pray and seek the Lord for whatever sins He would be calling you to repent and walk away from today. When we collectively seek accountability and repentance, God changes us and also our community because he changes our hearts. Our hearts, once again, break for what breaks His heart and our minds focus on the things of Christ instead of the things of this world.",
+            "Use Ezra's prayer of confession in Ezra 9 to guide you if this is a new practice. Be careful not to walk away from your convictions without initiating change. True repentance requires tangible brokenness and change and change is only accomplished through accountability. Commit to sharing your convictions with someone and asking for their help.",
+            "Let's strive to be a community that embraces and continually models accountability and repentance in our lives.",
+
+            "Pastor Kim Davis"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-07-26",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Ezra",
+              "chapter": "10",
+              "verses": {
+                "18": "Among the descendants of the priests, the following had married foreign women: From the descendants of Jeshua son of Jozadak, and his brothers: Maaseiah, Eliezer, Jarib and Gedaliah.",
+                "19": "(They all gave their hands in pledge to put away their wives, and for their guilt they each presented a ram from the flock as a guilt offering.)",
+                "20": "From the descendants of Immer: Hanani and Zebadiah.",
+                "21": "From the descendants of Harim: Maaseiah, Elijah, Shemaiah, Jehiel and Uzziah.",
+                "22": "From the descendants of Pashhur: Elioenai, Maaseiah, Ishmael, Nethanel, Jozabad and Elasah.",
+                "23": "Among the Levites: Jozabad, Shimei, Kelaiah (that is, Kelita), Pethahiah, Judah and Eliezer.",
+                "24": "From the singers: Eliashib. From the gatekeepers: Shallum, Telem and Uri.",
+                "25": "And among the other Israelites: From the descendants of Parosh: Ramiah, Izziah, Malkijah, Mijamin, Eleazar, Malkijah and Benaiah.",
+                "26": "From the descendants of Elam: Mattaniah, Zechariah, Jehiel, Abdi, Jeremoth and Elijah.",
+                "27": "From the descendants of Zattu: Elioenai, Eliashib, Mattaniah, Jeremoth, Zabad and Aziza.",
+                "28": "From the descendants of Bebai: Jehohanan, Hananiah, Zabbai and Athlai.",
+                "29": "From the descendants of Bani: Meshullam, Malluch, Adaiah, Jashub, Sheal and Jeremoth.",
+                "30": "From the descendants of Pahath-Moab: Adna, Kelal, Benaiah, Maaseiah, Mattaniah, Bezalel, Binnui and Manasseh.",
+                "31": "From the descendants of Harim: Eliezer, Ishijah, Malkijah, Shemaiah, Shimeon,",
+                "32": "Benjamin, Malluch and Shemariah.",
+                "33": "From the descendants of Hashum: Mattenai, Mattattah, Zabad, Eliphelet, Jeremai, Manasseh and Shimei.",
+                "34": "From the descendants of Bani: Maadai, Amram, Uel,",
+                "35": "Benaiah, Bedeiah, Keluhi,",
+                "36": "Vaniah, Meremoth, Eliashib,",
+                "37": "Mattaniah, Mattenai and Jaasu.",
+                "38": "From the descendants of Binnui: Shimei,",
+                "39": "Shelemiah, Nathan, Adaiah,",
+                "40": "Macnadebai, Shashai, Sharai,",
+                "41": "Azarel, Shelemiah, Shemariah,",
+                "42": "Shallum, Amariah and Joseph.",
+                "43": "From the descendants of Nebo: Jeiel, Mattithiah, Zabad, Zebina, Jaddai, Joel and Benaiah.",
+                "44": "All these had married foreign women, and some of them had children by these wives."
+              }
+            }
+          ]
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Ezra 10:18-44 by hand. This will help you slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-07-27",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "1",
+              "verses": {
+                "1": "The words of Nehemiah son of Hacaliah: In the month of Kislev in the twentieth year, while I was in the citadel of Susa,",
+                "2": "Hanani, one of my brothers, came from Judah with some other men, and I questioned them about the Jewish remnant that survived the exile, and also about Jerusalem.",
+                "3": "They said to me, \"Those who survived the exile and are back in the province are in great trouble and disgrace. The wall of Jerusalem is broken down, and its gates have been burned with fire.\"",
+                "4": "When I heard these things, I sat down and wept. For some days I mourned and fasted and prayed before the God of heaven.",
+                "5": "Then I said: \"O LORD, God of heaven, the great and awesome God, who keeps his covenant of love with those who love him and obey his commands,",
+                "6": "let your ear be attentive and your eyes open to hear the prayer your servant is praying before you day and night for your servants, the people of Israel. I confess the sins we Israelites, including myself and my father's house, have committed against you.",
+                "7": "We have acted very wickedly toward you. We have not obeyed the commands, decrees and laws you gave your servant Moses.",
+                "8": "\"Remember the instruction you gave your servant Moses, saying, 'If you are unfaithful, I will scatter you among the nations,",
+                "9": "but if you return to me and obey my commands, then even if your exiled people are at the farthest horizon, I will gather them from there and bring them to the place I have chosen as a dwelling for my Name.'",
+                "10": "\"They are your servants and your people, whom you redeemed by your great strength and your mighty hand.",
+                "11": "O Lord, let your ear be attentive to the prayer of this your servant and to the prayer of your servants who delight in revering your name. Give your servant success today by granting him favor in the presence of this man.\" I was cupbearer to the king."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Nehemiah 1:11 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "1",
+              "verses": {
+                "11": "O Lord, let your ear be attentive to the prayer of this your servant and to the prayer of your servants who delight in revering your name. Give your servant success today by granting him favor in the presence of this man.\" I was cupbearer to the king."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-07-28",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "2",
+              "verses": {
+                "1": "In the month of Nisan in the twentieth year of King Artaxerxes, when wine was brought for him, I took the wine and gave it to the king. I had not been sad in his presence before;",
+                "2": "so the king asked me, \"Why does your face look so sad when you are not ill? This can be nothing but sadness of heart.\" I was very much afraid,",
+                "3": "but I said to the king, \"May the king live forever! Why should my face not look sad when the city where my fathers are buried lies in ruins, and its gates have been destroyed by fire?\"",
+                "4": "The king said to me, \"What is it you want?\" Then I prayed to the God of heaven,",
+                "5": "and I answered the king, \"If it pleases the king and if your servant has found favor in his sight, let him send me to the city in Judah where my fathers are buried so that I can rebuild it.\"",
+                "6": "Then the king, with the queen sitting beside him, asked me, \"How long will your journey take, and when will you get back?\" It pleased the king to send me; so I set a time.",
+                "7": "I also said to him, \"If it pleases the king, may I have letters to the governors of Trans-Euphrates, so that they will provide me safe-conduct until I arrive in Judah?",
+                "8": "And may I have a letter to Asaph, keeper of the king's forest, so he will give me timber to make beams for the gates of the citadel by the temple and for the city wall and for the residence I will occupy?\" And because the gracious hand of my God was upon me, the king granted my requests.",
+                "9": "So I went to the governors of Trans-Euphrates and gave them the king's letters. The king had also sent army officers and cavalry with me.",
+                "10": "When Sanballat the Horonite and Tobiah the Ammonite official heard about this, they were very much disturbed that someone had come to promote the welfare of the Israelites."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "question",
+          "questions": [
+            "Scripture: Read Nehemiah 2:1-10. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-07-29",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "2",
+              "verses": {
+                "11": "I went to Jerusalem, and after staying there three days",
+                "12": "I set out during the night with a few men. I had not told anyone what my God had put in my heart to do for Jerusalem. There were no mounts with me except the one I was riding on.",
+                "13": "By night I went out through the Valley Gate toward the Jackal Well and the Dung Gate, examining the walls of Jerusalem, which had been broken down, and its gates, which had been destroyed by fire.",
+                "14": "Then I moved on toward the Fountain Gate and the King's Pool, but there was not enough room for my mount to get through;",
+                "15": "so I went up the valley by night, examining the wall. Finally, I turned back and reentered through the Valley Gate.",
+                "16": "The officials did not know where I had gone or what I was doing, because as yet I had said nothing to the Jews or the priests or nobles or officials or any others who would be doing the work.",
+                "17": "Then I said to them, \"You see the trouble we are in: Jerusalem lies in ruins, and its gates have been burned with fire. Come, let us rebuild the wall of Jerusalem, and we will no longer be in disgrace.\"",
+                "18": "I also told them about the gracious hand of my God upon me and what the king had said to me. They replied, \"Let us start rebuilding.\" So they began this good work.",
+                "19": "But when Sanballat the Horonite, Tobiah the Ammonite official and Geshem the Arab heard about it, they mocked and ridiculed us. \"What is this you are doing?\" they asked. \"Are you rebelling against the king?\"",
+                "20": "I answered them by saying, \"The God of heaven will give us success. We his servants will start rebuilding, but as for you, you have no share in Jerusalem or any claim or historic right to it.\""
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Nehemiah 2 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Lord, our God and King, we worship You.",
+            "We magnify You. You rule and reign forever. Lord, thank you for Nehemiah's example. And thank you for the lessons we can learn from his leadership and obedience to Your command. You gave him the confidence to rebuild the walls of Jerusalem even in the face of opposition.",
+            "We, too, can have the same confidence and resolve in facing our trials as we obey You. We know that we are overcomers through Jesus Christ. As the Lord Jesus said in John 16:33, “In this world You will have trouble. But take heart! I have overcome the world.“",
+            "In Jesus Name, Amen."
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-08-01",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Nehemiah 3:1-14 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "3",
+              "verses": {
+                "1": "Eliashib the high priest and his fellow priests went to work and rebuilt the Sheep Gate. They dedicated it and set its doors in place, building as far as the Tower of the Hundred, which they dedicated, and as far as the Tower of Hananel.",
+                "2": "The men of Jericho built the adjoining section, and Zaccur son of Imri built next to them.",
+                "3": "The Fish Gate was rebuilt by the sons of Hassenaah. They laid its beams and put its doors and bolts and bars in place.",
+                "4": "Meremoth son of Uriah, the son of Hakkoz, repaired the next section. Next to him Meshullam son of Berekiah, the son of Meshezabel, made repairs, and next to him Zadok son of Baana also made repairs.",
+                "5": "The next section was repaired by the men of Tekoa, but their nobles would not put their shoulders to the work under their supervisors.",
+                "6": "The Jeshanah Gate was repaired by Joiada son of Paseah and Meshullam son of Besodeiah. They laid its beams and put its doors and bolts and bars in place.",
+                "7": "Next to them, repairs were made by men from Gibeon and Mizpah-Melatiah of Gibeon and Jadon of Meronoth-places under the authority of the governor of Trans-Euphrates.",
+                "8": "Uzziel son of Harhaiah, one of the goldsmiths, repaired the next section; and Hananiah, one of the perfume-makers, made repairs next to that. They restored Jerusalem as far as the Broad Wall.",
+                "9": "Rephaiah son of Hur, ruler of a half-district of Jerusalem, repaired the next section.",
+                "10": "Adjoining this, Jedaiah son of Harumaph made repairs opposite his house, and Hattush son of Hashabneiah made repairs next to him.",
+                "11": "Malkijah son of Harim and Hasshub son of Pahath-Moab repaired another section and the Tower of the Ovens.",
+                "12": "Shallum son of Hallohesh, ruler of a half-district of Jerusalem, repaired the next section with the help of his daughters.",
+                "13": "The Valley Gate was repaired by Hanun and the residents of Zanoah. They rebuilt it and put its doors and bolts and bars in place. They also repaired five hundred yards of the wall as far as the Dung Gate.",
+                "14": "The Dung Gate was repaired by Malkijah son of Recab, ruler of the district of Beth Hakkerem. He rebuilt it and put its doors and bolts and bars in place."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "To Do List",
+            "Are you a list maker? I'm a habitual list creator. If a task comes to mind, I add it to my “to do list”. As the day passes, it grows and may reproduce into more lists: groceries, errands, vacation plans or possibly, even, an expense budget. Perhaps I'm not the only one to admit to carrying a scrap of paper tucked in a pocket as a reminder. Often it's neatly scribed with bold checkmarks added upon successful completion giving me a sense of satisfaction! Smart phones can also organize information quickly into lists with the potential to set reminders. Entering prayer requests to a list on a phone may also be a practical way of reference and remembrance.",
+            "In the book of Nehemiah, chapter one expresses how God has put the desire into Nehemiah's heart to rebuild the walls of Jerusalem and its gates that had been destroyed by fire. As the King grants him leave as his cupbearer and also provides the materials to make the repairs, Nehemiah put his heart toward the work. In reading chapter three, we see that he begins to make a “list”. He has likely already considered the timeline and materials, but this account documents a different focus. He lists the repairs by the people of Israel as a record of their labour and commitment to rebuild the wall of Jerusalem. Nehemiah details the names, repairs, scope of work and in one verse: the attitude associated to the effort or lack thereof. “And next to them the Tekoires repaired, but their nobles would not stoop to serve their Lord.” (Nehemiah 3:5)",
+            "How many efforts fall to the wayside when the support of the people wanes? Nehemiah began with a burden for the restoration of the walls, but he couldn't complete the task without the efforts of everyone. After his assessment of the work, he needed the people to come together in unity for the restoration. God's leading of Nehemiah inspired the people of Israel to complete in unity the task before them. The restored wall brings security, beauty and faithfulness back again to Jerusalem.",
+            "If we as followers of Christ seek His purpose in unity, I'm confident that we will see a move of God in our city. “Behold, how good and pleasant it is when brothers dwell in unity.” (Psalm 133:1). Let's add “unity of the believers at WPA” to our prayer list and remember whom it is we  serve.",
+
+            "Ben Guse (Deacon)"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-08-02",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "3",
+              "verses": {
+                "15": "The Fountain Gate was repaired by Shallun son of Col-Hozeh, ruler of the district of Mizpah. He rebuilt it, roofing it over and putting its doors and bolts and bars in place. He also repaired the wall of the Pool of Siloam, by the King's Garden, as far as the steps going down from the City of David.",
+                "16": "Beyond him, Nehemiah son of Azbuk, ruler of a half-district of Beth Zur, made repairs up to a point opposite the tombs of David, as far as the artificial pool and the House of the Heroes.",
+                "17": "Next to him, the repairs were made by the Levites under Rehum son of Bani. Beside him, Hashabiah, ruler of half the district of Keilah, carried out repairs for his district.",
+                "18": "Next to him, the repairs were made by their countrymen under Binnui son of Henadad, ruler of the other half-district of Keilah.",
+                "19": "Next to him, Ezer son of Jeshua, ruler of Mizpah, repaired another section, from a point facing the ascent to the armory as far as the angle.",
+                "20": "Next to him, Baruch son of Zabbai zealously repaired another section, from the angle to the entrance of the house of Eliashib the high priest.",
+                "21": "Next to him, Meremoth son of Uriah, the son of Hakkoz, repaired another section, from the entrance of Eliashib's house to the end of it.",
+                "22": "The repairs next to him were made by the priests from the surrounding region.",
+                "23": "Beyond them, Benjamin and Hasshub made repairs in front of their house; and next to them, Azariah son of Maaseiah, the son of Ananiah, made repairs beside his house.",
+                "24": "Next to him, Binnui son of Henadad repaired another section, from Azariah's house to the angle and the corner,",
+                "25": "and Palal son of Uzai worked opposite the angle and the tower projecting from the upper palace near the court of the guard. Next to him, Pedaiah son of Parosh",
+                "26": "and the temple servants living on the hill of Ophel made repairs up to a point opposite the Water Gate toward the east and the projecting tower.",
+                "27": "Next to them, the men of Tekoa repaired another section, from the great projecting tower to the wall of Ophel.",
+                "28": "Above the Horse Gate, the priests made repairs, each in front of his own house.",
+                "29": "Next to them, Zadok son of Immer made repairs opposite his house. Next to him, Shemaiah son of Shecaniah, the guard at the East Gate, made repairs.",
+                "30": "Next to him, Hananiah son of Shelemiah, and Hanun, the sixth son of Zalaph, repaired another section. Next to them, Meshullam son of Berekiah made repairs opposite his living quarters.",
+                "31": "Next to him, Malkijah, one of the goldsmiths, made repairs as far as the house of the temple servants and the merchants, opposite the Inspection Gate, and as far as the room above the corner;",
+                "32": "and between the room above the corner and the Sheep Gate the goldsmiths and merchants made repairs."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Nehemiah 3:15-32 by hand. This will help you slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-08-03",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "4",
+              "verses": {
+                "1": "When Sanballat heard that we were rebuilding the wall, he became angry and was greatly incensed. He ridiculed the Jews,",
+                "2": "and in the presence of his associates and the army of Samaria, he said, \"What are those feeble Jews doing? Will they restore their wall? Will they offer sacrifices? Will they finish in a day? Can they bring the stones back to life from those heaps of rubble-burned as they are?\"",
+                "3": "Tobiah the Ammonite, who was at his side, said, \"What they are building-if even a fox climbed up on it, he would break down their wall of stones!\"",
+                "4": "Hear us, O our God, for we are despised. Turn their insults back on their own heads. Give them over as plunder in a land of captivity.",
+                "5": "Do not cover up their guilt or blot out their sins from your sight, for they have thrown insults in the face of the builders.",
+                "6": "So we rebuilt the wall till all of it reached half its height, for the people worked with all their heart.",
+                "7": "But when Sanballat, Tobiah, the Arabs, the Ammonites and the men of Ashdod heard that the repairs to Jerusalem's walls had gone ahead and that the gaps were being closed, they were very angry.",
+                "8": "They all plotted together to come and fight against Jerusalem and stir up trouble against it.",
+                "9": "But we prayed to our God and posted a guard day and night to meet this threat.",
+                "10": "Meanwhile, the people in Judah said, \"The strength of the laborers is giving out, and there is so much rubble that we cannot rebuild the wall.\"",
+                "11": "Also our enemies said, \"Before they know it or see us, we will be right there among them and will kill them and put an end to the work.\"",
+                "12": "Then the Jews who lived near them came and told us ten times over, \"Wherever you turn, they will attack us.\"",
+                "13": "Therefore I stationed some of the people behind the lowest points of the wall at the exposed places, posting them by families, with their swords, spears and bows.",
+                "14": "After I looked things over, I stood up and said to the nobles, the officials and the rest of the people, \"Don't be afraid of them. Remember the Lord, who is great and awesome, and fight for your brothers, your sons and your daughters, your wives and your homes.\""
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Nehemiah 4:14 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "4",
+              "verses": {
+                "14": "After I looked things over, I stood up and said to the nobles, the officials and the rest of the people, \"Don't be afraid of them. Remember the Lord, who is great and awesome, and fight for your brothers, your sons and your daughters, your wives and your homes.\""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-08-04",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "4",
+              "verses": {
+                "13": "Therefore I stationed some of the people behind the lowest points of the wall at the exposed places, posting them by families, with their swords, spears and bows.",
+                "14": "After I looked things over, I stood up and said to the nobles, the officials and the rest of the people, \"Don't be afraid of them. Remember the Lord, who is great and awesome, and fight for your brothers, your sons and your daughters, your wives and your homes.\"",
+                "15": "When our enemies heard that we were aware of their plot and that God had frustrated it, we all returned to the wall, each to his own work.",
+                "16": "From that day on, half of my men did the work, while the other half were equipped with spears, shields, bows and armor. The officers posted themselves behind all the people of Judah",
+                "17": "who were building the wall. Those who carried materials did their work with one hand and held a weapon in the other,",
+                "18": "and each of the builders wore his sword at his side as he worked. But the man who sounded the trumpet stayed with me.",
+                "19": "Then I said to the nobles, the officials and the rest of the people, \"The work is extensive and spread out, and we are widely separated from each other along the wall.",
+                "20": "Wherever you hear the sound of the trumpet, join us there. Our God will fight for us!\"",
+                "21": "So we continued the work with half the men holding spears, from the first light of dawn till the stars came out.",
+                "22": "At that time I also said to the people, \"Have every man and his helper stay inside Jerusalem at night, so they can serve us as guards by night and workmen by day.\"",
+                "23": "Neither I nor my brothers nor my men nor the guards with me took off our clothes; each had his weapon, even when he went for water."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "question",
+          "questions": [
+            "Scripture: Read Nehemiah 4:13-23. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-08-05",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "5",
+              "verses": {
+                "1": "Now the men and their wives raised a great outcry against their Jewish brothers.",
+                "2": "Some were saying, \"We and our sons and daughters are numerous; in order for us to eat and stay alive, we must get grain.\"",
+                "3": "Others were saying, \"We are mortgaging our fields, our vineyards and our homes to get grain during the famine.\"",
+                "4": "Still others were saying, \"We have had to borrow money to pay the king's tax on our fields and vineyards.",
+                "5": "Although we are of the same flesh and blood as our countrymen and though our sons are as good as theirs, yet we have to subject our sons and daughters to slavery. Some of our daughters have already been enslaved, but we are powerless, because our fields and our vineyards belong to others.\"",
+                "6": "When I heard their outcry and these charges, I was very angry.",
+                "7": "I pondered them in my mind and then accused the nobles and officials. I told them, \"You are exacting usury from your own countrymen!\" So I called together a large meeting to deal with them",
+                "8": "and said: \"As far as possible, we have bought back our Jewish brothers who were sold to the Gentiles. Now you are selling your brothers, only for them to be sold back to us!\" They kept quiet, because they could find nothing to say.",
+                "9": "So I continued, \"What you are doing is not right. Shouldn't you walk in the fear of our God to avoid the reproach of our Gentile enemies?",
+                "10": "I and my brothers and my men are also lending the people money and grain. But let the exacting of usury stop!",
+                "11": "Give back to them immediately their fields, vineyards, olive groves and houses, and also the usury you are charging them-the hundredth part of the money, grain, new wine and oil.\"",
+                "12": "\"We will give it back,\" they said. \"And we will not demand anything more from them. We will do as you say.\" Then I summoned the priests and made the nobles and officials take an oath to do what they had promised.",
+                "13": "I also shook out the folds of my robe and said, \"In this way may God shake out of his house and possessions every man who does not keep this promise. So may such a man be shaken out and emptied!\" At this the whole assembly said, \"Amen,\" and praised the LORD. And the people did as they had promised.",
+                "14": "Moreover, from the twentieth year of King Artaxerxes, when I was appointed to be their governor in the land of Judah, until his thirty-second year-twelve years-neither I nor my brothers ate the food allotted to the governor.",
+                "15": "But the earlier governors-those preceding me-placed a heavy burden on the people and took forty shekels of silver from them in addition to food and wine. Their assistants also lorded it over the people. But out of reverence for God I did not act like that.",
+                "16": "Instead, I devoted myself to the work on this wall. All my men were assembled there for the work; we did not acquire any land.",
+                "17": "Furthermore, a hundred and fifty Jews and officials ate at my table, as well as those who came to us from the surrounding nations.",
+                "18": "Each day one ox, six choice sheep and some poultry were prepared for me, and every ten days an abundant supply of wine of all kinds. In spite of all this, I never demanded the food allotted to the governor, because the demands were heavy on these people.",
+                "19": "Remember me with favor, O my God, for all I have done for these people."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Nehemiah 5 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Lord, our God and King, we worship You.",
+            "You are righteous, compassionate and abounding in love. You have a great heart for the poor, oppressed and needy. Lord, please forgive us if we have been insensitive to the needs of our neighbours. Lord, quicken our hearts and give us a burden for the disadvantaged.",
+            "Teach us to love our neighbours as we love ourselves and teach us to be like the Good Samaritan to those who are in need. In Jesus' name we pray, Amen."
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-08-08",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Nehemiah 6 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "6",
+              "verses": {
+                "1": "When word came to Sanballat, Tobiah, Geshem the Arab and the rest of our enemies that I had rebuilt the wall and not a gap was left in it-though up to that time I had not set the doors in the gates-",
+                "2": "Sanballat and Geshem sent me this message: \"Come, let us meet together in one of the villages on the plain of Ono.\" But they were scheming to harm me;",
+                "3": "so I sent messengers to them with this reply: \"I am carrying on a great project and cannot go down. Why should the work stop while I leave it and go down to you?\"",
+                "4": "Four times they sent me the same message, and each time I gave them the same answer.",
+                "5": "Then, the fifth time, Sanballat sent his aide to me with the same message, and in his hand was an unsealed letter",
+                "6": "in which was written: \"It is reported among the nations-and Geshem says it is true-that you and the Jews are plotting to revolt, and therefore you are building the wall. Moreover, according to these reports you are about to become their king",
+                "7": "and have even appointed prophets to make this proclamation about you in Jerusalem: 'There is a king in Judah!' Now this report will get back to the king; so come, let us confer together.\"",
+                "8": "I sent him this reply: \"Nothing like what you are saying is happening; you are just making it up out of your head.\"",
+                "9": "They were all trying to frighten us, thinking, \"Their hands will get too weak for the work, and it will not be completed.\" But I prayed, \"Now strengthen my hands.\"",
+                "10": "One day I went to the house of Shemaiah son of Delaiah, the son of Mehetabel, who was shut in at his home. He said, \"Let us meet in the house of God, inside the temple, and let us close the temple doors, because men are coming to kill you-by night they are coming to kill you.\"",
+                "11": "But I said, \"Should a man like me run away? Or should one like me go into the temple to save his life? I will not go!\"",
+                "12": "I realized that God had not sent him, but that he had prophesied against me because Tobiah and Sanballat had hired him.",
+                "13": "He had been hired to intimidate me so that I would commit a sin by doing this, and then they would give me a bad name to discredit me.",
+                "14": "Remember Tobiah and Sanballat, O my God, because of what they have done; remember also the prophetess Noadiah and the rest of the prophets who have been trying to intimidate me.",
+                "15": "So the wall was completed on the twenty-fifth of Elul, in fifty-two days."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "The Call of Duty",
+            "Attacks by the enemy should not be new to Christians. Our enemy continues to use deception and deceiving schemes to try to dissuade God's people from doing what He has called them to do. The Apostle Paul warned us in Ephesian 6:11 to “Put on the full armour of God, so that you will be able to stand firm against the schemes of the devil”. As children of God, to accomplish His purpose for our lives, we must learn to resist the devil's schemes just as Nehemiah had to endure many attacks.",
+            "Following the threats from his enemies and the internal conflict between the wealthy and poor Jews, Nehemiah could see that the rebuilding of the walls of Jerusalem was almost done. Most of the work had been completed except for the doors in the gates, but the enemy had not given up. It was no longer a question of discouraging the builders. They recognized that it was now time to dispose of or dishonour Nehemiah once and for all. Sanballat, governor of Samaria, and Geshem, king of Kedar came together to plot to discredit and get rid of him (6:1-9) and to make him act in such a way as to reveal himself as a weakling who is fearful of his enemies (6:10-14).",
+            "After failing in four attempts, Sanballat increased the pressure with a fifth open unsealed letter containing a rumor accusing Nehemiah of plotting to rebel and become the king; a sneaky attempt to build up suspicion against Nehemiah. Each time Nehemiah replied by declaring “No such things as you say are being done, but you invent them in your own heart” (6:8). Through deception with intimidation and fear they continued to design an effort to bring Nehemiah to do foolish things to lessen his interest and influence. Thus, they invented a claim of having a word from God that had the guise of saving Nehemiah's life, but actually with the intention of destroying Nehemiah's life (6:13). Despite all the attacks, Nehemiah resolved to call on God in prayer to remember those prophets, who had all seemingly tried to make him afraid, and deal with them accordingly (6:14).",
+            "We must never be overwhelmed by the persistence to do anything sinful or foolish. When we are attacked or tempted, we must resist with godly purpose and resolve. Every temptation to draw us from duty should rather quicken us towards our call of duty. We must pray for God's wisdom to direct us when to remain silent or to reply to false accusations. We must respond with prayer, keeping on with the work that God has given us to do. Satan still uses all sorts of innocent-sounding appeals to lure believers into traps. We must be careful with claims from people, even believers, pointing us towards doing something that we know is wrong. We need to remember that just because we resisted the devil once, doesn't mean he is going to give up and leave us alone.",
+            "Despite the secret communication and the challenges to the building of the wall, it was remarkably completed in fifty-two days! As Christians we must endeavor, at whatever cost, to never decline our call of duty: to do good work despite our challenges.",
+            "Johnson Darko (Elder)"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-08-09",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "6",
+              "verses": {
+                "16": "When all our enemies heard about this, all the surrounding nations were afraid and lost their self-confidence, because they realized that this work had been done with the help of our God.",
+                "17": "Also, in those days the nobles of Judah were sending many letters to Tobiah, and replies from Tobiah kept coming to them.",
+                "18": "For many in Judah were under oath to him, since he was son-in-law to Shecaniah son of Arah, and his son Jehohanan had married the daughter of Meshullam son of Berekiah.",
+                "19": "Moreover, they kept reporting to me his good deeds and then telling him what I said. And Tobiah sent letters to intimidate me."
+              }
+            },
+            {
+              "book": "Nehemiah",
+              "chapter": "7",
+              "verses": {
+                "1": "After the wall had been rebuilt and I had set the doors in place, the gatekeepers and the singers and the Levites were appointed.",
+                "2": "I put in charge of Jerusalem my brother Hanani, along with Hananiah the commander of the citadel, because he was a man of integrity and feared God more than most men do.",
+                "3": "I said to them, \"The gates of Jerusalem are not to be opened until the sun is hot. While the gatekeepers are still on duty, have them shut the doors and bar them. Also appoint residents of Jerusalem as guards, some at their posts and some near their own houses.\""
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Nehemiah 6:16 to Nehemiah 7:3 by hand. This will help you to slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-08-10",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "7",
+              "verses": {
+                "4": "Now the city was large and spacious, but there were few people in it, and the houses had not yet been rebuilt.",
+                "5": "So my God put it into my heart to assemble the nobles, the officials and the common people for registration by families. I found the genealogical record of those who had been the first to return. This is what I found written there:",
+                "6": "These are the people of the province who came up from the captivity of the exiles whom Nebuchadnezzar king of Babylon had taken captive (they returned to Jerusalem and Judah, each to his own town,",
+                "7": "in company with Zerubbabel, Jeshua, Nehemiah, Azariah, Raamiah, Nahamani, Mordecai, Bilshan, Mispereth, Bigvai, Nehum and Baanah): The list of the men of Israel:",
+                "8": "the descendants of Parosh 2,172",
+                "9": "of Shephatiah 372",
+                "10": "of Arah 652",
+                "11": "of Pahath-Moab (through the line of Jeshua and Joab) 2,818",
+                "12": "of Elam 1,254",
+                "13": "of Zattu 845",
+                "14": "of Zaccai 760",
+                "15": "of Binnui 648",
+                "16": "of Bebai 628",
+                "17": "of Azgad 2,322",
+                "18": "of Adonikam 667",
+                "19": "of Bigvai 2,067",
+                "20": "of Adin 655",
+                "21": "of Ater (through Hezekiah) 98",
+                "22": "of Hashum 328",
+                "23": "of Bezai 324",
+                "24": "of Hariph 112",
+                "25": "of Gibeon 95",
+                "26": "the men of Bethlehem and Netophah 188",
+                "27": "of Anathoth 128",
+                "28": "of Beth Azmaveth 42",
+                "29": "of Kiriath Jearim, Kephirah and Beeroth 743",
+                "30": "of Ramah and Geba 621",
+                "31": "of Micmash 122",
+                "32": "of Bethel and Ai 123",
+                "33": "of the other Nebo 52",
+                "34": "of the other Elam 1,254",
+                "35": "of Harim 320",
+                "36": "of Jericho 345",
+                "37": "of Lod, Hadid and Ono 721",
+                "38": "of Senaah 3,930",
+                "39": "The priests: the descendants of Jedaiah (through the family of Jeshua) 973",
+                "40": "of Immer 1,052",
+                "41": "of Pashhur 1,247",
+                "42": "of Harim 1,017",
+                "43": "The Levites: the descendants of Jeshua (through Kadmiel through the line of Hodaviah) 74",
+                "44": "The singers: the descendants of Asaph 148",
+                "45": "The gatekeepers: the descendants of Shallum, Ater, Talmon, Akkub, Hatita and Shobai 138",
+                "46": "The temple servants: the descendants of Ziha, Hasupha, Tabbaoth,",
+                "47": "Keros, Sia, Padon,",
+                "48": "Lebana, Hagaba, Shalmai,",
+                "49": "Hanan, Giddel, Gahar,",
+                "50": "Reaiah, Rezin, Nekoda,",
+                "51": "Gazzam, Uzza, Paseah,",
+                "52": "Besai, Meunim, Nephussim,",
+                "53": "Bakbuk, Hakupha, Harhur,",
+                "54": "Bazluth, Mehida, Harsha,",
+                "55": "Barkos, Sisera, Temah,",
+                "56": "Neziah and Hatipha"
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Nehemiah 6:16 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "6",
+              "verses": {
+                "16": "When all our enemies heard about this, all the surrounding nations were afraid and lost their self-confidence, because they realized that this work had been done with the help of our God."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-08-11",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "7",
+              "verses": {
+                "57": "The descendants of the servants of Solomon: the descendants of Sotai, Sophereth, Perida,",
+                "58": "Jaala, Darkon, Giddel,",
+                "59": "Shephatiah, Hattil, Pokereth-Hazzebaim and Amon",
+                "60": "The temple servants and the descendants of the servants of Solomon 392",
+                "61": "The following came up from the towns of Tel Melah, Tel Harsha, Kerub, Addon and Immer, but they could not show that their families were descended from Israel:",
+                "62": "the descendants of Delaiah, Tobiah and Nekoda 642",
+                "63": "And from among the priests: the descendants of Hobaiah, Hakkoz and Barzillai (a man who had married a daughter of Barzillai the Gileadite and was called by that name).",
+                "64": "These searched for their family records, but they could not find them and so were excluded from the priesthood as unclean.",
+                "65": "The governor, therefore, ordered them not to eat any of the most sacred food until there should be a priest ministering with the Urim and Thummim.",
+                "66": "The whole company numbered 42,360,",
+                "67": "besides their 7,337 menservants and maidservants; and they also had 245 men and women singers.",
+                "68": "There were 736 horses, 245 mules,",
+                "69": "435 camels and 6,720 donkeys.",
+                "70": "Some of the heads of the families contributed to the work. The governor gave to the treasury 1,000 drachmas of gold, 50 bowls and 530 garments for priests.",
+                "71": "Some of the heads of the families gave to the treasury for the work 20,000 drachmas of gold and 2,200 minas of silver.",
+                "72": "The total given by the rest of the people was 20,000 drachmas of gold, 2,000 minas of silver and 67 garments for priests.",
+                "73": "The priests, the Levites, the gatekeepers, the singers and the temple servants, along with certain of the people and the rest of the Israelites, settled in their own towns. When the seventh month came and the Israelites had settled in their towns,"
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "question",
+          "questions": [
+            "Scripture: Read Nehemiah 7:57-73. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-08-12",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "8",
+              "verses": {
+                "1": "all the people assembled as one man in the square before the Water Gate. They told Ezra the scribe to bring out the Book of the Law of Moses, which the LORD had commanded for Israel.",
+                "2": "So on the first day of the seventh month Ezra the priest brought the Law before the assembly, which was made up of men and women and all who were able to understand.",
+                "3": "He read it aloud from daybreak till noon as he faced the square before the Water Gate in the presence of the men, women and others who could understand. And all the people listened attentively to the Book of the Law.",
+                "4": "Ezra the scribe stood on a high wooden platform built for the occasion. Beside him on his right stood Mattithiah, Shema, Anaiah, Uriah, Hilkiah and Maaseiah; and on his left were Pedaiah, Mishael, Malkijah, Hashum, Hashbaddanah, Zechariah and Meshullam.",
+                "5": "Ezra opened the book. All the people could see him because he was standing above them; and as he opened it, the people all stood up.",
+                "6": "Ezra praised the LORD, the great God; and all the people lifted their hands and responded, \"Amen! Amen!\" Then they bowed down and worshiped the LORD with their faces to the ground.",
+                "7": "The Levites-Jeshua, Bani, Sherebiah, Jamin, Akkub, Shabbethai, Hodiah, Maaseiah, Kelita, Azariah, Jozabad, Hanan and Pelaiah-instructed the people in the Law while the people were standing there.",
+                "8": "They read from the Book of the Law of God, making it clear and giving the meaning so that the people could understand what was being read.",
+                "9": "Then Nehemiah the governor, Ezra the priest and scribe, and the Levites who were instructing the people said to them all, \"This day is sacred to the LORD your God. Do not mourn or weep.\" For all the people had been weeping as they listened to the words of the Law.",
+                "10": "Nehemiah said, \"Go and enjoy choice food and sweet drinks, and send some to those who have nothing prepared. This day is sacred to our Lord. Do not grieve, for the joy of the LORD is your strength.\"",
+                "11": "The Levites calmed all the people, saying, \"Be still, for this is a sacred day. Do not grieve.\"",
+                "12": "Then all the people went away to eat and drink, to send portions of food and to celebrate with great joy, because they now understood the words that had been made known to them.",
+                "13": "On the second day of the month, the heads of all the families, along with the priests and the Levites, gathered around Ezra the scribe to give attention to the words of the Law.",
+                "14": "They found written in the Law, which the LORD had commanded through Moses, that the Israelites were to live in booths during the feast of the seventh month",
+                "15": "and that they should proclaim this word and spread it throughout their towns and in Jerusalem: \"Go out into the hill country and bring back branches from olive and wild olive trees, and from myrtles, palms and shade trees, to make booths\"-as it is written.",
+                "16": "So the people went out and brought back branches and built themselves booths on their own roofs, in their courtyards, in the courts of the house of God and in the square by the Water Gate and the one by the Gate of Ephraim.",
+                "17": "The whole company that had returned from exile built booths and lived in them. From the days of Joshua son of Nun until that day, the Israelites had not celebrated it like this. And their joy was very great.",
+                "18": "Day after day, from the first day to the last, Ezra read from the Book of the Law of God. They celebrated the feast for seven days, and on the eighth day, in accordance with the regulation, there was an assembly."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Nehemiah 8 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Dear Heavenly Father,", 
+            "Your love stands firm forever. You are faithful and true. Abba Father, we thank you for sending us our pastors and church leaders. We pray that You anoint and protect them as they teach Your Word and lead Your church.",
+            "Continue to fill them with the Holy Spirit. We also pray that You open our ears to hear Your Word and soften our hearts that we respond to your message. Teach us to be humble and obedient to Your Word.",
+            "In Jesus' name we pray, Amen."
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-08-15",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Nehemiah 9:1-21 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "9",
+              "verses": {
+                "1": "On the twenty-fourth day of the same month, the Israelites gathered together, fasting and wearing sackcloth and having dust on their heads.",
+                "2": "Those of Israelite descent had separated themselves from all foreigners. They stood in their places and confessed their sins and the wickedness of their fathers.",
+                "3": "They stood where they were and read from the Book of the Law of the LORD their God for a quarter of the day, and spent another quarter in confession and in worshiping the LORD their God.",
+                "4": "Standing on the stairs were the Levites-Jeshua, Bani, Kadmiel, Shebaniah, Bunni, Sherebiah, Bani and Kenani-who called with loud voices to the LORD their God.",
+                "5": "And the Levites-Jeshua, Kadmiel, Bani, Hashabneiah, Sherebiah, Hodiah, Shebaniah and Pethahiah-said: \"Stand up and praise the LORD your God, who is from everlasting to everlasting. Blessed be your glorious name, and may it be exalted above all blessing and praise.",
+                "6": "You alone are the LORD. You made the heavens, even the highest heavens, and all their starry host, the earth and all that is on it, the seas and all that is in them. You give life to everything, and the multitudes of heaven worship you.",
+                "7": "\"You are the LORD God, who chose Abram and brought him out of Ur of the Chaldeans and named him Abraham.",
+                "8": "You found his heart faithful to you, and you made a covenant with him to give to his descendants the land of the Canaanites, Hittites, Amorites, Perizzites, Jebusites and Girgashites. You have kept your promise because you are righteous.",
+                "9": "\"You saw the suffering of our forefathers in Egypt; you heard their cry at the Red Sea.",
+                "10": "You sent miraculous signs and wonders against Pharaoh, against all his officials and all the people of his land, for you knew how arrogantly the Egyptians treated them. You made a name for yourself, which remains to this day.",
+                "11": "You divided the sea before them, so that they passed through it on dry ground, but you hurled their pursuers into the depths, like a stone into mighty waters.",
+                "12": "By day you led them with a pillar of cloud, and by night with a pillar of fire to give them light on the way they were to take.",
+                "13": "\"You came down on Mount Sinai; you spoke to them from heaven. You gave them regulations and laws that are just and right, and decrees and commands that are good.",
+                "14": "You made known to them your holy Sabbath and gave them commands, decrees and laws through your servant Moses.",
+                "15": "In their hunger you gave them bread from heaven and in their thirst you brought them water from the rock; you told them to go in and take possession of the land you had sworn with uplifted hand to give them.",
+                "16": "\"But they, our forefathers, became arrogant and stiff-necked, and did not obey your commands.",
+                "17": "They refused to listen and failed to remember the miracles you performed among them. They became stiff-necked and in their rebellion appointed a leader in order to return to their slavery. But you are a forgiving God, gracious and compassionate, slow to anger and abounding in love. Therefore you did not desert them,",
+                "18": "even when they cast for themselves an image of a calf and said, 'This is your god, who brought you up out of Egypt,' or when they committed awful blasphemies.",
+                "19": "\"Because of your great compassion you did not abandon them in the desert. By day the pillar of cloud did not cease to guide them on their path, nor the pillar of fire by night to shine on the way they were to take.",
+                "20": "You gave your good Spirit to instruct them. You did not withhold your manna from their mouths, and you gave them water for their thirst.",
+                "21": "For forty years you sustained them in the desert; they lacked nothing, their clothes did not wear out nor did their feet become swollen."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "They Lacked Nothing!",
+            "“Because of your great compassion you did not abandon them in the wilderness. By day the pillar of cloud did not fail to guide them on their path, nor the pillar of fire by night to shine on the way they were to take. You gave your good Spirit to instruct them. You did not withhold your manna from their mouths, and you gave them water for their thirst.  For forty years you sustained them in the wilderness; they lacked nothing, their clothes did not wear out nor did their feet become swollen.” (Nehemiah 9:19-21)",
+            "As we seek to fulfill God's great plans through our lives, it is important to note how God cares for us and why He does care. The passage above is the perfect summary of our God who supernaturally provides care to the souls and bodies of His people to keep them well-sustained in fulfilling His plan because of His great compassion.",
+            "When it comes to fulfilling God's plan for our lives, we often come with this sense of inadequacy and rightfully so! If we think that it is easy to fulfill God's plan without God's support, we are only fooling ourselves. Though it can feel nerve-wracking to accomplish God's plan for our lives, this feeling of “anxiousness” should not be seen immediately as a sign of direction away from God's plan, but rather a sign to prayerfully seek God's strength to fulfill His plans.",
+            "The passage above comes from the Israelites' confession to God of His loving character displayed through the history of their forefathers. It is a strong admission of His faithfulness towards them; to lead them into His plans even when their predecessors failed to live honourably before Him.",
+            "The great catch of this confession is found in the sentence “they lacked nothing.” Even though they failed to live to God's standards, His compassion for His own people was so great that it not only was sealed with a promise, but that He sustained them completely to fulfill that promise. He treated them well beyond what they deserved. They experienced His grace!",
+            "As you read this devotional today, be encouraged to know that despite all of our failures, God's compassion is undeservingly great over us and He will give you everything that you need to do His will; you shall lack nothing (Ps. 23:1) because He is rich in mercy and grace!",
+            "As we ponder on this amazing truth, this doesn't mean we excuse ourselves from living according to God's standards. As it says in verse 20, “You gave your good Spirit to instruct them.”",
+            "For those who believe in Jesus Christ, God's begotten Son and our Saviour, God the Father has given us the Holy Spirit, who is good and also raised Jesus Christ from the dead, to live in us and to instruct us on how to live honourably! He will help us fulfill God's plan.",
+            "Questions to ask ourselves today as we read this passage: Are we fulfilling God's will on our own strength or on His strength? Are we cherishing His great compassion over us; where despite our sinfulness, He still has given us everything we need to fulfill His plan? Are we listening to the Holy Spirit who instructs us and teaches us in the way we should go?",
+            "Pastor Joshua Mathew"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-08-16",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "9",
+              "verses": {
+                "22": "\"You gave them kingdoms and nations, allotting to them even the remotest frontiers. They took over the country of Sihon king of Heshbon and the country of Og king of Bashan.",
+                "23": "You made their sons as numerous as the stars in the sky, and you brought them into the land that you told their fathers to enter and possess.",
+                "24": "Their sons went in and took possession of the land. You subdued before them the Canaanites, who lived in the land; you handed the Canaanites over to them, along with their kings and the peoples of the land, to deal with them as they pleased.",
+                "25": "They captured fortified cities and fertile land; they took possession of houses filled with all kinds of good things, wells already dug, vineyards, olive groves and fruit trees in abundance. They ate to the full and were well-nourished; they reveled in your great goodness.",
+                "26": "\"But they were disobedient and rebelled against you; they put your law behind their backs. They killed your prophets, who had admonished them in order to turn them back to you; they committed awful blasphemies.",
+                "27": "So you handed them over to their enemies, who oppressed them. But when they were oppressed they cried out to you. From heaven you heard them, and in your great compassion you gave them deliverers, who rescued them from the hand of their enemies.",
+                "28": "\"But as soon as they were at rest, they again did what was evil in your sight. Then you abandoned them to the hand of their enemies so that they ruled over them. And when they cried out to you again, you heard from heaven, and in your compassion you delivered them time after time.",
+                "29": "\"You warned them to return to your law, but they became arrogant and disobeyed your commands. They sinned against your ordinances, by which a man will live if he obeys them. Stubbornly they turned their backs on you, became stiff-necked and refused to listen.",
+                "30": "For many years you were patient with them. By your Spirit you admonished them through your prophets. Yet they paid no attention, so you handed them over to the neighboring peoples.",
+                "31": "But in your great mercy you did not put an end to them or abandon them, for you are a gracious and merciful God.",
+                "32": "\"Now therefore, O our God, the great, mighty and awesome God, who keeps his covenant of love, do not let all this hardship seem trifling in your eyes-the hardship that has come upon us, upon our kings and leaders, upon our priests and prophets, upon our fathers and all your people, from the days of the kings of Assyria until today.",
+                "33": "In all that has happened to us, you have been just; you have acted faithfully, while we did wrong.",
+                "34": "Our kings, our leaders, our priests and our fathers did not follow your law; they did not pay attention to your commands or the warnings you gave them.",
+                "35": "Even while they were in their kingdom, enjoying your great goodness to them in the spacious and fertile land you gave them, they did not serve you or turn from their evil ways.",
+                "36": "\"But see, we are slaves today, slaves in the land you gave our forefathers so they could eat its fruit and the other good things it produces.",
+                "37": "Because of our sins, its abundant harvest goes to the kings you have placed over us. They rule over our bodies and our cattle as they please. We are in great distress.",
+                "38": "\"In view of all this, we are making a binding agreement, putting it in writing, and our leaders, our Levites and our priests are affixing their seals to it.\""
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Nehemiah 9:22-38 by hand. This will help you to slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-08-17",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "10",
+              "verses": {
+                "1": "Those who sealed it were: Nehemiah the governor, the son of Hacaliah. Zedekiah,",
+                "2": "Seraiah, Azariah, Jeremiah,",
+                "3": "Pashhur, Amariah, Malkijah,",
+                "4": "Hattush, Shebaniah, Malluch,",
+                "5": "Harim, Meremoth, Obadiah,",
+                "6": "Daniel, Ginnethon, Baruch,",
+                "7": "Meshullam, Abijah, Mijamin,",
+                "8": "Maaziah, Bilgai and Shemaiah. These were the priests.",
+                "9": "The Levites: Jeshua son of Azaniah, Binnui of the sons of Henadad, Kadmiel,",
+                "10": "and their associates: Shebaniah, Hodiah, Kelita, Pelaiah, Hanan,",
+                "11": "Mica, Rehob, Hashabiah,",
+                "12": "Zaccur, Sherebiah, Shebaniah,",
+                "13": "Hodiah, Bani and Beninu.",
+                "14": "The leaders of the people: Parosh, Pahath-Moab, Elam, Zattu, Bani,",
+                "15": "Bunni, Azgad, Bebai,",
+                "16": "Adonijah, Bigvai, Adin,",
+                "17": "Ater, Hezekiah, Azzur,",
+                "18": "Hodiah, Hashum, Bezai,",
+                "19": "Hariph, Anathoth, Nebai,",
+                "20": "Magpiash, Meshullam, Hezir,",
+                "21": "Meshezabel, Zadok, Jaddua,",
+                "22": "Pelatiah, Hanan, Anaiah,",
+                "23": "Hoshea, Hananiah, Hasshub,",
+                "24": "Hallohesh, Pilha, Shobek,",
+                "25": "Rehum, Hashabnah, Maaseiah,",
+                "26": "Ahiah, Hanan, Anan,",
+                "27": "Malluch, Harim and Baanah.",
+                "28": "\"The rest of the people-priests, Levites, gatekeepers, singers, temple servants and all who separated themselves from the neighboring peoples for the sake of the Law of God, together with their wives and all their sons and daughters who are able to understand-",
+                "29": "all these now join their brothers the nobles, and bind themselves with a curse and an oath to follow the Law of God given through Moses the servant of God and to obey carefully all the commands, regulations and decrees of the LORD our Lord."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Nehemiah 10:28-29 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "10",
+              "verses": {
+                "28": "\"The rest of the people-priests, Levites, gatekeepers, singers, temple servants and all who separated themselves from the neighboring peoples for the sake of the Law of God, together with their wives and all their sons and daughters who are able to understand-",
+                "29": "all these now join their brothers the nobles, and bind themselves with a curse and an oath to follow the Law of God given through Moses the servant of God and to obey carefully all the commands, regulations and decrees of the LORD our Lord."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-08-18",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "10",
+              "verses": {
+                "30": "\"We promise not to give our daughters in marriage to the peoples around us or take their daughters for our sons.",
+                "31": "\"When the neighboring peoples bring merchandise or grain to sell on the Sabbath, we will not buy from them on the Sabbath or on any holy day. Every seventh year we will forgo working the land and will cancel all debts.",
+                "32": "\"We assume the responsibility for carrying out the commands to give a third of a shekel each year for the service of the house of our God:",
+                "33": "for the bread set out on the table; for the regular grain offerings and burnt offerings; for the offerings on the Sabbaths, New Moon festivals and appointed feasts; for the holy offerings; for sin offerings to make atonement for Israel; and for all the duties of the house of our God.",
+                "34": "\"We-the priests, the Levites and the people-have cast lots to determine when each of our families is to bring to the house of our God at set times each year a contribution of wood to burn on the altar of the LORD our God, as it is written in the Law.",
+                "35": "\"We also assume responsibility for bringing to the house of the LORD each year the firstfruits of our crops and of every fruit tree.",
+                "36": "\"As it is also written in the Law, we will bring the firstborn of our sons and of our cattle, of our herds and of our flocks to the house of our God, to the priests ministering there.",
+                "37": "\"Moreover, we will bring to the storerooms of the house of our God, to the priests, the first of our ground meal, of our grain offerings, of the fruit of all our trees and of our new wine and oil. And we will bring a tithe of our crops to the Levites, for it is the Levites who collect the tithes in all the towns where we work.",
+                "38": "A priest descended from Aaron is to accompany the Levites when they receive the tithes, and the Levites are to bring a tenth of the tithes up to the house of our God, to the storerooms of the treasury.",
+                "39": "The people of Israel, including the Levites, are to bring their contributions of grain, new wine and oil to the storerooms where the articles for the sanctuary are kept and where the ministering priests, the gatekeepers and the singers stay. \"We will not neglect the house of our God.\""
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "question",
+          "questions": [
+            "Scripture: Read Jeremiah 10:30-39. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-08-19",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "11",
+              "verses": {
+                "1": "Now the leaders of the people settled in Jerusalem, and the rest of the people cast lots to bring one out of every ten to live in Jerusalem, the holy city, while the remaining nine were to stay in their own towns.",
+                "2": "The people commended all the men who volunteered to live in Jerusalem.",
+                "3": "These are the provincial leaders who settled in Jerusalem (now some Israelites, priests, Levites, temple servants and descendants of Solomon's servants lived in the towns of Judah, each on his own property in the various towns,",
+                "4": "while other people from both Judah and Benjamin lived in Jerusalem): From the descendants of Judah: Athaiah son of Uzziah, the son of Zechariah, the son of Amariah, the son of Shephatiah, the son of Mahalalel, a descendant of Perez;",
+                "5": "and Maaseiah son of Baruch, the son of Col-Hozeh, the son of Hazaiah, the son of Adaiah, the son of Joiarib, the son of Zechariah, a descendant of Shelah.",
+                "6": "The descendants of Perez who lived in Jerusalem totaled 468 able men.",
+                "7": "From the descendants of Benjamin: Sallu son of Meshullam, the son of Joed, the son of Pedaiah, the son of Kolaiah, the son of Maaseiah, the son of Ithiel, the son of Jeshaiah,",
+                "8": "and his followers, Gabbai and Sallai-928 men.",
+                "9": "Joel son of Zicri was their chief officer, and Judah son of Hassenuah was over the Second District of the city.",
+                "10": "From the priests: Jedaiah; the son of Joiarib; Jakin;",
+                "11": "Seraiah son of Hilkiah, the son of Meshullam, the son of Zadok, the son of Meraioth, the son of Ahitub, supervisor in the house of God,",
+                "12": "and their associates, who carried on work for the temple-822 men; Adaiah son of Jeroham, the son of Pelaliah, the son of Amzi, the son of Zechariah, the son of Pashhur, the son of Malkijah,",
+                "13": "and his associates, who were heads of families-242 men; Amashsai son of Azarel, the son of Ahzai, the son of Meshillemoth, the son of Immer,",
+                "14": "and his associates, who were able men-128. Their chief officer was Zabdiel son of Haggedolim.",
+                "15": "From the Levites: Shemaiah son of Hasshub, the son of Azrikam, the son of Hashabiah, the son of Bunni;",
+                "16": "Shabbethai and Jozabad, two of the heads of the Levites, who had charge of the outside work of the house of God;",
+                "17": "Mattaniah son of Mica, the son of Zabdi, the son of Asaph, the director who led in thanksgiving and prayer; Bakbukiah, second among his associates; and Abda son of Shammua, the son of Galal, the son of Jeduthun.",
+                "18": "The Levites in the holy city totaled 284.",
+                "19": "The gatekeepers: Akkub, Talmon and their associates, who kept watch at the gates-172 men.",
+                "20": "The rest of the Israelites, with the priests and Levites, were in all the towns of Judah, each on his ancestral property.",
+                "21": "The temple servants lived on the hill of Ophel, and Ziha and Gishpa were in charge of them.",
+                "22": "The chief officer of the Levites in Jerusalem was Uzzi son of Bani, the son of Hashabiah, the son of Mattaniah, the son of Mica. Uzzi was one of Asaph's descendants, who were the singers responsible for the service of the house of God.",
+                "23": "The singers were under the king's orders, which regulated their daily activity.",
+                "24": "Pethahiah son of Meshezabel, one of the descendants of Zerah son of Judah, was the king's agent in all affairs relating to the people.",
+                "25": "As for the villages with their fields, some of the people of Judah lived in Kiriath Arba and its surrounding settlements, in Dibon and its settlements, in Jekabzeel and its villages,",
+                "26": "in Jeshua, in Moladah, in Beth Pelet,",
+                "27": "in Hazar Shual, in Beersheba and its settlements,",
+                "28": "in Ziklag, in Meconah and its settlements,",
+                "29": "in En Rimmon, in Zorah, in Jarmuth,",
+                "30": "Zanoah, Adullam and their villages, in Lachish and its fields, and in Azekah and its settlements. So they were living all the way from Beersheba to the Valley of Hinnom.",
+                "31": "The descendants of the Benjamites from Geba lived in Micmash, Aija, Bethel and its settlements,",
+                "32": "in Anathoth, Nob and Ananiah,",
+                "33": "in Hazor, Ramah and Gittaim,",
+                "34": "in Hadid, Zeboim and Neballat,",
+                "35": "in Lod and Ono, and in the Valley of the Craftsmen.",
+                "36": "Some of the divisions of the Levites of Judah settled in Benjamin."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Nehemiah 11 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Loving Father,",
+            "We glorify Your holy Name. Thank You for sending the Lord Jesus Christ to die on the cross for our sins; that whoever believes in Him will be saved. We praise You for allowing us to be part of the body of Jesus Christ, which is the church.", 
+            "Father God, thank you for reminding us that our church, Waterloo Pentecostal Assembly, needs workers and volunteers to function. Lord, forgive us if we have been too busy in the past. God, we commit to serving Christ's body (WPA) according to the gifts that you gave us.", 
+            "In Jesus' mighty name, Amen."
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "devotional",
+      "date": "2022-08-22",
+      "body": [
+        {
+          "paragraphs": [
+            "Read Nehemiah 12:1-26 below and reflect on the devotion that follows."
+          ],
+          "body_type": "text"
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "12",
+              "verses": {
+                "1": "These were the priests and Levites who returned with Zerubbabel son of Shealtiel and with Jeshua: Seraiah, Jeremiah, Ezra,",
+                "2": "Amariah, Malluch, Hattush,",
+                "3": "Shecaniah, Rehum, Meremoth,",
+                "4": "Iddo, Ginnethon, Abijah,",
+                "5": "Mijamin, Moadiah, Bilgah,",
+                "6": "Shemaiah, Joiarib, Jedaiah,",
+                "7": "Sallu, Amok, Hilkiah and Jedaiah. These were the leaders of the priests and their associates in the days of Jeshua.",
+                "8": "The Levites were Jeshua, Binnui, Kadmiel, Sherebiah, Judah, and also Mattaniah, who, together with his associates, was in charge of the songs of thanksgiving.",
+                "9": "Bakbukiah and Unni, their associates, stood opposite them in the services.",
+                "10": "Jeshua was the father of Joiakim, Joiakim the father of Eliashib, Eliashib the father of Joiada,",
+                "11": "Joiada the father of Jonathan, and Jonathan the father of Jaddua.",
+                "12": "In the days of Joiakim, these were the heads of the priestly families: of Seraiah's family, Meraiah; of Jeremiah's, Hananiah;",
+                "13": "of Ezra's, Meshullam; of Amariah's, Jehohanan;",
+                "14": "of Malluch's, Jonathan; of Shecaniah's, Joseph;",
+                "15": "of Harim's, Adna; of Meremoth's, Helkai;",
+                "16": "of Iddo's, Zechariah; of Ginnethon's, Meshullam;",
+                "17": "of Abijah's, Zicri; of Miniamin's and of Moadiah's, Piltai;",
+                "18": "of Bilgah's, Shammua; of Shemaiah's, Jehonathan;",
+                "19": "of Joiarib's, Mattenai; of Jedaiah's, Uzzi;",
+                "20": "of Sallu's, Kallai; of Amok's, Eber;",
+                "21": "of Hilkiah's, Hashabiah; of Jedaiah's, Nethanel.",
+                "22": "The family heads of the Levites in the days of Eliashib, Joiada, Johanan and Jaddua, as well as those of the priests, were recorded in the reign of Darius the Persian.",
+                "23": "The family heads among the descendants of Levi up to the time of Johanan son of Eliashib were recorded in the book of the annals.",
+                "24": "And the leaders of the Levites were Hashabiah, Sherebiah, Jeshua son of Kadmiel, and their associates, who stood opposite them to give praise and thanksgiving, one section responding to the other, as prescribed by David the man of God.",
+                "25": "Mattaniah, Bakbukiah, Obadiah, Meshullam, Talmon and Akkub were gatekeepers who guarded the storerooms at the gates.",
+                "26": "They served in the days of Joiakim son of Jeshua, the son of Jozadak, and in the days of Nehemiah the governor and of Ezra the priest and scribe."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "In The Details",
+            "Did you feel like skipping over today's reading because you saw a list of names? You are not alone, many of us do that when we see these lists of names or genealogies. Nehemiah 12 begins with listing the priests and Levites. The Levites were being gathered for the dedication ceremony of the wall of Jerusalem. The Bible could have just said, “the Levites and priests,” but no. Instead they were each listed by name. We may think that reading them won't make a difference, they're sometimes hard to pronounce and we assume we don't get much out of reading them.",
+            "These lists support the Bible's historical accuracy and credibility, they confirm the existence of these people, they confirm prophecy and demonstrate just how much our God, our BIG GOD is concerned with the details. He is very attentive, detailed and meticulous. Each of these Levites and priests were chosen and formed to live out a specific purpose: designed by God, destined by God, to be priests, to be worshippers and to lead others in worship. Every single name represents a whole person, a whole life, a whole plan, a whole purpose, a person gifted by God and made in His image.",
+            "As they were dedicating the wall of Jerusalem, the Levites were, “sought out from where they lived and were brought to Jerusalem to celebrate joyfully the dedication with songs of thanksgiving and with the music of cymbals, harps and lyres.” (Neh 12:27). Just think about that; these people were each named in the Bible, they were sought out, they came here to Jerusalem for a purpose. The celebration of the dedication of the wall involved these hand-picked people. The ceremony was well ordered and each of them had a specific role to play. We all have a gift which assists in making the body of Christ complete.",
+            "You were created on purpose for a purpose. “Before I formed you in the womb I knew you, before you were born I set you apart; I appointed you as a prophet to the nations.” (Jer. 1:5) Don't ever lose your wonder of the meticulous nature of our God. It's something we know, but often we forget.",
+            "As we live day to day remember that God is a detail-oriented God. The hairs of your head are numbered. He cares about the little details that upset you or delight you, no matter how insignificant they seem. Be encouraged today to take some time to fixate on just how marvellous it is that He is so involved in every detail and has ordained every specific situation and opportunity that comes into your path. He formed you specifically to deal with that situation or take up that opportunity in your own unique way. May we never lose our wonder of Him.",
+            "Riana Jagessar (Deacon)"
+          ],
+          "body_type": "text"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "scribe",
+      "date": "2022-08-23",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "12",
+              "verses": {
+                "27": "At the dedication of the wall of Jerusalem, the Levites were sought out from where they lived and were brought to Jerusalem to celebrate joyfully the dedication with songs of thanksgiving and with the music of cymbals, harps and lyres.",
+                "28": "The singers also were brought together from the region around Jerusalem-from the villages of the Netophathites,",
+                "29": "from Beth Gilgal, and from the area of Geba and Azmaveth, for the singers had built villages for themselves around Jerusalem.",
+                "30": "When the priests and Levites had purified themselves ceremonially, they purified the people, the gates and the wall.",
+                "31": "I had the leaders of Judah go up on top of the wall. I also assigned two large choirs to give thanks. One was to proceed on top of the wall to the right, toward the Dung Gate.",
+                "32": "Hoshaiah and half the leaders of Judah followed them,",
+                "33": "along with Azariah, Ezra, Meshullam,",
+                "34": "Judah, Benjamin, Shemaiah, Jeremiah,",
+                "35": "as well as some priests with trumpets, and also Zechariah son of Jonathan, the son of Shemaiah, the son of Mattaniah, the son of Micaiah, the son of Zaccur, the son of Asaph,",
+                "36": "and his associates-Shemaiah, Azarel, Milalai, Gilalai, Maai, Nethanel, Judah and Hanani-with musical instruments prescribed by David the man of God. Ezra the scribe led the procession.",
+                "37": "At the Fountain Gate they continued directly up the steps of the City of David on the ascent to the wall and passed above the house of David to the Water Gate on the east.",
+                "38": "The second choir proceeded in the opposite direction. I followed them on top of the wall, together with half the people-past the Tower of the Ovens to the Broad Wall,",
+                "39": "over the Gate of Ephraim, the Jeshanah Gate, the Fish Gate, the Tower of Hananel and the Tower of the Hundred, as far as the Sheep Gate. At the Gate of the Guard they stopped.",
+                "40": "The two choirs that gave thanks then took their places in the house of God; so did I, together with half the officials,",
+                "41": "as well as the priests-Eliakim, Maaseiah, Miniamin, Micaiah, Elioenai, Zechariah and Hananiah with their trumpets-",
+                "42": "and also Maaseiah, Shemaiah, Eleazar, Uzzi, Jehohanan, Malkijah, Elam and Ezer. The choirs sang under the direction of Jezrahiah.",
+                "43": "And on that day they offered great sacrifices, rejoicing because God had given them great joy. The women and children also rejoiced. The sound of rejoicing in Jerusalem could be heard far away.",
+                "44": "At that time men were appointed to be in charge of the storerooms for the contributions, firstfruits and tithes. From the fields around the towns they were to bring into the storerooms the portions required by the Law for the priests and the Levites, for Judah was pleased with the ministering priests and Levites.",
+                "45": "They performed the service of their God and the service of purification, as did also the singers and gatekeepers, according to the commands of David and his son Solomon.",
+                "46": "For long ago, in the days of David and Asaph, there had been directors for the singers and for the songs of praise and thanksgiving to God.",
+                "47": "So in the days of Zerubbabel and of Nehemiah, all Israel contributed the daily portions for the singers and gatekeepers. They also set aside the portion for the other Levites, and the Levites set aside the portion for the descendants of Aaron."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "We encourage you to take the time to write down Nehemiah 12:27-47 by hand. This will help you to slow down and reflect on today's portion of scripture. You may upload a photo of your scribe below for your personal record."
+          ]
+        },
+        {
+          "body_type": "image_input"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "memorize",
+      "date": "2022-08-24",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "13",
+              "verses": {
+                "1": "On that day the Book of Moses was read aloud in the hearing of the people and there it was found written that no Ammonite or Moabite should ever be admitted into the assembly of God,",
+                "2": "because they had not met the Israelites with food and water but had hired Balaam to call a curse down on them. (Our God, however, turned the curse into a blessing.)",
+                "3": "When the people heard this law, they excluded from Israel all who were of foreign descent.",
+                "4": "Before this, Eliashib the priest had been put in charge of the storerooms of the house of our God. He was closely associated with Tobiah,",
+                "5": "and he had provided him with a large room formerly used to store the grain offerings and incense and temple articles, and also the tithes of grain, new wine and oil prescribed for the Levites, singers and gatekeepers, as well as the contributions for the priests.",
+                "6": "But while all this was going on, I was not in Jerusalem, for in the thirty-second year of Artaxerxes king of Babylon I had returned to the king. Some time later I asked his permission",
+                "7": "and came back to Jerusalem. Here I learned about the evil thing Eliashib had done in providing Tobiah a room in the courts of the house of God.",
+                "8": "I was greatly displeased and threw all Tobiah's household goods out of the room.",
+                "9": "I gave orders to purify the rooms, and then I put back into them the equipment of the house of God, with the grain offerings and the incense.",
+                "10": "I also learned that the portions assigned to the Levites had not been given to them, and that all the Levites and singers responsible for the service had gone back to their own fields.",
+                "11": "So I rebuked the officials and asked them, \"Why is the house of God neglected?\" Then I called them together and stationed them at their posts.",
+                "12": "All Judah brought the tithes of grain, new wine and oil into the storerooms.",
+                "13": "I put Shelemiah the priest, Zadok the scribe, and a Levite named Pedaiah in charge of the storerooms and made Hanan son of Zaccur, the son of Mattaniah, their assistant, because these men were considered trustworthy. They were made responsible for distributing the supplies to their brothers.",
+                "14": "Remember me for this, O my God, and do not blot out what I have so faithfully done for the house of my God and its services."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "text",
+          "paragraphs": [
+            "Commit Nehemiah 13:14 to memory."
+          ]
+        },
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "13",
+              "verses": {
+                "14": "Remember me for this, O my God, and do not blot out what I have so faithfully done for the house of my God and its services."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "reflect",
+      "date": "2022-08-25",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "13",
+              "verses": {
+                "15": "In those days I saw men in Judah treading winepresses on the Sabbath and bringing in grain and loading it on donkeys, together with wine, grapes, figs and all other kinds of loads. And they were bringing all this into Jerusalem on the Sabbath. Therefore I warned them against selling food on that day.",
+                "16": "Men from Tyre who lived in Jerusalem were bringing in fish and all kinds of merchandise and selling them in Jerusalem on the Sabbath to the people of Judah.",
+                "17": "I rebuked the nobles of Judah and said to them, \"What is this wicked thing you are doing-desecrating the Sabbath day?",
+                "18": "Didn't your forefathers do the same things, so that our God brought all this calamity upon us and upon this city? Now you are stirring up more wrath against Israel by desecrating the Sabbath.\"",
+                "19": "When evening shadows fell on the gates of Jerusalem before the Sabbath, I ordered the doors to be shut and not opened until the Sabbath was over. I stationed some of my own men at the gates so that no load could be brought in on the Sabbath day.",
+                "20": "Once or twice the merchants and sellers of all kinds of goods spent the night outside Jerusalem.",
+                "21": "But I warned them and said, \"Why do you spend the night by the wall? If you do this again, I will lay hands on you.\" From that time on they no longer came on the Sabbath.",
+                "22": "Then I commanded the Levites to purify themselves and go and guard the gates in order to keep the Sabbath day holy. Remember me for this also, O my God, and show mercy to me according to your great love."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "body_type": "question",
+          "questions": [
+            "Scripture: Read Nehemiah 13:15-22. Look for a verse that was meaningful to you and write it down.",
+            "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+            "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+            "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may be revealing to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "",
+      "content_type": "pray",
+      "date": "2022-08-26",
+      "body": [
+        {
+          "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+          "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+          "body_type": "scripture",
+          "scriptures": [
+            {
+              "book": "Nehemiah",
+              "chapter": "13",
+              "verses": {
+                "23": "Moreover, in those days I saw men of Judah who had married women from Ashdod, Ammon and Moab.",
+                "24": "Half of their children spoke the language of Ashdod or the language of one of the other peoples, and did not know how to speak the language of Judah.",
+                "25": "I rebuked them and called curses down on them. I beat some of the men and pulled out their hair. I made them take an oath in God's name and said: \"You are not to give your daughters in marriage to their sons, nor are you to take their daughters in marriage for your sons or for yourselves.",
+                "26": "Was it not because of marriages like these that Solomon king of Israel sinned? Among the many nations there was no king like him. He was loved by his God, and God made him king over all Israel, but even he was led into sin by foreign women.",
+                "27": "Must we hear now that you too are doing all this terrible wickedness and are being unfaithful to our God by marrying foreign women?\"",
+                "28": "One of the sons of Joiada son of Eliashib the high priest was son-in-law to Sanballat the Horonite. And I drove him away from me.",
+                "29": "Remember them, O my God, because they defiled the priestly office and the covenant of the priesthood and of the Levites.",
+                "30": "So I purified the priests and the Levites of everything foreign, and assigned them duties, each to his own task.",
+                "31": "I also made provision for contributions of wood at designated times, and for the firstfruits. Remember me with favor, O my God."
+              }
+            }
+          ]
+        },
+        {
+          "paragraphs": [
+            "_________________"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Having read through the passages this week, pray your own prayer inspired by Jeremiah 52 or pray the following prayer:"
+          ],
+          "body_type": "text"
+        },
+        {
+          "paragraphs": [
+            "Father God,",
+            "We praise You for You are kind, merciful and abounding in love. Lord, You have called us to be your witnesses, to be salt and light to those around us (Matt. 5:13-16).", 
+            "You have chosen us and set us apart to lead people back to you as you have said in 1 Peter 2:9, “But you are a chosen people, a royal priesthood, a holy nation, God's special possession, that you may declare the praises of him who called you out of darkness into his wonderful light.”", 
+            "Thank You Lord for reminding us to faithfully obey Your word and not give into sin. Lord God, please forgive us if we have compromised our faith. We commit to faithfully obey You and share Your Word to those around us.",
+            "In Jesus name, Amen."
+
+          ],
+          "body_type": "text"
+        }
+      ]
+    }
+  ]
+}
