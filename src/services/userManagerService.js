@@ -1,6 +1,11 @@
 // See https://firebase.google.com/docs/auth/admin/manage-users#update_a_user
-
+/** @typedef {import("@google-cloud/firestore").Firestore} Firestore */
+/** @typedef {import("@google-cloud/firestore").Firestore} Auth */
 class UserManagerService {
+    /**
+     * @param {Firestore} firestore 
+     * @param {Auth} auth 
+     */
     constructor(firestore, auth) {
         this.auth = auth;
         this.firestore = firestore;
@@ -67,6 +72,20 @@ class UserManagerService {
         });
 
         return docRef.id;
+    }
+
+    async getAllUsersAfterDate(date) {
+        const users = await this.auth.listUsers();
+        let allCount = 0;
+        let afterDateCount = 0;
+        users['users'].forEach((user)=>{
+            allCount += 1;
+            const creationTime = new Date(user.metadata.creationTime);
+            if (creationTime>=date){
+                afterDateCount+=1;
+            }
+        });
+        console.log('Total users: ', allCount, ', Users after ', date, ': ', afterDateCount); 
     }
 }
 

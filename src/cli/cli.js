@@ -10,6 +10,7 @@ const { UserManagerCli } = require('./userManager');
 const { DataLoaderService } = require('../services/dataLoaderService');
 const { DataFetchingService } = require('../services/dataFetchingService');
 const { UserManagerService } = require('../services/userManagerService');
+const { DataDeletingService } = require('../services/dataDeletingService');
 
 class AdminCli {
     constructor(dataLoaderCli, dataFetchingCli, devHelpersCli, userManagerCli) {
@@ -74,6 +75,7 @@ class AdminCli {
 const dataLoaderService = new DataLoaderService(firestore);
 const dataFetchingService = new DataFetchingService(firestore);
 const userManagerService = new UserManagerService(firestore, auth);
+const dataDeletingService = new DataDeletingService(firestore, auth);
 
 const dataLoaderCli = new DataLoaderCli(dataLoaderService);
 const dataFetchingCli = new DataFetchingCli(dataFetchingService);
@@ -82,4 +84,13 @@ const userManagerCli = new UserManagerCli(userManagerService);
 
 const adminCli = new AdminCli(dataLoaderCli, dataFetchingCli, devHelpersCli, userManagerCli);
 
-adminCli.run();
+// adminCli.run();
+
+// --- ADHOC ---
+async function main() {
+    await userManagerService.getAllUsersAfterDate(new Date('January 1, 2022'));
+    // await dataFetchingService.getEngagementCountByType('bDAV2va3PTR73C4hw1lF');
+    // await dataFetchingService.getCompletionsByType('devotional', 'bDAV2va3PTR73C4hw1lF');
+    // await dataDeletingService.deleteOldPrayerRequests(new Date(Date.UTC(2022,9,1,0,0,0)));
+}
+main();

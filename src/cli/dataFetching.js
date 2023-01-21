@@ -46,7 +46,7 @@ class DataFetchingCli {
         spinner = ora('Writing to file');
         spinner.start();
         const progressCsv = progressData.join(',');
-        fs.writeFileSync(path.resolve(__dirname) + `/../data/progress_records/${Date.now()}.csv`, progressCsv);
+        fs.writeFileSync(path.resolve(__dirname) + `/../data/progress_records/${Date.now().toLocaleString()}.csv`, progressCsv);
         spinner.succeed();
     }
 }
