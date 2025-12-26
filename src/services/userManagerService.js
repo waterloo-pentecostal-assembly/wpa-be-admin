@@ -1,6 +1,7 @@
 // See https://firebase.google.com/docs/auth/admin/manage-users#update_a_user
 /** @typedef {import("@google-cloud/firestore").Firestore} Firestore */
 /** @typedef {import("@google-cloud/firestore").Firestore} Auth */
+
 class UserManagerService {
     /**
      * @param {Firestore} firestore 
@@ -75,17 +76,67 @@ class UserManagerService {
     }
 
     async getAllUsersAfterDate(date) {
-        const users = await this.auth.listUsers();
+        let nextToken = undefined;
         let allCount = 0;
         let afterDateCount = 0;
-        users['users'].forEach((user)=>{
-            allCount += 1;
-            const creationTime = new Date(user.metadata.creationTime);
-            if (creationTime>=date){
-                afterDateCount+=1;
-            }
-        });
+        do {
+            const result = await this.auth.listUsers(1000, nextToken)
+            nextToken = result.pageToken;
+            console.log(">>", nextToken);
+            result['users'].forEach((user)=>{
+                allCount += 1;
+                const creationTime = new Date(user.metadata.creationTime);
+                if (creationTime>=date){
+                    afterDateCount+=1;
+                }
+            });
+        } while (nextToken != undefined)
         console.log('Total users: ', allCount, ', Users after ', date, ': ', afterDateCount); 
+    }
+
+    async getActiveUsersBetweenDates(date_start, date_end) {
+        const completionsSnapshot = await this.firestore
+            .collection('completions')
+            .where('completion_date', '>=', date_start)
+            .where('completion_date', '<', date_end)
+            .limit(30000)
+            .get();
+        const prayerRequestSnapshot = await this.firestore
+            .collection('prayer_requests')
+            .where('date', '>=', date_start)
+            .where('date', '<', date_end)
+            .limit(30000)
+            .get();
+        const testimoniesSnapshot = await this.firestore
+            .collection('testimonies')
+            .where('date', '>=', date_start)
+            .where('date', '<', date_end)
+            .limit(30000)
+            .get();
+        let count = 0;
+        const users = new Set();
+        completionsSnapshot.forEach(doc => {
+            const data = doc.data();
+            const user_id = data.user_id;
+            count+=1;
+            console.log(user_id, count);
+            users.add(user_id);
+        });
+        prayerRequestSnapshot.forEach(doc => {
+            const data = doc.data();
+            const user_id = data.user_id;
+            count+=1;
+            console.log(user_id, count);
+            users.add(user_id);
+        });
+        testimoniesSnapshot.forEach(doc => {
+            const data = doc.data();
+            const user_id = data.user_id;
+            count+=1;
+            console.log(user_id, count);
+            users.add(user_id);
+        });
+        console.log('Total active users: ', users.size); 
     }
 }
 

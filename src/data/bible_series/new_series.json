@@ -1,0 +1,50 @@
+{
+    "bible_series": {
+        "title": "Test series",
+        "sub_title": "test",
+        "image_gs_location": "",
+        "is_active": false,
+        "is_visible": false
+    },
+    "series_content": [
+        {
+            "date": "2025-12-29",
+            "content_type": "read",
+            "body": [
+                {
+                    "body_type": "text",
+                    "paragraphs": [
+                        "read the following"
+                    ]
+                },
+                {
+                    "body_type": "scripture",
+                    "scriptures": [
+                        {
+                            "book": "Genesis",
+                            "chapter": "1",
+                            "title": "",
+                            "verses": {
+                                "1": "In the beginning God created the heavens and the earth.",
+                                "2": "Now the earth was formless and empty, darkness was over the surface of the deep, and the Spirit of God was hovering over the waters.",
+                                "3": "And God said, \"Let there be light,\" and there was light.",
+                                "4": "God saw that the light was good, and he separated the light from the darkness.",
+                                "5": "God called the light \"day,\" and the darkness he called \"night.\" And there was evening, and there was morning-the first day.",
+                                "6": "And God said, \"Let there be an expanse between the waters to separate water from water.\""
+                            }
+                        }
+                    ],
+                    "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+                    "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide"
+                },
+                {
+                    "body_type": "question",
+                    "questions": [
+                        "whats up?",
+                        "Whats your name?"
+                    ]
+                }
+            ]
+        }
+    ]
+}

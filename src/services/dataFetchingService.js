@@ -40,6 +40,22 @@ class DataFetchingService {
         // return result;
     }
 
+    async getUniqueUsersForSeries(series_id) {
+        const uniqueUsers = new Set();
+        const completionsSnapshot = await this.firestore
+            .collection('completions')
+            .where('series_id', '==', series_id)
+            .get();
+        completionsSnapshot.forEach(doc => {
+            const data = doc.data();
+            const user_id = data.user_id;
+            uniqueUsers.add(user_id)
+        });
+        console.log(uniqueUsers.size);
+        // return result;
+    }
+
+
     async getProgressData() {
         const progressData = [];
 
@@ -50,7 +66,9 @@ class DataFetchingService {
         progressSnapshot.forEach(doc => {
             const data = doc.data();
             const seriesProgress = data.series_progress;
-            progressData.push(seriesProgress);
+            if (seriesProgress > 0) {
+                progressData.push(seriesProgress);
+            }
         });
         return progressData;
     }
