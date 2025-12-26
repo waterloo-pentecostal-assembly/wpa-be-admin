@@ -158,7 +158,8 @@ if (fs.existsSync(DIST_DIR)) {
     app.use(express.static(DIST_DIR));
 
     // Handle SPA Routing - Return index.html for all non-API routes
-    app.get('*', (req, res) => {
+    // Express 5 requires strict path syntax. Use (.*) or just a regex for catch-all.
+    app.get(/(.*)/, (req, res) => {
         res.sendFile(path.join(DIST_DIR, 'index.html'));
     });
 }
