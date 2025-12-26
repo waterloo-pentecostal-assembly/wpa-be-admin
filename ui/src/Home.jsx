@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, LogOut } from 'lucide-react';
+import { BookOpen, LogOut, BarChart3 } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 
 
@@ -45,6 +45,16 @@ const Home = () => {
                             </div>
                             <h2 className="text-xl font-bold text-gray-800 mb-2">Bible Series Content Manager</h2>
                             <p className="text-gray-500 text-sm">Create and manage daily engagement content for bible series.</p>
+                        </div>
+                    </Link>
+
+                    <Link to="/stats" className="group">
+                        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-brand-300 transition-all flex flex-col items-center text-center h-full">
+                            <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center text-brand mb-4 group-hover:bg-brand group-hover:text-white transition-colors">
+                                <BarChart3 size={32} />
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-800 mb-2">Stats Dashboard</h2>
+                            <p className="text-gray-500 text-sm">View app usage statistics, prayer requests, testimonies, and user progress.</p>
                         </div>
                     </Link>
                 </div>

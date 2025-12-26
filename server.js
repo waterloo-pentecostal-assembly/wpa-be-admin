@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
+import admin from 'firebase-admin';
+import { DataFetchingService } from './src/services/dataFetchingService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,12 +12,56 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3001;
 
+// Initialize Firebase Admin
+try {
+    const serviceAccountPath = path.join(__dirname, 'src', 'config', 'service-account.json');
+    if (fs.existsSync(serviceAccountPath)) {
+        const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+        if (!admin.apps.length) {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount)
+            });
+            console.log("Firebase Admin Initialized");
+        }
+    } else {
+        console.warn("Service account file not found. Stats API will fail.");
+    }
+} catch (error) {
+    console.error("Failed to initialize Firebase Admin:", error);
+}
+
+const db = admin.apps.length ? admin.firestore() : null;
+const dataFetchingService = db ? new DataFetchingService(db) : null;
+
 app.use(cors());
 app.use(express.json());
 
 // Paths
 const DATA_DIR = path.join(__dirname, 'src', 'data', 'bible_series');
 const NIV_FILE = path.join(__dirname, 'src', 'data', 'niv.json');
+
+// Stats Endpoint
+app.get('/api/stats', async (req, res) => {
+    if (!dataFetchingService || !db) {
+        return res.status(503).json({ error: 'Database service not confirmed available' });
+    }
+
+    try {
+        const [prayerRequestsSnapshot, testimoniesSnapshot, progressData] = await Promise.all([
+            db.collection('prayer_requests').get(),
+            db.collection('testimonies').get(),
+            dataFetchingService.getProgressData()
+        ]);
+        res.json({
+            prayerRequests: prayerRequestsSnapshot.size,
+            testimonies: testimoniesSnapshot.size,
+            progress: progressData
+        });
+    } catch (error) {
+        console.error('Error in /api/stats:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Get NIV Data
 app.get('/api/niv', (req, res) => {

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Home';
 import BibleSeriesManager from './BibleSeriesManager';
+import Stats from './Stats';
 import Login from './Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
@@ -25,6 +26,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <BibleSeriesManager />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/stats"
+                        element={
+                            <ProtectedRoute>
+                                <Stats />
                             </ProtectedRoute>
                         }
                     />

@@ -1,6 +1,6 @@
 /** @typedef {import("@google-cloud/firestore").Firestore} Firestore */
 
-class DataFetchingService {
+export class DataFetchingService {
     /**
      * @param {Firestore} firestore 
      */
@@ -128,7 +128,3 @@ class DataFetchingService {
         // console.log(csvString);
     }
 }
-
-module.exports = {
-    DataFetchingService
-};
