@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db } from '../firebase';
+import { initFirebase, getAuthInstance } from '../firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
@@ -13,52 +13,71 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const login = (email, password) => {
+        const auth = getAuthInstance();
+        if (!auth) throw new Error("Firebase not initialized");
         return signInWithEmailAndPassword(auth, email, password);
     };
 
     const logout = () => {
+        const auth = getAuthInstance();
+        if (!auth) return Promise.resolve();
         return signOut(auth);
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setLoading(true);
-            if (user) {
-                try {
-                    // Check if user is admin in Firestore
-                    const q = query(collection(db, "users"), where("email", "==", user.email));
-                    const querySnapshot = await getDocs(q);
+        let unsubscribe;
 
-                    let adminStatus = false;
-                    querySnapshot.forEach((doc) => {
-                        if (doc.data().is_admin === true) {
-                            adminStatus = true;
+        const initializeAuth = async () => {
+            try {
+                const { auth: authInstance, db: dbInstance } = await initFirebase();
+
+                unsubscribe = onAuthStateChanged(authInstance, async (user) => {
+                    setLoading(true);
+                    if (user) {
+                        try {
+                            // Check if user is admin in Firestore
+                            const q = query(collection(dbInstance, "users"), where("email", "==", user.email));
+                            const querySnapshot = await getDocs(q);
+
+                            let adminStatus = false;
+                            querySnapshot.forEach((doc) => {
+                                if (doc.data().is_admin === true) {
+                                    adminStatus = true;
+                                }
+                            });
+
+                            if (adminStatus) {
+                                setCurrentUser(user);
+                                setIsAdmin(true);
+                            } else {
+                                console.error("Access Denied: User is not an admin.");
+                                await signOut(authInstance);
+                                setCurrentUser(null);
+                                setIsAdmin(false);
+                                alert("Access Denied: You do not have administrator privileges.");
+                            }
+                        } catch (error) {
+                            console.error("Error verifying admin status:", error);
+                            setCurrentUser(null);
+                            setIsAdmin(false);
                         }
-                    });
-
-                    if (adminStatus) {
-                        setCurrentUser(user);
-                        setIsAdmin(true);
                     } else {
-                        console.error("Access Denied: User is not an admin.");
-                        await signOut(auth);
                         setCurrentUser(null);
                         setIsAdmin(false);
-                        alert("Access Denied: You do not have administrator privileges.");
                     }
-                } catch (error) {
-                    console.error("Error verifying admin status:", error);
-                    setCurrentUser(null);
-                    setIsAdmin(false);
-                }
-            } else {
-                setCurrentUser(null);
-                setIsAdmin(false);
+                    setLoading(false);
+                });
+            } catch (error) {
+                console.error("Failed to initialize auth:", error);
+                setLoading(false); // Stop loading even if init fails
             }
-            setLoading(false);
-        });
+        };
 
-        return unsubscribe;
+        initializeAuth();
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     const value = {

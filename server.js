@@ -70,6 +70,48 @@ app.use(express.json());
 const DATA_DIR = path.join(__dirname, 'src', 'data', 'bible_series');
 const NIV_FILE = path.join(__dirname, 'src', 'data', 'niv.json');
 
+// Get Firebase Client Config
+app.get('/api/firebase-config', (req, res) => {
+    try {
+        let clientConfig;
+
+        // 1. Try Render Secret File (Production)
+        const renderSecretPath = '/etc/secrets/firebase-client-config.json';
+        if (fs.existsSync(renderSecretPath)) {
+            clientConfig = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
+            // console.log("Loaded Firebase Client config from Render Secret File");
+        }
+
+        // 2. Try Environment Variable (Fallback)
+        if (!clientConfig && process.env.FIREBASE_CLIENT_CONFIG) {
+            try {
+                clientConfig = JSON.parse(process.env.FIREBASE_CLIENT_CONFIG);
+                // console.log("Loaded Firebase Client config from Environment Variable");
+            } catch (e) {
+                console.error("Failed to parse FIREBASE_CLIENT_CONFIG env var", e);
+            }
+        }
+
+        // 3. Try Local File (Development)
+        if (!clientConfig) {
+            const localConfigPath = path.join(__dirname, 'src', 'config', 'firebase-client-config.json');
+            if (fs.existsSync(localConfigPath)) {
+                clientConfig = JSON.parse(fs.readFileSync(localConfigPath, 'utf8'));
+                // console.log("Loaded Firebase Client config from local file");
+            }
+        }
+
+        if (clientConfig) {
+            res.json(clientConfig);
+        } else {
+            res.status(404).json({ error: 'Firebase Client Configuration not found' });
+        }
+    } catch (error) {
+        console.error("Error fetching firebase config:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Stats Endpoint
 app.get('/api/stats', async (req, res) => {
     if (!dataFetchingService || !db) {

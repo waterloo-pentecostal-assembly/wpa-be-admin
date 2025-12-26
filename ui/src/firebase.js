@@ -2,16 +2,35 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAfrUSJZetuv2UstvDQP4v--hy3PJwE3lE",
-    authDomain: "wpa-be-app.firebaseapp.com",
-    projectId: "wpa-be-app",
-    storageBucket: "wpa-be-app.appspot.com",
-    messagingSenderId: "755795301430",
-    appId: "1:755795301430:web:4189cdb87c5f25b54fb497",
-    measurementId: "G-745202NTVC"
+let app;
+let auth;
+let db;
+
+/**
+ * Initializes Firebase by fetching config from the server.
+ * This allows us to use Repder Secret Files loaded by the backend.
+ */
+export const initFirebase = async () => {
+    if (app) return { auth, db };
+
+    try {
+        const response = await fetch('/api/firebase-config');
+        if (!response.ok) {
+            throw new Error(`Failed to load Firebase config: ${response.statusText}`);
+        }
+
+        const firebaseConfig = await response.json();
+
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        return { auth, db };
+    } catch (error) {
+        console.error("Firebase initialization failed:", error);
+        throw error;
+    }
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const getAuthInstance = () => auth;
+export const getDbInstance = () => db;

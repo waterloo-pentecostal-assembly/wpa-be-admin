@@ -116,4 +116,5 @@ dist
 
 # Custom
 service-account*.json
+firebase-client-config.json
 .DS_Store
