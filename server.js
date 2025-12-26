@@ -16,8 +16,19 @@ const PORT = 3001;
 try {
     let serviceAccount;
 
-    // 1. Try Environment Variable (Production/Render)
-    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // 1. Try Render Secret File (Production)
+    const renderSecretPath = '/etc/secrets/service-account.json';
+    if (fs.existsSync(renderSecretPath)) {
+        try {
+            serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
+            console.log("Loaded Firebase credentials from Render Secret File");
+        } catch (e) {
+            console.error("Failed to parse Render Secret File", e);
+        }
+    }
+
+    // 2. Try Environment Variable (Fallback)
+    if (!serviceAccount && process.env.FIREBASE_SERVICE_ACCOUNT) {
         try {
             serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
             console.log("Loaded Firebase credentials from Environment Variable");
