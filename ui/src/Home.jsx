@@ -1,16 +1,38 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, LogOut } from 'lucide-react';
+import { useAuth } from './contexts/AuthContext';
+
 
 import logo from './assets/logo.png';
 
 const Home = () => {
+    const { logout } = useAuth();
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Failed to log out", error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <div className="w-full bg-gray-800 shadow-sm mb-12">
-                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-start space-x-4">
-                    <img src={logo} alt="WPA Logo" className="h-12 w-auto" />
-                    <h1 className="text-2xl font-bold text-white tracking-tight">WPA BE Admin Console</h1>
+                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        <img src={logo} alt="WPA Logo" className="h-12 w-auto" />
+                        <h1 className="text-2xl font-bold text-white tracking-tight">WPA BE Admin Console</h1>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-700"
+                        title="Sign Out"
+                    >
+                        <LogOut size={20} />
+                        <span className="text-sm font-medium">Sign Out</span>
+                    </button>
                 </div>
             </div>
 

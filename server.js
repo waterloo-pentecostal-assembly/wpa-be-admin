@@ -76,6 +76,17 @@ app.post('/api/series', (req, res) => {
     }
 });
 
+// Serve Static Files (UI)
+const DIST_DIR = path.join(__dirname, 'dist');
+if (fs.existsSync(DIST_DIR)) {
+    app.use(express.static(DIST_DIR));
+
+    // Handle SPA Routing - Return index.html for all non-API routes
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(DIST_DIR, 'index.html'));
+    });
+}
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

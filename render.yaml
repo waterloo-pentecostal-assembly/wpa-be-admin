@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: wpa-be-admin
+    env: docker
+    region: ohio
+    plan: free
+    branch: main
+    buildCommand: docker build -t wpa-be-admin .
+    startCommand: docker run -p 3001:3001 wpa-be-admin
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_DEFAULT_VERSION
+        value: 20.10.0

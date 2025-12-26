@@ -11,7 +11,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server.js"
+    "server": "node server.js",
+    "start:dev": "concurrently \"npm run server\" \"npm run dev\""
   },
   "author": "Joshua Ramsamooj",
   "license": "ISC",
@@ -20,6 +21,7 @@
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "express": "^5.2.1",
+    "firebase": "^12.7.0",
     "firebase-admin": "^9.4.1",
     "inquirer": "^7.3.3",
     "lucide-react": "^0.562.0",
@@ -37,6 +39,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.23",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react-hooks": "^7.0.1",
