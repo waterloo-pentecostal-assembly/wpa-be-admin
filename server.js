@@ -14,9 +14,28 @@ const PORT = 3001;
 
 // Initialize Firebase Admin
 try {
-    const serviceAccountPath = path.join(__dirname, 'src', 'config', 'service-account.json');
-    if (fs.existsSync(serviceAccountPath)) {
-        const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    let serviceAccount;
+
+    // 1. Try Environment Variable (Production/Render)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        try {
+            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+            console.log("Loaded Firebase credentials from Environment Variable");
+        } catch (e) {
+            console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var", e);
+        }
+    }
+
+    // 2. Try Local File (Development)
+    if (!serviceAccount) {
+        const serviceAccountPath = path.join(__dirname, 'src', 'config', 'service-account.json');
+        if (fs.existsSync(serviceAccountPath)) {
+            serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+            console.log("Loaded Firebase credentials from local file");
+        }
+    }
+
+    if (serviceAccount) {
         if (!admin.apps.length) {
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount)
@@ -24,7 +43,7 @@ try {
             console.log("Firebase Admin Initialized");
         }
     } else {
-        console.warn("Service account file not found. Stats API will fail.");
+        console.warn("No Firebase credentials found (File or Env). Stats API will fail.");
     }
 } catch (error) {
     console.error("Failed to initialize Firebase Admin:", error);
