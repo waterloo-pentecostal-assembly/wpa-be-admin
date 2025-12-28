@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Header from './components/Header';
 import { ArrowLeft, BarChart3, MessageSquare, Heart, RefreshCw } from 'lucide-react';
 
 export default function Stats() {
@@ -42,18 +43,10 @@ export default function Stats() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            {/* Header */}
-            <div className="w-full bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <Link to="/" className="text-gray-500 hover:text-gray-900 transition-colors">
-                            <ArrowLeft size={24} />
-                        </Link>
-                        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <BarChart3 size={24} className="text-blue-600" />
-                            Stats Dashboard
-                        </h1>
-                    </div>
+            <Header
+                title="Stats Dashboard"
+                icon={BarChart3}
+                actions={
                     <button
                         onClick={fetchStats}
                         className="p-2 text-gray-500 hover:text-blue-600 transition-colors rounded-full hover:bg-gray-100"
@@ -61,8 +54,8 @@ export default function Stats() {
                     >
                         <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
                     </button>
-                </div>
-            </div>
+                }
+            />
 
             <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-10">
                 {error && (
@@ -77,6 +70,16 @@ export default function Stats() {
                     </div>
                 ) : (
                     <div className="space-y-8">
+                        {/* Current Series Header */}
+                        {stats?.currentSeries && (
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-1">Current Active Series</p>
+                                    <h2 className="text-2xl font-bold text-gray-900">{stats.currentSeries.title}</h2>
+                                </div>
+                            </div>
+                        )}
+
                         {/* KPI Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
@@ -98,6 +101,46 @@ export default function Stats() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Current Series Engagement */}
+                        {stats?.currentSeries && (
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900">Engagement Breakdown</h3>
+                                        <p className="text-sm text-gray-500">By Content Type</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {Object.entries(stats.currentSeries.engagement || {}).map(([type, count]) => {
+                                        // Calculate max for relative width, defaulting to total count or a reasonable max
+                                        const values = Object.values(stats.currentSeries.engagement);
+                                        const max = Math.max(...values, 1);
+                                        const percentage = Math.round((count / max) * 100);
+
+                                        // Format type label (e.g., "read" -> "Read")
+                                        const label = type.charAt(0).toUpperCase() + type.slice(1);
+
+                                        return (
+                                            <div key={type} className="flex items-center gap-4">
+                                                <div className="w-24 text-sm font-medium text-gray-600 capitalize">{type}</div>
+                                                <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                                                        style={{ width: `${percentage}%` }}
+                                                    />
+                                                </div>
+                                                <div className="w-12 text-sm text-gray-900 font-bold text-right">{count}</div>
+                                            </div>
+                                        );
+                                    })}
+                                    {(!stats.currentSeries.engagement || Object.keys(stats.currentSeries.engagement).length === 0) && (
+                                        <p className="text-gray-400 italic text-center py-4">No engagement data available yet.</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Histogram */}
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">

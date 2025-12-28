@@ -124,10 +124,29 @@ app.get('/api/stats', async (req, res) => {
             db.collection('testimonies').get(),
             dataFetchingService.getProgressData()
         ]);
+
+        // Fetch current series data
+        let currentSeriesStats = null;
+        try {
+            const currentSeries = await dataFetchingService.getCurrentSeries();
+            if (currentSeries) {
+                const engagementMap = await dataFetchingService.getEngagementCountByType(currentSeries.id);
+                // Convert Map to Object for JSON serialization
+                const engagement = Object.fromEntries(engagementMap);
+                currentSeriesStats = {
+                    ...currentSeries,
+                    engagement
+                };
+            }
+        } catch (error) {
+            console.error("Error fetching current series stats:", error);
+        }
+
         res.json({
             prayerRequests: prayerRequestsSnapshot.size,
             testimonies: testimoniesSnapshot.size,
-            progress: progressData
+            progress: progressData,
+            currentSeries: currentSeriesStats
         });
     } catch (error) {
         console.error('Error in /api/stats:', error);

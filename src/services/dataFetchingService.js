@@ -8,6 +8,30 @@ export class DataFetchingService {
         this.firestore = firestore;
     }
 
+    async getCurrentSeries() {
+        try {
+            const snapshot = await this.firestore
+                .collection('bible_series')
+                .where('is_active', '==', true)
+                .limit(1)
+                .get();
+
+            if (snapshot.empty) {
+                return null;
+            }
+
+            const doc = snapshot.docs[0];
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title || data.name || "Untitled Series" // Fallback for safety
+            };
+        } catch (error) {
+            console.error("Error fetching current series:", error);
+            return null;
+        }
+    }
+
     async getEngagementCountByType(series_id) {
         const result = new Map();
         const contentTypeMapping = new Map();
@@ -36,8 +60,7 @@ export class DataFetchingService {
                 result.set(content_type, 1);
             }
         });
-        console.log(result);
-        // return result;
+        return result;
     }
 
     async getUniqueUsersForSeries(series_id) {

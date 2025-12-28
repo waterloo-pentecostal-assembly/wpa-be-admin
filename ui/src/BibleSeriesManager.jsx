@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Save, Plus, Loader2, ArrowLeft, Download } from 'lucide-react';
+import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Header from './components/Header';
 import SeriesForm from './components/SeriesForm';
 import ContentList from './components/ContentList';
 import EngagementEditor from './components/EngagementEditor';
@@ -193,122 +194,123 @@ function BibleSeriesManager() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans">
-      {/* Sidebar - File List */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-10">
-        <div className="p-4 border-b border-gray-200 bg-gray-50">
-          <Link to="/" className="flex items-center space-x-2 text-gray-500 hover:text-brand mb-4 transition-colors">
-            <ArrowLeft size={16} />
-            <span className="text-sm font-medium">Back to Home</span>
-          </Link>
-          <div className="flex justify-between items-center">
-            <h1 className="font-bold text-gray-700 tracking-tight">Series Creator</h1>
-            <button onClick={createNewSeries} className="p-1.5 hover:bg-white rounded-md textfocus:ring-brand focus:border-brandorder-transparent hover:border-gray-200 transition-all shadow-sm" title="New Series">
-              <Plus size={18} />
-            </button>
+    <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans">
+      <Header
+        title="Series Creator"
+        icon={BookOpen}
+        fullWidth
+        actions={
+          <button onClick={createNewSeries} className="flex items-center space-x-2 bg-brand text-white px-3 py-1.5 rounded-md hover:bg-brand-600 transition-all shadow-sm text-sm" title="New Series">
+            <Plus size={16} />
+            <span>New Series</span>
+          </button>
+        }
+      />
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar - File List */}
+        <div className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-10">
+          <div className="flex-1 overflow-y-auto pt-2">
+            {seriesList.map(file => (
+              <div
+                key={file}
+                onClick={() => loadSeries(file)}
+                className={`px-4 py-3 cursor-pointer border-l-4 transition-colors text-sm ${selectedFile === file ? 'bg-brand-50 border-brand text-brand font-medium' : 'border-transparent text-gray-600 hover:bg-gray-50'}`}
+              >
+                <div className="flex items-center space-x-2">
+                  <FileText size={14} className={selectedFile === file ? "text-brand" : "text-gray-400"} />
+                  <span className="truncate">{file}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          {seriesList.map(file => (
-            <div
-              key={file}
-              onClick={() => loadSeries(file)}
-              className={`px-4 py-3 cursor-pointer border-l-4 transition-colors text-sm ${selectedFile === file ? 'bg-brand-50 border-brand text-brand font-medium' : 'border-transparent text-gray-600 hover:bg-gray-50'}`}
-            >
-              <div className="flex items-center space-x-2">
-                <FileText size={14} className={selectedFile === file ? "text-brand" : "text-gray-400"} />
-                <span className="truncate">{file}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {bibleSeries ? (
-          <div className="max-w-5xl mx-auto p-8 pb-20">
-            <div className="flex justify-between items-center mb-8 sticky top-0 bg-gray-50/95 backdrop-blur py-4 z-10 border-b border-gray-200/50">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {bibleSeries.title || 'Untitled Series'}
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">{selectedFile}</p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-xs text-gray-400 px-2">{loading ? 'Loading...' : ''}</span>
-                <button
-                  onClick={handleDownloadJson}
-                  className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all shadow-sm hover:shadow active:scale-95"
-                  title="Download JSON"
-                >
-                  <Download size={18} />
-                  <span>Download JSON</span>
-                </button>
-                <button
-                  onClick={saveSeries}
-                  className="flex items-center space-x-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-600 transition-all shadow-sm hover:shadow active:scale-95"
-                >
-                  <Save size={18} />
-                  <span>Save Changes</span>
-                </button>
-              </div>
-            </div>
-
-            <SeriesForm
-              data={bibleSeries}
-              onChange={setBibleSeries}
-            />
-
-            <div className="mt-8">
-              <div className="flex justify-between items-end mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Content Schedule</h2>
-                <button
-                  onClick={handleAddNewContent}
-                  className="flex items-center space-x-1 text-sm font-medium text-brand hover:bg-brand-50 px-3 py-1.5 rounded-md transition-colors"
-                >
-                  <Plus size={16} />
-                  <span>Add Content</span>
-                </button>
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {bibleSeries ? (
+            <div className="max-w-5xl mx-auto p-8 pb-20">
+              <div className="flex justify-between items-center mb-8 sticky top-0 bg-gray-50/95 backdrop-blur py-4 z-10 border-b border-gray-200/50">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {bibleSeries.title || 'Untitled Series'}
+                  </h1>
+                  <p className="text-sm text-gray-500 mt-1">{selectedFile}</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-xs text-gray-400 px-2">{loading ? 'Loading...' : ''}</span>
+                  <button
+                    onClick={handleDownloadJson}
+                    className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all shadow-sm hover:shadow active:scale-95"
+                    title="Download JSON"
+                  >
+                    <Download size={18} />
+                    <span>Download JSON</span>
+                  </button>
+                  <button
+                    onClick={saveSeries}
+                    className="flex items-center space-x-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-600 transition-all shadow-sm hover:shadow active:scale-95"
+                  >
+                    <Save size={18} />
+                    <span>Save Changes</span>
+                  </button>
+                </div>
               </div>
 
-              <ContentList
-                content={seriesContent}
-                onSelect={handleEditContent}
-                onDelete={handleDeleteContent}
-                onMove={handleMoveContent}
+              <SeriesForm
+                data={bibleSeries}
+                onChange={setBibleSeries}
               />
+
+              <div className="mt-8">
+                <div className="flex justify-between items-end mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">Content Schedule</h2>
+                  <button
+                    onClick={handleAddNewContent}
+                    className="flex items-center space-x-1 text-sm font-medium text-brand hover:bg-brand-50 px-3 py-1.5 rounded-md transition-colors"
+                  >
+                    <Plus size={16} />
+                    <span>Add Content</span>
+                  </button>
+                </div>
+
+                <ContentList
+                  content={seriesContent}
+                  onSelect={handleEditContent}
+                  onDelete={handleDeleteContent}
+                  onMove={handleMoveContent}
+                />
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="h-full flex flex-col items-center justify-center text-gray-400">
-            <div className="p-6 bg-white rounded-full mb-4 shadow-sm">
-              <FileText size={48} className="text-gray-300" />
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+              <div className="p-6 bg-white rounded-full mb-4 shadow-sm">
+                <FileText size={48} className="text-gray-300" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-600">No Series Selected</h3>
+              <p className="text-sm">Select a file from the sidebar or create a new series.</p>
             </div>
-            <h3 className="text-lg font-medium text-gray-600">No Series Selected</h3>
-            <p className="text-sm">Select a file from the sidebar or create a new series.</p>
-          </div>
+          )}
+        </div>
+
+        {/* Overlays */}
+        {editingIndex !== null && (
+          <EngagementEditor
+            entry={editingEntry}
+            onChange={setEditingEntry}
+            onCancel={() => setEditingIndex(null)}
+            onSave={handleSaveEditor}
+            onAddScripture={handleOpenScripturePicker} // Passed down prop
+          />
+        )}
+
+        {showScripturePicker && (
+          <ScripturePicker
+            nivData={nivData}
+            onSelect={handleScriptureSelected}
+            onCancel={() => setShowScripturePicker(false)}
+          />
         )}
       </div>
-
-      {/* Overlays */}
-      {editingIndex !== null && (
-        <EngagementEditor
-          entry={editingEntry}
-          onChange={setEditingEntry}
-          onCancel={() => setEditingIndex(null)}
-          onSave={handleSaveEditor}
-          onAddScripture={handleOpenScripturePicker} // Passed down prop
-        />
-      )}
-
-      {showScripturePicker && (
-        <ScripturePicker
-          nivData={nivData}
-          onSelect={handleScriptureSelected}
-          onCancel={() => setShowScripturePicker(false)}
-        />
-      )}
     </div>
   );
 }
