@@ -32,6 +32,40 @@ export class DataFetchingService {
         }
     }
 
+    async getPrayerRequestCount(fromDate) {
+        try {
+            let query = this.firestore.collection('prayer_requests');
+            if (fromDate) {
+                const dateObj = new Date(fromDate);
+                if (!isNaN(dateObj)) {
+                    query = query.where('date', '>=', dateObj);
+                }
+            }
+            const snapshot = await query.count().get();
+            return snapshot.data().count;
+        } catch (error) {
+            console.error("Error fetching prayer request count:", error);
+            return 0;
+        }
+    }
+
+    async getTestimonyCount(fromDate) {
+        try {
+            let query = this.firestore.collection('testimonies');
+            if (fromDate) {
+                const dateObj = new Date(fromDate);
+                if (!isNaN(dateObj)) {
+                    query = query.where('date', '>=', dateObj);
+                }
+            }
+            const snapshot = await query.count().get();
+            return snapshot.data().count;
+        } catch (error) {
+            console.error("Error fetching testimony count:", error);
+            return 0;
+        }
+    }
+
     async getEngagementCountByType(series_id) {
         const result = new Map();
         const contentTypeMapping = new Map();
@@ -39,6 +73,7 @@ export class DataFetchingService {
             .collection('bible_series')
             .doc(series_id)
             .collection('series_content')
+            .select('content_type')
             .get();
         seriesContentSnapshot.docs.forEach(doc => {
             const type = doc.data().content_type;
@@ -48,6 +83,7 @@ export class DataFetchingService {
         const completionsSnapshot = await this.firestore
             .collection('completions')
             .where('series_id', '==', series_id)
+            .select('content_id')
             .get();
         completionsSnapshot.forEach(doc => {
             const data = doc.data();
@@ -68,6 +104,7 @@ export class DataFetchingService {
         const completionsSnapshot = await this.firestore
             .collection('completions')
             .where('series_id', '==', series_id)
+            .select('user_id')
             .get();
         completionsSnapshot.forEach(doc => {
             const data = doc.data();
@@ -84,6 +121,7 @@ export class DataFetchingService {
 
         const progressSnapshot = await this.firestore
             .collection('achievements')
+            .select('series_progress')
             .get();
 
         progressSnapshot.forEach(doc => {

@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './components/Header';
-import { ArrowLeft, BarChart3, MessageSquare, Heart, RefreshCw } from 'lucide-react';
+import { ArrowLeft, BarChart3, MessageSquare, Heart, RefreshCw, Users } from 'lucide-react';
 
 export default function Stats() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const [dateFilter, setDateFilter] = useState('');
+
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const res = await fetch('/api/stats');
+            const queryParams = new URLSearchParams();
+            if (dateFilter) queryParams.append('from', dateFilter);
+
+            const res = await fetch(`/api/stats?${queryParams.toString()}`);
             if (!res.ok) throw new Error('Failed to fetch stats');
             const data = await res.json();
             setStats(data);
@@ -24,7 +29,7 @@ export default function Stats() {
 
     useEffect(() => {
         fetchStats();
-    }, []);
+    }, [dateFilter]);
 
     // Process histogram data
     // Buckets: 0-10, 10-20, ..., 90-100
@@ -70,6 +75,62 @@ export default function Stats() {
                     </div>
                 ) : (
                     <div className="space-y-8">
+
+
+                        {/* KPI Cards */}
+                        <div className="flex justify-end mb-2">
+                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+                                <span className="text-sm text-gray-500 font-medium">Filter from:</span>
+                                <input
+                                    type="date"
+                                    value={dateFilter}
+                                    onChange={(e) => setDateFilter(e.target.value)}
+                                    className="text-sm border-none focus:ring-0 text-gray-700 bg-transparent p-0"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+                                <div className="p-4 bg-green-50 text-green-500 rounded-full">
+                                    <Users size={32} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">Total Users</p>
+                                    {loading ? (
+                                        <div className="h-8 w-24 bg-gray-200 rounded animate-pulse mt-1"></div>
+                                    ) : (
+                                        <h2 className="text-3xl font-bold text-gray-900">{stats?.totalUsers || 0}</h2>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+                                <div className="p-4 bg-red-50 text-red-500 rounded-full">
+                                    <Heart size={32} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">Prayer Requests</p>
+                                    {loading ? (
+                                        <div className="h-8 w-24 bg-gray-200 rounded animate-pulse mt-1"></div>
+                                    ) : (
+                                        <h2 className="text-3xl font-bold text-gray-900">{stats?.prayerRequests || 0}</h2>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+                                <div className="p-4 bg-blue-50 text-blue-500 rounded-full">
+                                    <MessageSquare size={32} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">Testimonies</p>
+                                    {loading ? (
+                                        <div className="h-8 w-24 bg-gray-200 rounded animate-pulse mt-1"></div>
+                                    ) : (
+                                        <h2 className="text-3xl font-bold text-gray-900">{stats?.testimonies || 0}</h2>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Current Series Header */}
                         {stats?.currentSeries && (
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
@@ -79,28 +140,6 @@ export default function Stats() {
                                 </div>
                             </div>
                         )}
-
-                        {/* KPI Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
-                                <div className="p-4 bg-red-50 text-red-500 rounded-full">
-                                    <Heart size={32} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Prayer Requests</p>
-                                    <h2 className="text-3xl font-bold text-gray-900">{stats?.prayerRequests || 0}</h2>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
-                                <div className="p-4 bg-blue-50 text-blue-500 rounded-full">
-                                    <MessageSquare size={32} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Testimonies</p>
-                                    <h2 className="text-3xl font-bold text-gray-900">{stats?.testimonies || 0}</h2>
-                                </div>
-                            </div>
-                        </div>
 
                         {/* Current Series Engagement */}
                         {stats?.currentSeries && (

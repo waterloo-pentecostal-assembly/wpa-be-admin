@@ -5,6 +5,7 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
 import { DataFetchingService } from './src/services/dataFetchingService.js';
+import { UserManagerService } from './src/services/userManagerService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,7 +62,9 @@ try {
 }
 
 const db = admin.apps.length ? admin.firestore() : null;
+const auth = admin.apps.length ? admin.auth() : null;
 const dataFetchingService = db ? new DataFetchingService(db) : null;
+const userManagerService = db && auth ? new UserManagerService(db, auth) : null;
 
 app.use(cors());
 app.use(express.json());
@@ -119,10 +122,13 @@ app.get('/api/stats', async (req, res) => {
     }
 
     try {
-        const [prayerRequestsSnapshot, testimoniesSnapshot, progressData] = await Promise.all([
-            db.collection('prayer_requests').get(),
-            db.collection('testimonies').get(),
-            dataFetchingService.getProgressData()
+        const { from } = req.query;
+
+        const [prayerRequestsCount, testimoniesCount, progressData, totalUsersCount] = await Promise.all([
+            dataFetchingService.getPrayerRequestCount(from),
+            dataFetchingService.getTestimonyCount(from),
+            dataFetchingService.getProgressData(),
+            userManagerService.getAllUsersAfterDate(from ? new Date(from) : new Date(0))
         ]);
 
         // Fetch current series data
@@ -143,8 +149,9 @@ app.get('/api/stats', async (req, res) => {
         }
 
         res.json({
-            prayerRequests: prayerRequestsSnapshot.size,
-            testimonies: testimoniesSnapshot.size,
+            prayerRequests: prayerRequestsCount,
+            testimonies: testimoniesCount,
+            totalUsers: totalUsersCount,
             progress: progressData,
             currentSeries: currentSeriesStats
         });

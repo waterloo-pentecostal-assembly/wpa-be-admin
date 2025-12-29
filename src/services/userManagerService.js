@@ -1,8 +1,7 @@
 // See https://firebase.google.com/docs/auth/admin/manage-users#update_a_user
 /** @typedef {import("@google-cloud/firestore").Firestore} Firestore */
 /** @typedef {import("@google-cloud/firestore").Firestore} Auth */
-
-class UserManagerService {
+export class UserManagerService {
     /**
      * @param {Firestore} firestore 
      * @param {Auth} auth 
@@ -77,21 +76,18 @@ class UserManagerService {
 
     async getAllUsersAfterDate(date) {
         let nextToken = undefined;
-        let allCount = 0;
         let afterDateCount = 0;
         do {
             const result = await this.auth.listUsers(1000, nextToken)
             nextToken = result.pageToken;
-            console.log(">>", nextToken);
-            result['users'].forEach((user)=>{
-                allCount += 1;
+            result['users'].forEach((user) => {
                 const creationTime = new Date(user.metadata.creationTime);
-                if (creationTime>=date){
-                    afterDateCount+=1;
+                if (creationTime >= date) {
+                    afterDateCount += 1;
                 }
             });
         } while (nextToken != undefined)
-        console.log('Total users: ', allCount, ', Users after ', date, ': ', afterDateCount); 
+        return afterDateCount;
     }
 
     async getActiveUsersBetweenDates(date_start, date_end) {
@@ -118,28 +114,24 @@ class UserManagerService {
         completionsSnapshot.forEach(doc => {
             const data = doc.data();
             const user_id = data.user_id;
-            count+=1;
+            count += 1;
             console.log(user_id, count);
             users.add(user_id);
         });
         prayerRequestSnapshot.forEach(doc => {
             const data = doc.data();
             const user_id = data.user_id;
-            count+=1;
+            count += 1;
             console.log(user_id, count);
             users.add(user_id);
         });
         testimoniesSnapshot.forEach(doc => {
             const data = doc.data();
             const user_id = data.user_id;
-            count+=1;
+            count += 1;
             console.log(user_id, count);
             users.add(user_id);
         });
-        console.log('Total active users: ', users.size); 
+        console.log('Total active users: ', users.size);
     }
 }
-
-module.exports = {
-    UserManagerService
-};
