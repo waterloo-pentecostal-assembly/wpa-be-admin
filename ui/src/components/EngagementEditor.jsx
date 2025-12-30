@@ -63,6 +63,9 @@ const EngagementEditor = ({ entry, onChange, onCancel, onSave, onAddScripture, l
                                 <option value="reflect">Reflect</option>
                                 <option value="prayer">Prayer</option>
                                 <option value="listen">Listen</option>
+                                <option value="devotional">Devotional</option>
+                                <option value="scribe">Scribe</option>
+                                <option value="draw">Draw</option>
                                 <option value="memorize">Memorize</option>
                             </select>
                         </div>
@@ -77,6 +80,7 @@ const EngagementEditor = ({ entry, onChange, onCancel, onSave, onAddScripture, l
                                 <button onClick={() => addBodyBlock('scripture')} className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-700">+ Scripture</button>
                                 <button onClick={() => addBodyBlock('question')} className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-700">+ Question</button>
                                 <button onClick={() => addBodyBlock('link')} className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-700">+ Link</button>
+                                <button onClick={() => addBodyBlock('image_input')} className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-700">+ Image Input</button>
                             </div>
                         </div>
 

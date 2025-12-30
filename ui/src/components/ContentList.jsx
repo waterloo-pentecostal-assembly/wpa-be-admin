@@ -18,6 +18,9 @@ const ContentList = ({ content, onSelect, onDelete, onMove }) => {
             case 'reflect': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
             case 'prayer': return 'bg-purple-100 text-purple-800 border-purple-200';
             case 'listen': return 'bg-blue-50 text-brand border-blue-200';
+            case 'devotional': return 'bg-orange-100 text-orange-800 border-orange-200';
+            case 'scribe': return 'bg-teal-100 text-teal-800 border-teal-200';
+            case 'draw': return 'bg-pink-100 text-pink-800 border-pink-200';
             default: return 'bg-gray-100 text-gray-800 border-gray-200';
         }
     };
