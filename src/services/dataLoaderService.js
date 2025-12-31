@@ -1,6 +1,7 @@
-const { DateTime } = require('luxon');
+import { DateTime } from 'luxon';
+import admin from 'firebase-admin';
 
-const Timestamp = require("firebase-admin").firestore.Timestamp;
+const Timestamp = admin.firestore.Timestamp;
 
 function sleep(ms) {
     return new Promise((resolve) => {
@@ -10,7 +11,7 @@ function sleep(ms) {
 
 // TODO: make this more robust. e.g. check for data duplication 
 
-class DataLoaderService {
+export class DataLoaderService {
     constructor(firestore) {
         this.firestore = firestore;
     }
@@ -42,18 +43,18 @@ class DataLoaderService {
 
                     // Convert date from string to millis with America/Toronto timezone
                     const contentDate = DateTime
-                    .fromFormat(data[i].date, 'yyyy-MM-dd', { zone: 'America/Toronto' })
-                    .toMillis();
-                    
+                        .fromFormat(data[i].date, 'yyyy-MM-dd', { zone: 'America/Toronto' })
+                        .toMillis();
+
                     const contentFirebaseTimestamp = Timestamp.fromMillis(contentDate);
                     data[i].date = contentFirebaseTimestamp;
-                    
+
                     // eslint-disable-next-line no-await-in-loop
                     await this.firestore
-                    .collection('bible_series')
-                    .doc(bibleSeriesId)
-                    .collection('series_content')
-                    .add(data[i]);
+                        .collection('bible_series')
+                        .doc(bibleSeriesId)
+                        .collection('series_content')
+                        .add(data[i]);
                     // eslint-disable-next-line no-await-in-loop
                     await sleep(2000);
                 } catch (e) {
@@ -65,7 +66,3 @@ class DataLoaderService {
         }
     }
 }
-
-module.exports = {
-    DataLoaderService
-};

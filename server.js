@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
 import { DataFetchingService } from './src/services/dataFetchingService.js';
 import { UserManagerService } from './src/services/userManagerService.js';
+import { DataLoaderService } from './src/services/dataLoaderService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,6 +66,7 @@ const db = admin.apps.length ? admin.firestore() : null;
 const auth = admin.apps.length ? admin.auth() : null;
 const dataFetchingService = db ? new DataFetchingService(db) : null;
 const userManagerService = db && auth ? new UserManagerService(db, auth) : null;
+const dataLoaderService = db ? new DataLoaderService(db) : null;
 
 app.use(cors());
 app.use(express.json());
@@ -216,6 +218,34 @@ app.post('/api/series', (req, res) => {
         fs.writeFileSync(filepath, JSON.stringify(content, null, 4));
         res.json({ success: true, filename: safeFilename });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Upload Series to Firebase
+app.post('/api/series/upload', async (req, res) => {
+    if (!dataLoaderService) {
+        return res.status(503).json({ error: 'Database service not available' });
+    }
+
+    try {
+        const { bible_series, series_content } = req.body;
+
+        if (!bible_series || !series_content) {
+            return res.status(400).json({ error: 'bible_series and series_content are required' });
+        }
+
+        console.log("Uploading series:", bible_series.title);
+        const bibleSeriesId = await dataLoaderService.loadBibleSeries(bible_series);
+        console.log("Series uploaded with ID:", bibleSeriesId);
+
+        console.log("Uploading content for series:", bibleSeriesId);
+        await dataLoaderService.loadSeriesContent(series_content, bibleSeriesId);
+        console.log("Content uploaded successfully");
+
+        res.json({ success: true, seriesId: bibleSeriesId });
+    } catch (error) {
+        console.error("Error uploading series:", error);
         res.status(500).json({ error: error.message });
     }
 });

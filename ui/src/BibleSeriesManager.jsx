@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen } from 'lucide-react';
+import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen, CloudUpload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from './components/Header';
 import SeriesForm from './components/SeriesForm';
 import ContentList from './components/ContentList';
 import EngagementEditor from './components/EngagementEditor';
 import ScripturePicker from './components/ScripturePicker';
+import ConfirmModal from './components/ConfirmModal';
 
 function BibleSeriesManager() {
   const [seriesList, setSeriesList] = useState([]);
@@ -20,6 +21,9 @@ function BibleSeriesManager() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [showScripturePicker, setShowScripturePicker] = useState(false);
   const [activeScriptureBlockIndex, setActiveScriptureBlockIndex] = useState(null);
+
+  // Modal State
+  const [showUploadConfirm, setShowUploadConfirm] = useState(false);
 
   useEffect(() => {
     fetchSeriesList();
@@ -135,6 +139,48 @@ function BibleSeriesManager() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  // Trigger the modal
+  const handleUploadClick = () => {
+    if (!bibleSeries) return;
+    setShowUploadConfirm(true);
+  };
+
+  // Actual upload logic
+  const handleConfirmUpload = async () => {
+    setShowUploadConfirm(false);
+    setLoading(true);
+    try {
+      const sortedContent = [...seriesContent].sort((a, b) => {
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return new Date(a.date) - new Date(b.date);
+      });
+
+      const payload = {
+        bible_series: bibleSeries,
+        series_content: sortedContent
+      };
+
+      const res = await fetch('/api/series/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      alert(`Successfully uploaded series! ID: ${result.seriesId}`);
+    } catch (err) {
+      alert('Error uploading to Firebase: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Content List Actions
@@ -253,6 +299,14 @@ function BibleSeriesManager() {
                     <Save size={18} />
                     <span>Save Changes</span>
                   </button>
+                  <button
+                    onClick={handleUploadClick}
+                    className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all shadow-sm hover:shadow active:scale-95"
+                    title="Upload to Firebase"
+                  >
+                    <CloudUpload size={18} />
+                    <span>Upload to Firebase</span>
+                  </button>
                 </div>
               </div>
 
@@ -308,6 +362,17 @@ function BibleSeriesManager() {
             nivData={nivData}
             onSelect={handleScriptureSelected}
             onCancel={() => setShowScripturePicker(false)}
+          />
+        )}
+
+        {showUploadConfirm && (
+          <ConfirmModal
+            title="Confirm Upload"
+            message="This data will be duplicated in Firebase if it already exists, would you like to proceed?"
+            onConfirm={handleConfirmUpload}
+            onCancel={() => setShowUploadConfirm(false)}
+            confirmText="Proceed"
+            isDangerous={false} // Orange warning feels appropriate for duplication, not destruction
           />
         )}
       </div>
