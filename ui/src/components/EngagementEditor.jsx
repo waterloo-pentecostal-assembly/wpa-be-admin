@@ -156,13 +156,33 @@ const EngagementEditor = ({ entry, onChange, onCancel, onSave, onAddScripture, l
                                             <div className="bg-gray-50 p-4 rounded text-center border border-dashed border-gray-300">
                                                 <div className="mb-3 space-y-1">
                                                     {(block.scriptures || []).map((s, sIdx) => (
-                                                        <div key={sIdx} className="text-sm bg-white border px-2 py-1 rounded shadow-sm text-left">
-                                                            <strong>{s.book} {s.chapter}</strong>: {Object.keys(s.verses).join(', ')} ...
+                                                        <div key={sIdx} className="text-sm bg-white border px-2 py-1 rounded shadow-sm flex justify-between items-center group/item">
+                                                            <span><strong>{s.book} {s.chapter}</strong>: {Object.keys(s.verses).join(', ')} ...</span>
+                                                            <div className="flex space-x-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                                                <button
+                                                                    onClick={() => onAddScripture(idx, sIdx)} // Pass sIdx to indicate editing existing
+                                                                    className="p-1 text-gray-400 hover:text-brand hover:bg-brand-50 rounded"
+                                                                    title="Edit"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const newBody = [...entry.body];
+                                                                        newBody[idx].scriptures.splice(sIdx, 1);
+                                                                        onChange({ ...entry, body: newBody });
+                                                                    }}
+                                                                    className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded"
+                                                                    title="Delete"
+                                                                >
+                                                                    <X size={14} />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
                                                 <button
-                                                    onClick={() => onAddScripture(idx)}
+                                                    onClick={() => onAddScripture(idx, null)}
                                                     className="text-sm text-brand hover:underline flex items-center justify-center space-x-1 mx-auto"
                                                 >
                                                     <Plus size={14} />

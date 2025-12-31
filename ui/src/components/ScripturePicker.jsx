@@ -1,18 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 
-const ScripturePicker = ({ nivData, onSelect, onCancel }) => {
+const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
     const [selectedBook, setSelectedBook] = useState(null);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [selectedVerses, setSelectedVerses] = useState({}); // { verseNum: text }
 
-    // Reset downstream selections when upstream changes
+    // Initialize state from initialSelection if provided
     useEffect(() => {
+        if (initialSelection && nivData) {
+            setSelectedBook(initialSelection.book);
+            setSelectedChapter(initialSelection.chapter);
+            setSelectedVerses(initialSelection.verses || {});
+        } else if (!initialSelection) {
+            // Reset if opening fresh
+            setSelectedBook(null);
+            setSelectedChapter(null);
+            setSelectedVerses({});
+        }
+    }, [initialSelection, nivData]);
+
+    // Reset downstream selections when upstream changes
+    // We only reset if the change didn't come from the initialization
+    useEffect(() => {
+        if (initialSelection && selectedBook === initialSelection.book) {
+            // Book matches initial, preserve chapter unless user explicitly changed it?
+            // If user changes book, selectedBook !== initialSelection.book (unless they pick the same one).
+            return;
+        }
         setSelectedChapter(null);
         setSelectedVerses({});
     }, [selectedBook]);
 
     useEffect(() => {
+        if (initialSelection && selectedChapter === initialSelection.chapter && selectedBook === initialSelection.book) {
+            return;
+        }
         setSelectedVerses({});
     }, [selectedChapter]);
 
@@ -44,6 +67,19 @@ const ScripturePicker = ({ nivData, onSelect, onCancel }) => {
             title: '', // Optional
             verses: sortedVerses
         });
+    };
+
+    const toggleSelectAll = () => {
+        if (!selectedBook || !selectedChapter || !verses) return;
+
+        const allVerseNums = Object.keys(verses);
+        const allSelected = allVerseNums.every(v => selectedVerses[v]);
+
+        if (allSelected) {
+            setSelectedVerses({});
+        } else {
+            setSelectedVerses(verses);
+        }
     };
 
     return (
@@ -94,7 +130,17 @@ const ScripturePicker = ({ nivData, onSelect, onCancel }) => {
 
                     {/* Verses */}
                     <div className="flex-1 overflow-y-auto p-4">
-                        <h4 className="font-semibold text-xs text-gray-500 uppercase mb-2">Verses</h4>
+                        <div className="flex justify-between items-center mb-2">
+                            <h4 className="font-semibold text-xs text-gray-500 uppercase">Verses</h4>
+                            {selectedBook && selectedChapter && (
+                                <button
+                                    onClick={toggleSelectAll}
+                                    className="text-xs text-brand hover:underline font-medium"
+                                >
+                                    {Object.keys(verses).every(v => selectedVerses[v]) ? 'Deselect All' : 'Select All'}
+                                </button>
+                            )}
+                        </div>
                         {selectedBook && selectedChapter ? (
                             <div className="grid grid-cols-1 gap-1">
                                 {Object.entries(verses).map(([vNum, text]) => (

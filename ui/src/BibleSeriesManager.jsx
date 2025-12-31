@@ -21,8 +21,46 @@ function BibleSeriesManager() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [showScripturePicker, setShowScripturePicker] = useState(false);
   const [activeScriptureBlockIndex, setActiveScriptureBlockIndex] = useState(null);
+  const [editingScriptureIndex, setEditingScriptureIndex] = useState(null); // null = adding new
+  const [pickerInitialSelection, setPickerInitialSelection] = useState(null);
 
-  // Modal State
+  // ... (rest of code) ...
+
+  const handleOpenScripturePicker = (blockIndex, scriptureIndex = null) => {
+    setActiveScriptureBlockIndex(blockIndex);
+    setEditingScriptureIndex(scriptureIndex);
+
+    // If editing existing, pass data to picker
+    if (scriptureIndex !== null) {
+      const block = editingEntry.body[blockIndex];
+      const scripture = block.scriptures[scriptureIndex];
+      setPickerInitialSelection(scripture);
+    } else {
+      setPickerInitialSelection(null);
+    }
+
+    setShowScripturePicker(true);
+  };
+
+  const handleScriptureSelected = (scriptureData) => {
+    const newEntry = { ...editingEntry };
+    const block = newEntry.body[activeScriptureBlockIndex];
+    if (!block.scriptures) block.scriptures = [];
+
+    if (editingScriptureIndex !== null) {
+      // Update existing
+      block.scriptures[editingScriptureIndex] = scriptureData;
+    } else {
+      // Add new
+      block.scriptures.push(scriptureData);
+    }
+
+    setEditingEntry(newEntry);
+    setShowScripturePicker(false);
+    setActiveScriptureBlockIndex(null);
+    setEditingScriptureIndex(null);
+    setPickerInitialSelection(null);
+  };
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
 
   useEffect(() => {
@@ -224,20 +262,7 @@ function BibleSeriesManager() {
     setEditingEntry(null);
   };
 
-  const handleOpenScripturePicker = (blockIndex) => {
-    setActiveScriptureBlockIndex(blockIndex);
-    setShowScripturePicker(true);
-  };
 
-  const handleScriptureSelected = (scriptureData) => {
-    const newEntry = { ...editingEntry };
-    const block = newEntry.body[activeScriptureBlockIndex];
-    if (!block.scriptures) block.scriptures = [];
-    block.scriptures.push(scriptureData);
-    setEditingEntry(newEntry);
-    setShowScripturePicker(false);
-    setActiveScriptureBlockIndex(null);
-  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans">
@@ -362,6 +387,7 @@ function BibleSeriesManager() {
             nivData={nivData}
             onSelect={handleScriptureSelected}
             onCancel={() => setShowScripturePicker(false)}
+            initialSelection={pickerInitialSelection}
           />
         )}
 
