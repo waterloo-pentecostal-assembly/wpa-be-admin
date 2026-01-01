@@ -157,7 +157,10 @@ const EngagementEditor = ({ entry, onChange, onCancel, onSave, onAddScripture, l
                                                 <div className="mb-3 space-y-1">
                                                     {(block.scriptures || []).map((s, sIdx) => (
                                                         <div key={sIdx} className="text-sm bg-white border px-2 py-1 rounded shadow-sm flex justify-between items-center group/item">
-                                                            <span><strong>{s.book} {s.chapter}</strong>: {Object.keys(s.verses).join(', ')} ...</span>
+                                                            <span>
+                                                                {s.title && <span className="font-semibold text-brand mr-2 block">{s.title}</span>}
+                                                                <strong>{s.book} {s.chapter}</strong>: {Object.keys(s.verses).join(', ')} ...
+                                                            </span>
                                                             <div className="flex space-x-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                                                                 <button
                                                                     onClick={() => onAddScripture(idx, sIdx)} // Pass sIdx to indicate editing existing

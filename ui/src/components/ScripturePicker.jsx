@@ -5,6 +5,7 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
     const [selectedBook, setSelectedBook] = useState(null);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [selectedVerses, setSelectedVerses] = useState({}); // { verseNum: text }
+    const [title, setTitle] = useState('');
 
     // Initialize state from initialSelection if provided
     useEffect(() => {
@@ -12,11 +13,13 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
             setSelectedBook(initialSelection.book);
             setSelectedChapter(initialSelection.chapter);
             setSelectedVerses(initialSelection.verses || {});
+            setTitle(initialSelection.title || '');
         } else if (!initialSelection) {
             // Reset if opening fresh
             setSelectedBook(null);
             setSelectedChapter(null);
             setSelectedVerses({});
+            setTitle('');
         }
     }, [initialSelection, nivData]);
 
@@ -39,9 +42,37 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
         setSelectedVerses({});
     }, [selectedChapter]);
 
+    const [lastClickedVerse, setLastClickedVerse] = useState(null);
+
+    // Reset last clicked when chapter changes
+    useEffect(() => {
+        setLastClickedVerse(null);
+    }, [selectedChapter]);
+
     const books = nivData ? Object.keys(nivData) : [];
     const chapters = selectedBook && nivData ? Object.keys(nivData[selectedBook]) : [];
     const verses = selectedBook && selectedChapter && nivData ? nivData[selectedBook][selectedChapter] : {};
+
+    const handleVerseClick = (vNum, text, e) => {
+        if (e.shiftKey && lastClickedVerse !== null) {
+            const start = Math.min(lastClickedVerse, parseInt(vNum));
+            const end = Math.max(lastClickedVerse, parseInt(vNum));
+
+            const newVerses = { ...selectedVerses };
+
+            // Add all verses in range
+            Object.entries(verses).forEach(([key, val]) => {
+                const kInt = parseInt(key);
+                if (kInt >= start && kInt <= end) {
+                    newVerses[key] = val;
+                }
+            });
+            setSelectedVerses(newVerses);
+        } else {
+            toggleVerse(vNum, text);
+            setLastClickedVerse(parseInt(vNum));
+        }
+    };
 
     const toggleVerse = (verseNum, text) => {
         const newVerses = { ...selectedVerses };
@@ -64,7 +95,7 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
         onSelect({
             book: selectedBook,
             chapter: selectedChapter,
-            title: '', // Optional
+            title: title,
             verses: sortedVerses
         });
     };
@@ -85,9 +116,18 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
     return (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-8">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[80vh] flex flex-col">
-                <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                    <h3 className="font-bold text-lg">Select Scripture</h3>
-                    <div className="space-x-2">
+                <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl gap-4">
+                    <h3 className="font-bold text-lg whitespace-nowrap">Select Scripture</h3>
+
+                    <input
+                        type="text"
+                        placeholder="Title (Optional, e.g. 'The Parable of the Sower')"
+                        className="flex-1 p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                    />
+
+                    <div className="space-x-2 flex-shrink-0">
                         <button onClick={onCancel} className="px-3 py-1 text-gray-600 hover:bg-gray-200 rounded">Cancel</button>
                         <button
                             onClick={handleConfirm}
