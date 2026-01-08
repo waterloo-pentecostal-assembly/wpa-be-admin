@@ -1,7 +1,7 @@
-const inquirer = require('inquirer');
-const ora = require('ora');
+import inquirer from 'inquirer';
+import ora from 'ora';
 
-class DevHelpersCli {
+export class DevHelpersCli {
 
     constructor(userManagerService, env) {
         this.userManagerService = userManagerService;
@@ -114,7 +114,3 @@ class DevHelpersCli {
         }
     }
 }
-
-module.exports = {
-    DevHelpersCli,
-};

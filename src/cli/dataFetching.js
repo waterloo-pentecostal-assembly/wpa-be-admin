@@ -1,10 +1,13 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import inquirer from 'inquirer';
+import ora from 'ora';
 
-const inquirer = require('inquirer');
-const ora = require('ora');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-class DataFetchingCli {
+export class DataFetchingCli {
     /**
      * @param {import('../services/dataFetchingService').DataFetchingService} dataFetchingService 
      */
@@ -52,7 +55,3 @@ class DataFetchingCli {
         spinner.succeed();
     }
 }
-
-module.exports = {
-    DataFetchingCli
-};

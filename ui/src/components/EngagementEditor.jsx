@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Plus } from 'lucide-react';
 
-const EngagementEditor = ({ entry, onChange, onCancel, onSave, onAddScripture, loading }) => {
+const EngagementEditor = ({ entry, onChange, onCancel, onSave, onAddScripture }) => {
     // entry: { date, content_type, body: [] }
 
     // Helper to update top-level fields

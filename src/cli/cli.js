@@ -1,17 +1,17 @@
 // See https://www.twilio.com/blog/how-to-build-a-cli-with-node-js
 
-const inquirer = require('inquirer');
+import inquirer from 'inquirer';
 
-const { firestore, auth, env } = require('../index');
-const { DataLoaderCli } = require('./dataLoader');
-const { DataFetchingCli } = require('./dataFetching');
-const { DevHelpersCli } = require('./devHelpers');
-const { UserManagerCli } = require('./userManager');
-const { DataLoaderService } = require('../services/dataLoaderService');
-const { DataFetchingService } = require('../services/dataFetchingService');
-const { UserManagerService } = require('../services/userManagerService');
-const { DataDeletingService } = require('../services/dataDeletingService');
-const { DataManagerService } = require('../services/dataManagerService');
+import { firestore, auth, env } from '../index.js';
+import { DataLoaderCli } from './dataLoader.js';
+import { DataFetchingCli } from './dataFetching.js';
+import { DevHelpersCli } from './devHelpers.js';
+import { UserManagerCli } from './userManager.js';
+import { DataLoaderService } from '../services/dataLoaderService.js';
+import { DataFetchingService } from '../services/dataFetchingService.js';
+import { UserManagerService } from '../services/userManagerService.js';
+// import { DataDeletingService } from '../services/dataDeletingService.js';
+// import { DataManagerService } from '../services/dataManagerService.js';
 
 class AdminCli {
     constructor(dataLoaderCli, dataFetchingCli, devHelpersCli, userManagerCli) {
@@ -42,7 +42,7 @@ class AdminCli {
             }
         );
 
-        switch(option.option){
+        switch (option.option) {
             case userManagerOption:
                 await this.userManagerCli.run();
                 break;
@@ -75,9 +75,9 @@ class AdminCli {
 // Inject dependencies
 const dataLoaderService = new DataLoaderService(firestore);
 const dataFetchingService = new DataFetchingService(firestore);
-const dataManagerService = new DataManagerService(firestore);
+// const dataManagerService = new DataManagerService(firestore);
 const userManagerService = new UserManagerService(firestore, auth);
-const dataDeletingService = new DataDeletingService(firestore, auth);
+// const dataDeletingService = new DataDeletingService(firestore, auth);
 
 const dataLoaderCli = new DataLoaderCli(dataLoaderService);
 const dataFetchingCli = new DataFetchingCli(dataFetchingService);

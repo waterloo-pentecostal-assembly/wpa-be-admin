@@ -10,7 +10,7 @@ export default function Stats() {
 
     const [dateFilter, setDateFilter] = useState('');
 
-    const fetchStats = async () => {
+    const fetchStats = React.useCallback(async () => {
         try {
             setLoading(true);
             const queryParams = new URLSearchParams();
@@ -25,11 +25,11 @@ export default function Stats() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [dateFilter]);
 
     useEffect(() => {
         fetchStats();
-    }, [dateFilter]);
+    }, [fetchStats]);
 
     // Process histogram data
     // Buckets: 0-10, 10-20, ..., 90-100
@@ -159,7 +159,8 @@ export default function Stats() {
                                         const percentage = Math.round((count / max) * 100);
 
                                         // Format type label (e.g., "read" -> "Read")
-                                        const label = type.charAt(0).toUpperCase() + type.slice(1);
+                                        // Format type label (e.g., "read" -> "Read")
+                                        // const label = type.charAt(0).toUpperCase() + type.slice(1); // Unused
 
                                         return (
                                             <div key={type} className="flex items-center gap-4">

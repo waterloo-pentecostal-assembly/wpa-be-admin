@@ -1,3 +1,4 @@
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -7,6 +8,7 @@ import admin from 'firebase-admin';
 import { DataFetchingService } from './src/services/dataFetchingService.js';
 import { UserManagerService } from './src/services/userManagerService.js';
 import { DataLoaderService } from './src/services/dataLoaderService.js';
+import { NotificationTestingService } from './src/services/notificationTestingService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,59 +16,83 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3001;
 
-// Initialize Firebase Admin
-try {
-    let serviceAccount;
+// Global Service Variables
+let db = null;
+let auth = null;
+let dataFetchingService = null;
+let userManagerService = null;
+let dataLoaderService = null;
+let notificationTestingService = null;
+let currentEnv = 'prod'; // 'prod' or 'dev'
 
-    // 1. Try Render Secret File (Production)
-    const renderSecretPath = '/etc/secrets/service-account.json';
-    if (fs.existsSync(renderSecretPath)) {
-        try {
-            serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
-            console.log("Loaded Firebase credentials from Render Secret File");
-        } catch (e) {
-            console.error("Failed to parse Render Secret File", e);
+async function initializeFirebase(env = 'prod') {
+    try {
+        // If an app already exists, delete it
+        if (admin.apps.length) {
+            await admin.app().delete();
         }
-    }
 
-    // 2. Try Environment Variable (Fallback)
-    if (!serviceAccount && process.env.FIREBASE_SERVICE_ACCOUNT) {
-        try {
-            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-            console.log("Loaded Firebase credentials from Environment Variable");
-        } catch (e) {
-            console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var", e);
+        let serviceAccount;
+        const filename = env === 'dev' ? 'service-account-dev.json' : 'service-account.json';
+
+        // 1. Try Render Secret File (Production)
+        const renderSecretPath = `/etc/secrets/${filename}`;
+        if (fs.existsSync(renderSecretPath)) {
+            try {
+                serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
+                console.log(`Loaded Firebase ${env} credentials from Render Secret File`);
+            } catch (e) {
+                console.error("Failed to parse Render Secret File", e);
+            }
         }
-    }
 
-    // 2. Try Local File (Development)
-    if (!serviceAccount) {
-        const serviceAccountPath = path.join(__dirname, 'src', 'config', 'service-account.json');
-        if (fs.existsSync(serviceAccountPath)) {
-            serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-            console.log("Loaded Firebase credentials from local file");
+        // 2. Try Environment Variable (Fallback)
+        const envVarName = env === 'dev' ? 'FIREBASE_SERVICE_ACCOUNT_DEV' : 'FIREBASE_SERVICE_ACCOUNT';
+        if (!serviceAccount && process.env[envVarName]) {
+            try {
+                serviceAccount = JSON.parse(process.env[envVarName]);
+                console.log(`Loaded Firebase ${env} credentials from Environment Variable`);
+            } catch (e) {
+                console.error(`Failed to parse ${envVarName} env var`, e);
+            }
         }
-    }
 
-    if (serviceAccount) {
-        if (!admin.apps.length) {
+        // 3. Try Local File (Development)
+        if (!serviceAccount) {
+            const serviceAccountPath = path.join(__dirname, 'src', 'config', filename);
+            if (fs.existsSync(serviceAccountPath)) {
+                serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+                console.log(`Loaded Firebase ${env} credentials from local file: ${filename}`);
+            }
+        }
+
+        if (serviceAccount) {
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount)
             });
-            console.log("Firebase Admin Initialized");
+            console.log(`Firebase Admin Initialized (${env})`);
+
+            // Re-instantiate services
+            db = admin.firestore();
+            auth = admin.auth();
+            dataFetchingService = new DataFetchingService(db);
+            userManagerService = new UserManagerService(db, auth);
+            dataLoaderService = new DataLoaderService(db);
+            notificationTestingService = new NotificationTestingService(admin);
+            currentEnv = env;
+            return true;
+        } else {
+            console.warn(`No Firebase credentials found for ${env}. Stats API will fail.`);
+            return false;
         }
-    } else {
-        console.warn("No Firebase credentials found (File or Env). Stats API will fail.");
+    } catch (error) {
+        console.error("Failed to initialize Firebase Admin:", error);
+        return false;
     }
-} catch (error) {
-    console.error("Failed to initialize Firebase Admin:", error);
 }
 
-const db = admin.apps.length ? admin.firestore() : null;
-const auth = admin.apps.length ? admin.auth() : null;
-const dataFetchingService = db ? new DataFetchingService(db) : null;
-const userManagerService = db && auth ? new UserManagerService(db, auth) : null;
-const dataLoaderService = db ? new DataLoaderService(db) : null;
+// Initialize default (prod) on startup
+initializeFirebase('prod');
 
 app.use(cors());
 app.use(express.json());
@@ -247,6 +273,46 @@ app.post('/api/series/upload', async (req, res) => {
     } catch (error) {
         console.error("Error uploading series:", error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Send Test Notification
+app.post('/api/notifications/test', async (req, res) => {
+    try {
+        const { token, title, body, data } = req.body;
+        if (!token || !title || !body) {
+            return res.status(400).json({ error: 'Token, title, and body are required' });
+        }
+
+        if (!notificationTestingService) {
+            return res.status(503).json({ error: 'Notification service not available' });
+        }
+
+        const response = await notificationTestingService.sendTestNotification(token, title, body, data);
+        console.log('Successfully sent message:', response);
+        res.json({ success: true, messageId: response });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Environment Switching Endpoints
+app.get('/api/env/current', (req, res) => {
+    res.json({ env: currentEnv });
+});
+
+app.post('/api/env/switch', async (req, res) => {
+    const { env } = req.body;
+    if (env !== 'prod' && env !== 'dev') {
+        return res.status(400).json({ error: 'Invalid environment. Must be "prod" or "dev".' });
+    }
+
+    const success = await initializeFirebase(env);
+    if (success) {
+        res.json({ success: true, env: currentEnv });
+    } else {
+        res.status(500).json({ error: 'Failed to switch environment' });
     }
 });
 

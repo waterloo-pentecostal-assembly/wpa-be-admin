@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import EnvSwitcher from './EnvSwitcher';
 
 export default function Header({ title, icon: Icon, actions, fullWidth = false }) {
     return (
@@ -15,11 +16,14 @@ export default function Header({ title, icon: Icon, actions, fullWidth = false }
                         {title}
                     </h1>
                 </div>
-                {actions && (
-                    <div className="flex items-center space-x-3">
-                        {actions}
-                    </div>
-                )}
+                <div className="flex items-center space-x-4">
+                    <EnvSwitcher />
+                    {actions && (
+                        <div className="flex items-center space-x-3">
+                            {actions}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

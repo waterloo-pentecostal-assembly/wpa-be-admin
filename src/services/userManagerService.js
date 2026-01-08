@@ -21,7 +21,7 @@ export class UserManagerService {
         // Verify user using transaction 
         const userRef = this.firestore.collection('users').doc(uid);
         await this.firestore.runTransaction(async (t) => {
-            const doc = await t.get(userRef);
+            await t.get(userRef);
             t.update(userRef, { is_verified: true });
         });
         return true;

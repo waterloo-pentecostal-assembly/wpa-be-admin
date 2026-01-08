@@ -1,15 +1,11 @@
 /** @typedef {import("@google-cloud/firestore").Firestore} Firestore */
-const { DateTime } = require('luxon');
+import { DateTime } from 'luxon';
+import admin from "firebase-admin";
 
-const Timestamp = require("firebase-admin").firestore.Timestamp;
+const Timestamp = admin.firestore.Timestamp;
 
-function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
-class DataDeletingService {
+export class DataDeletingService {
     /**
      * @param {Firestore} firestore 
      */
@@ -29,7 +25,3 @@ class DataDeletingService {
         // });
     }
 }
-
-module.exports = {
-    DataDeletingService
-};

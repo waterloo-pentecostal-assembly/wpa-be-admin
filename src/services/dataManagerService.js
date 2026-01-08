@@ -1,15 +1,11 @@
 /** @typedef {import("@google-cloud/firestore").Firestore} Firestore */
-const { DateTime } = require('luxon');
+import { DateTime } from 'luxon';
+import admin from "firebase-admin";
 
-const Timestamp = require("firebase-admin").firestore.Timestamp;
+const Timestamp = admin.firestore.Timestamp;
 
-function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
-class DataManagerService {
+export class DataManagerService {
     /**
      * @param {Firestore} firestore 
      */
@@ -24,13 +20,12 @@ class DataManagerService {
             .get();
         const bibleSeriesDocs = bibleSeriesQuerySnapshot.docs;
         for (let a = 0; a < bibleSeriesDocs.length; a++) {
-            
-            const bibleSeries = bibleSeriesDocs[a].data();
+
+            // const bibleSeries = bibleSeriesDocs[a].data();
             const seriesId = bibleSeriesDocs[a].id;
             // if (seriesId !== 'MX6BPXbMHwWvjjGv1BH8') {
             //     continue;
             // }
-            // eslint-disable-next-line no-await-in-loop
             const seriesContentSnapshot = await this.firestore
                 .collection('bible_series')
                 .doc(seriesId)
@@ -50,13 +45,12 @@ class DataManagerService {
                             console.log(seriesId, contentId, link, conv);
                             body[i]['link'] = conv;
                             // console.log(body);
-                            // eslint-disable-next-line no-await-in-loop
                             await this.firestore
                                 .collection('bible_series')
                                 .doc(seriesId)
                                 .collection('series_content')
                                 .doc(contentId)
-                                .update({body});
+                                .update({ body });
                         }
                     }
                 }
@@ -69,7 +63,7 @@ class DataManagerService {
         // Extract video ID from different formats of YouTube URLs
         const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i;
         const match = youtubeUrl.match(regex);
-        
+
         if (match && match[1]) {
             const videoId = match[1];
             // Construct the embed URL
@@ -81,7 +75,3 @@ class DataManagerService {
         }
     }
 }
-
-module.exports = {
-    DataManagerService
-};

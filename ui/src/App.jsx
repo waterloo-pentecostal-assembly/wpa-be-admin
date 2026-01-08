@@ -4,6 +4,7 @@ import Home from './Home';
 import BibleSeriesManager from './BibleSeriesManager';
 import Stats from './Stats';
 import Login from './Login';
+import NotificationTester from './NotificationTester';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -34,6 +35,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Stats />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/notifications"
+                        element={
+                            <ProtectedRoute>
+                                <NotificationTester />
                             </ProtectedRoute>
                         }
                     />

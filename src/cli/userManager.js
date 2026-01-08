@@ -1,7 +1,7 @@
-const inquirer = require('inquirer');
-const ora = require('ora');
+import inquirer from 'inquirer';
+import ora from 'ora';
 
-class UserManagerCli {
+export class UserManagerCli {
     constructor(userManagerService) {
         this.userManagerService = userManagerService;
     }
@@ -40,8 +40,8 @@ class UserManagerCli {
         );
 
         email = email.value;
-        let spinner; 
-        
+        let spinner;
+
         // Verify user
         try {
             spinner = ora(`Verifying user ${email}`).start();
@@ -54,7 +54,3 @@ class UserManagerCli {
     }
 
 }
-
-module.exports = {
-    UserManagerCli
-};

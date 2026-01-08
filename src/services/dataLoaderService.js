@@ -49,15 +49,13 @@ export class DataLoaderService {
                     const contentFirebaseTimestamp = Timestamp.fromMillis(contentDate);
                     data[i].date = contentFirebaseTimestamp;
 
-                    // eslint-disable-next-line no-await-in-loop
                     await this.firestore
                         .collection('bible_series')
                         .doc(bibleSeriesId)
                         .collection('series_content')
                         .add(data[i]);
-                    // eslint-disable-next-line no-await-in-loop
                     await sleep(2000);
-                } catch (e) {
+                } catch {
                     console.log(">>>>> Unable to load", data[i]);
                 }
             }

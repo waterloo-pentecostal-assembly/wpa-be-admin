@@ -1,7 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-exports.getConfig = (env) => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export const getConfig = (env) => {
     if (env === 'local_dev') {
         const serviceAccountFile = path.resolve(__dirname) + '/service-account-dev.json';
         let serviceAccount;
@@ -13,7 +17,7 @@ exports.getConfig = (env) => {
 
         // Use environment variable is it exists
         if (process.env.SERVICE_ACCOUNT_CREDENTIALS) {
-            serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_CREDENTIALS); 
+            serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_CREDENTIALS);
         } else if (fs.existsSync(serviceAccountFile)) {
             serviceAccount = path.resolve(__dirname) + '/service-account-dev.json';
         } else {
@@ -31,7 +35,7 @@ exports.getConfig = (env) => {
 
         // Use environment variable is it exists
         if (process.env.SERVICE_ACCOUNT_CREDENTIALS) {
-            serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_CREDENTIALS); 
+            serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_CREDENTIALS);
         } else if (fs.existsSync(serviceAccountFile)) {
             serviceAccount = path.resolve(__dirname) + '/service-account-dev.json';
         } else {

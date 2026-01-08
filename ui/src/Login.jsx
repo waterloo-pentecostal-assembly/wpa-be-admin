@@ -10,7 +10,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
-    const useNavigate_ = useNavigate();
+    const navigate = useNavigate();
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -19,7 +19,7 @@ export default function Login() {
             setError('');
             setLoading(true);
             await login(email, password);
-            useNavigate_('/');
+            navigate('/');
         } catch (err) {
             setError('Failed to log in: ' + err.message);
             console.error(err);

@@ -1,53 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 
 const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
-    const [selectedBook, setSelectedBook] = useState(null);
-    const [selectedChapter, setSelectedChapter] = useState(null);
-    const [selectedVerses, setSelectedVerses] = useState({}); // { verseNum: text }
-    const [title, setTitle] = useState('');
-
     // Initialize state from initialSelection if provided
-    useEffect(() => {
-        if (initialSelection && nivData) {
-            setSelectedBook(initialSelection.book);
-            setSelectedChapter(initialSelection.chapter);
-            setSelectedVerses(initialSelection.verses || {});
-            setTitle(initialSelection.title || '');
-        } else if (!initialSelection) {
-            // Reset if opening fresh
-            setSelectedBook(null);
-            setSelectedChapter(null);
-            setSelectedVerses({});
-            setTitle('');
-        }
-    }, [initialSelection, nivData]);
-
-    // Reset downstream selections when upstream changes
-    // We only reset if the change didn't come from the initialization
-    useEffect(() => {
-        if (initialSelection && selectedBook === initialSelection.book) {
-            // Book matches initial, preserve chapter unless user explicitly changed it?
-            // If user changes book, selectedBook !== initialSelection.book (unless they pick the same one).
-            return;
-        }
-        setSelectedChapter(null);
-        setSelectedVerses({});
-    }, [selectedBook]);
-
-    useEffect(() => {
-        if (initialSelection && selectedChapter === initialSelection.chapter && selectedBook === initialSelection.book) {
-            return;
-        }
-        setSelectedVerses({});
-    }, [selectedChapter]);
-
+    const [selectedBook, setSelectedBook] = useState(initialSelection?.book || null);
+    const [selectedChapter, setSelectedChapter] = useState(initialSelection?.chapter || null);
+    const [selectedVerses, setSelectedVerses] = useState(initialSelection?.verses || {}); // { verseNum: text }
+    const [title, setTitle] = useState(initialSelection?.title || '');
     const [lastClickedVerse, setLastClickedVerse] = useState(null);
 
-    // Reset last clicked when chapter changes
-    useEffect(() => {
+    // Initial state set via useState above. 
+    // Since component remounts on open, we don't need to listen for prop changes.
+
+    const handleBookSelect = (book) => {
+        if (selectedBook === book) return;
+        setSelectedBook(book);
+        setSelectedChapter(null);
+        setSelectedVerses({});
         setLastClickedVerse(null);
-    }, [selectedChapter]);
+    };
+
+    const handleChapterSelect = (ch) => {
+        if (selectedChapter === ch) return;
+        setSelectedChapter(ch);
+        setSelectedVerses({});
+        setLastClickedVerse(null);
+    };
 
     const books = nivData ? Object.keys(nivData) : [];
     const chapters = selectedBook && nivData ? Object.keys(nivData[selectedBook]) : [];
@@ -146,7 +124,7 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
                         {books.map(book => (
                             <div
                                 key={book}
-                                onClick={() => setSelectedBook(book)}
+                                onClick={() => handleBookSelect(book)}
                                 className={`px-3 py-2 rounded cursor-pointer text-sm ${selectedBook === book ? 'bg-brand-100 text-brand font-medium' : 'hover:bg-gray-50'}`}
                             >
                                 {book}
@@ -160,7 +138,7 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
                         {chapters.map(ch => (
                             <div
                                 key={ch}
-                                onClick={() => setSelectedChapter(ch)}
+                                onClick={() => handleChapterSelect(ch)}
                                 className={`px-3 py-2 rounded cursor-pointer text-sm text-center ${selectedChapter === ch ? 'bg-brand-100 text-brand font-medium' : 'hover:bg-gray-100'}`}
                             >
                                 {ch}
@@ -186,7 +164,7 @@ const ScripturePicker = ({ nivData, onSelect, onCancel, initialSelection }) => {
                                 {Object.entries(verses).map(([vNum, text]) => (
                                     <div
                                         key={vNum}
-                                        onClick={() => toggleVerse(vNum, text)}
+                                        onClick={(e) => handleVerseClick(vNum, text, e)}
                                         className={`p-2 rounded border cursor-pointer text-sm flex space-x-3 hover:border-brand-300 ${selectedVerses[vNum] ? 'bg-brand-50 border-brand-200' : 'border-transparent'}`}
                                     >
                                         <div className={`w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full border ${selectedVerses[vNum] ? 'bg-brand border-brand text-white' : 'border-gray-300 text-gray-400'}`}>

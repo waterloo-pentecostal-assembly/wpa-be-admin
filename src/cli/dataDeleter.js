@@ -65,47 +65,6 @@ class DataDeleterCli {
             await this.dataDeletingService.loadMedia(dataToLoad);
             spinner.succeed();
 
-        } else if (answers.dataCollection === dataCollectionOption2) {
-            const questions = [];
-
-            // Get available bible series data
-            const mediaOptions = fs.readdirSync(path.resolve(__dirname) + '/../data/bible_series');
-
-            questions.push({
-                type: 'list',
-                name: 'mediaChoice',
-                message: 'Please choose data file',
-                choices: mediaOptions,
-            });
-
-            const answers = await inquirer.prompt(questions);
-
-            // Confirm data load
-            const proceed = await inquirer.prompt(
-                {
-                    type: 'confirm',
-                    name: 'proceed',
-                    message: 'This data will be duplicated if it already exists, proceed?',
-                    default: false,
-                }
-            );
-
-            if (!proceed.proceed) {
-                return;
-            }
-
-            let dataToLoad = JSON.parse(
-                fs.readFileSync(path.resolve(__dirname) + `/../data/bible_series/${answers.mediaChoice}`)
-            );
-
-            let spinner = ora('Inserting Bible Series');
-            spinner.start();
-            const bibleSeriesId = await this.dataDeletingService.loadBibleSeries(dataToLoad['bible_series']);
-            spinner.succeed();
-
-            spinner = ora('Inserting Bible Series Content').start();
-            await this.dataDeletingService.loadSeriesContent(dataToLoad['series_content'], bibleSeriesId);
-            spinner.succeed();
         }
     }
 }
