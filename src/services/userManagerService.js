@@ -134,4 +134,40 @@ export class UserManagerService {
         });
         console.log('Total active users: ', users.size);
     }
+
+    async updateAllUserNotificationSettings() {
+        console.log('Starting one-time update of all user notification settings...');
+        const usersSnapshot = await this.firestore.collection('users').get();
+        console.log(`Found ${usersSnapshot.size} users.`);
+
+        let count = 0;
+        for (const userDoc of usersSnapshot.docs) {
+            const notificationSettingsRef = userDoc.ref.collection('notification_settings');
+            const snapshot = await notificationSettingsRef.limit(1).get();
+
+            if (!snapshot.empty) {
+                const doc = snapshot.docs[0];
+                await doc.ref.set({
+                    "daily_engagement_reminder": true,
+                    "testimonies": true,
+                    "prayers": true,
+                    "new_prayer_request": true,
+                    "new_testimony": true,
+                    "new_forum_thread": true,
+                    "forum_comment_likes": true,
+                    "forum_comment_replies": true,
+                    "forum_thread_comments": true,
+                });
+                count++;
+                if (count % 20 === 0) {
+                    console.log(`Updated ${count} users...`);
+                }
+            } else {
+                // Optional: Create if missing? User said "update the doc" implying existence, 
+                // but usually good to handle. For now, I'll just log it as the request was specific.
+                console.log(`User ${userDoc.id} has no notification_settings doc. Skipping.`);
+            }
+        }
+        console.log(`Finished. Updated ${count} users.`);
+    }
 }

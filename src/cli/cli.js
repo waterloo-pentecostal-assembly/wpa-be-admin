@@ -86,16 +86,17 @@ const userManagerCli = new UserManagerCli(userManagerService);
 
 const adminCli = new AdminCli(dataLoaderCli, dataFetchingCli, devHelpersCli, userManagerCli);
 
-adminCli.run();
+// adminCli.run();
 
 // --- ADHOC ---
-// async function main() {
-//     // await userManagerService.getAllUsersAfterDate(new Date('October 6, 2025'));
-//     // await userManagerService.getActiveUsersBetweenDates(new Date('January 1, 2025'), new Date('August 21, 2025'));
-//     // await dataFetchingService.getEngagementCountByType('MMOCISOqyI8egl5kd6VL');
-//     // await dataFetchingService.getUniqueUsersForSeries('6r2eXvUx4GKzMUeBUvHh');
-//     // await dataFetchingService.getCompletionsByType('devotional', 'JSyJhGV0wmpEPNf7R6VN');
-//     // await dataDeletingService.deleteOldPrayerRequests(new Date(Date.UTC(2022,9,1,0,0,0)));
-//     // await dataManagerService.updateYoutubeLinks();
-// }
-// main();
+async function main() {
+    // await userManagerService.getAllUsersAfterDate(new Date('October 6, 2025'));
+    // await userManagerService.getActiveUsersBetweenDates(new Date('January 1, 2025'), new Date('August 21, 2025'));
+    // await dataFetchingService.getEngagementCountByType('MMOCISOqyI8egl5kd6VL');
+    // await dataFetchingService.getUniqueUsersForSeries('6r2eXvUx4GKzMUeBUvHh');
+    // await dataFetchingService.getCompletionsByType('devotional', 'JSyJhGV0wmpEPNf7R6VN');
+    // await dataDeletingService.deleteOldPrayerRequests(new Date(Date.UTC(2022,9,1,0,0,0)));
+    // await dataManagerService.updateYoutubeLinks();
+    await userManagerService.updateAllUserNotificationSettings();
+}
+main();
