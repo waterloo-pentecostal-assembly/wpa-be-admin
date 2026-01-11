@@ -2,7 +2,7 @@
 
 import inquirer from 'inquirer';
 
-import { firestore, auth, env } from '../index.js';
+import { firestore, auth, env, messaging } from '../index.js';
 import { DataLoaderCli } from './dataLoader.js';
 import { DataFetchingCli } from './dataFetching.js';
 import { DevHelpersCli } from './devHelpers.js';
@@ -76,7 +76,7 @@ class AdminCli {
 const dataLoaderService = new DataLoaderService(firestore);
 const dataFetchingService = new DataFetchingService(firestore);
 // const dataManagerService = new DataManagerService(firestore);
-const userManagerService = new UserManagerService(firestore, auth);
+const userManagerService = new UserManagerService(firestore, auth, messaging);
 // const dataDeletingService = new DataDeletingService(firestore, auth);
 
 const dataLoaderCli = new DataLoaderCli(dataLoaderService);
@@ -97,6 +97,7 @@ async function main() {
     // await dataFetchingService.getCompletionsByType('devotional', 'JSyJhGV0wmpEPNf7R6VN');
     // await dataDeletingService.deleteOldPrayerRequests(new Date(Date.UTC(2022,9,1,0,0,0)));
     // await dataManagerService.updateYoutubeLinks();
-    await userManagerService.updateAllUserNotificationSettings();
+    // await userManagerService.updateAllUserNotificationSettings();
+    await userManagerService.subscribeAllAdminsToTopics();
 }
 main();

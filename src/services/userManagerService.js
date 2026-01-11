@@ -5,10 +5,12 @@ export class UserManagerService {
     /**
      * @param {Firestore} firestore 
      * @param {Auth} auth 
+     * @param {import("firebase-admin").messaging.Messaging} messaging
      */
-    constructor(firestore, auth) {
+    constructor(firestore, auth, messaging) {
         this.auth = auth;
         this.firestore = firestore;
+        this.messaging = messaging;
     }
 
     async verifyUserByEmail(email) {
@@ -169,5 +171,62 @@ export class UserManagerService {
             }
         }
         console.log(`Finished. Updated ${count} users.`);
+    }
+
+    async subscribeAllAdminsToTopics() {
+        if (!this.messaging) {
+            throw new Error('Messaging service not initialized in UserManagerService');
+        }
+
+        console.log('Starting execution of subscribeAllAdminsToTopics...');
+
+        // 1. Get all admin users
+        const adminsSnapshot = await this.firestore.collection('users').where('is_admin', '==', true).get();
+        console.log(`Found ${adminsSnapshot.size} admin users.`);
+
+        const tokensToSubscribe = [];
+
+        // 2. Collect tokens from each admin's devices
+        for (const adminDoc of adminsSnapshot.docs) {
+            const devicesSnapshot = await adminDoc.ref.collection('devices').get();
+            devicesSnapshot.forEach(deviceDoc => {
+                const data = deviceDoc.data();
+                if (data.token) {
+                    tokensToSubscribe.push(data.token);
+                }
+            });
+        }
+
+        console.log(`Found ${tokensToSubscribe.length} tokens to subscribe.`);
+
+        if (tokensToSubscribe.length === 0) {
+            console.log('No tokens found. Exiting.');
+            return;
+        }
+
+        const topics = [
+            'user_signup_notifications',
+            'user_delete_request',
+            'new_testimony_for_approval',
+            'new_prayer_request_for_approval'
+        ];
+
+        // 3. Subscribe tokens to each topic
+        for (const topic of topics) {
+            console.log(`Subscribing tokens to topic: ${topic}`);
+            // subscribeToTopic accepts up to 1000 tokens per call.
+            // If tokens > 1000, we'd need to chunk, but for admins it's unlikely to exceed.
+            // Still, good practice to be aware.
+            try {
+                const response = await this.messaging.subscribeToTopic(tokensToSubscribe, topic);
+                console.log(`Successfully subscribed to ${topic}:`, response.successCount, 'successes,', response.failureCount, 'failures');
+                if (response.errors && response.errors.length > 0) {
+                    // console.error('Errors:', response.errors);
+                }
+            } catch (error) {
+                console.error(`Error subscribing to ${topic}:`, error);
+            }
+        }
+        console.log('Finished subscribing admins to topics.');
     }
 }

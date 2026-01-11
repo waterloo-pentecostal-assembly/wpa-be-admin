@@ -75,8 +75,9 @@ async function initializeFirebase(env = 'prod') {
             // Re-instantiate services
             db = admin.firestore();
             auth = admin.auth();
+            const messaging = admin.messaging();
             dataFetchingService = new DataFetchingService(db);
-            userManagerService = new UserManagerService(db, auth);
+            userManagerService = new UserManagerService(db, auth, messaging);
             dataLoaderService = new DataLoaderService(db);
             notificationTestingService = new NotificationTestingService(admin);
             currentEnv = env;

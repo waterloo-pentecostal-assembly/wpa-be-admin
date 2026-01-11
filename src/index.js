@@ -10,9 +10,11 @@ admin.initializeApp({ credential: admin.credential.cert(config.serviceAccount) }
 
 const firestore = admin.firestore();
 const auth = admin.auth();
+const messaging = admin.messaging();    
 
 export {
     firestore,
     auth,
-    env
+    env,
+    messaging
 };
