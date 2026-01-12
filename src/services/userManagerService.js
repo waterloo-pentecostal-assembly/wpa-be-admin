@@ -229,4 +229,53 @@ export class UserManagerService {
         }
         console.log('Finished subscribing admins to topics.');
     }
+
+    async cleanupInvalidTokens() {
+        if (!this.messaging) {
+            throw new Error('Messaging service not initialized in UserManagerService');
+        }
+
+        console.log('Starting execution of cleanupInvalidTokens...');
+
+        const usersSnapshot = await this.firestore.collection('users').get();
+        console.log(`Found ${usersSnapshot.size} total users.`);
+
+        let processedCount = 0;
+        let deletedCount = 0;
+
+        for (const userDoc of usersSnapshot.docs) {
+            const devicesSnapshot = await userDoc.ref.collection('devices').get();
+
+            for (const deviceDoc of devicesSnapshot.docs) {
+                const data = deviceDoc.data();
+                const token = data.token;
+
+                if (!token) {
+                    console.log(`Device ${deviceDoc.id} for user ${userDoc.id} has no token. Deleting...`);
+                    await deviceDoc.ref.delete();
+                    deletedCount++;
+                    continue;
+                }
+
+                processedCount++;
+                try {
+                    // Dry run send to valid token
+                    await this.messaging.send({ token }, true);
+                } catch (error) {
+                    if (error.code === 'messaging/registration-token-not-registered' ||
+                        error.code === 'messaging/invalid-registration-token' ||
+                        error.code === 'messaging/invalid-argument') {
+
+                        console.log(`Token invalid for user ${userDoc.id}: ${error.code}. Deleting device ${deviceDoc.id}...`);
+                        await deviceDoc.ref.delete();
+                        deletedCount++;
+                    } else {
+                        console.error(`Error checking token for user ${userDoc.id}:`, error.code);
+                    }
+                }
+            }
+        }
+
+        console.log(`Finished cleanup. Processed ${processedCount} tokens. Deleted ${deletedCount} invalid devices.`);
+    }
 }

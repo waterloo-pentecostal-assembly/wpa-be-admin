@@ -98,6 +98,7 @@ async function main() {
     // await dataDeletingService.deleteOldPrayerRequests(new Date(Date.UTC(2022,9,1,0,0,0)));
     // await dataManagerService.updateYoutubeLinks();
     // await userManagerService.updateAllUserNotificationSettings();
-    await userManagerService.subscribeAllAdminsToTopics();
+    // await userManagerService.subscribeAllAdminsToTopics();
+    await userManagerService.cleanupInvalidTokens();
 }
 main();
