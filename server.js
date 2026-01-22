@@ -233,7 +233,7 @@ app.get('/api/series/:filename', (req, res) => {
 // Save Series
 app.post('/api/series', (req, res) => {
     try {
-        const { filename, content } = req.body;
+        const { filename, content, checkExists } = req.body;
         if (!filename || !content) {
             return res.status(400).json({ error: 'Filename and content required' });
         }
@@ -241,6 +241,10 @@ app.post('/api/series', (req, res) => {
         // Ensure filename ends with .json
         const safeFilename = filename.endsWith('.json') ? filename : `${filename}.json`;
         const filepath = path.join(DATA_DIR, safeFilename);
+
+        if (checkExists && fs.existsSync(filepath)) {
+            return res.status(409).json({ error: 'File already exists' });
+        }
 
         fs.writeFileSync(filepath, JSON.stringify(content, null, 4));
         res.json({ success: true, filename: safeFilename });

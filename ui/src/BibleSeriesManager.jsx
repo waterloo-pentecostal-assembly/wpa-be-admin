@@ -104,17 +104,54 @@ function BibleSeriesManager() {
     }
   };
 
-  const createNewSeries = () => {
-    setSelectedFile('new_series.json');
-    setBibleSeries({
-      title: 'New Series',
-      sub_title: '',
-      image_gs_location: '',
-      is_active: false,
-      is_visible: false
-    });
-    setSeriesContent([]);
-    setEditingIndex(null);
+  const createNewSeries = async () => {
+    const name = window.prompt("Enter Series Name:");
+    if (!name) return;
+
+    const filename = name.toLowerCase().trim().replace(/\s+/g, '_') + '.json';
+
+    if (seriesList.includes(filename)) {
+      alert('A series with this filename already exists. Please choose a different name.');
+      return;
+    }
+
+    const newSeriesData = {
+      bible_series: {
+        title: name,
+        sub_title: '',
+        image_gs_location: '',
+        is_active: false,
+        is_visible: false
+      },
+      series_content: []
+    };
+
+    try {
+      const res = await fetch('/api/series', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename,
+          content: newSeriesData,
+          checkExists: true
+        })
+      });
+
+      if (res.ok) {
+        await fetchSeriesList();
+        setSelectedFile(filename);
+        setBibleSeries(newSeriesData.bible_series);
+        setSeriesContent(newSeriesData.series_content);
+        setEditingIndex(null);
+      } else if (res.status === 409) {
+        alert('A series with this filename already exists on the server. Please choose a different name.');
+      } else {
+        alert('Failed to create new series file');
+      }
+    } catch (err) {
+      console.error('Error creating new series:', err);
+      alert('Error creating new series');
+    }
   };
 
   const saveSeries = async () => {
