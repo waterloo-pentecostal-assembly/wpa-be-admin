@@ -96,7 +96,7 @@ async function initializeFirebase(env = 'prod') {
 initializeFirebase('prod');
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // Paths
 const DATA_DIR = path.join(__dirname, 'src', 'data', 'bible_series');

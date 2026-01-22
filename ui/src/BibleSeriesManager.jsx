@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen, CloudUpload } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen, CloudUpload, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from './components/Header';
 import SeriesForm from './components/SeriesForm';
@@ -23,6 +23,8 @@ function BibleSeriesManager() {
   const [activeScriptureBlockIndex, setActiveScriptureBlockIndex] = useState(null);
   const [editingScriptureIndex, setEditingScriptureIndex] = useState(null); // null = adding new
   const [pickerInitialSelection, setPickerInitialSelection] = useState(null);
+
+  const fileInputRef = useRef(null);
 
   // ... (rest of code) ...
 
@@ -152,6 +154,89 @@ function BibleSeriesManager() {
       console.error('Error creating new series:', err);
       alert('Error creating new series');
     }
+  };
+
+  const handleLoadJsonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleJsonFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Reset value so same file can be selected again if needed
+    e.target.value = null;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const jsonContent = JSON.parse(event.target.result);
+
+        // Basic validation - check if it looks like a series
+        if (!jsonContent.bible_series && !jsonContent.series_content) {
+          // Try to see if it's the structure { title: ..., content: ... } or just the bible_series object?
+          // For now assume standard export format { bible_series, series_content }
+          if (!jsonContent.title) {
+            // Maybe it's just raw content? Let's assume strict format for now based on current export
+            alert("Invalid JSON format. Expected an export from this tool.");
+            return;
+          }
+        }
+
+        // Normalize data
+        let importedSeries = jsonContent.bible_series;
+        let importedContent = jsonContent.series_content || [];
+
+        // If simple format (just the object)
+        if (!importedSeries && jsonContent.title) {
+          importedSeries = jsonContent;
+          importedContent = [];
+        }
+
+        const name = window.prompt("Enter Series Name for the new file:", importedSeries.title || file.name.replace('.json', ''));
+        if (!name) return;
+
+        const filename = name.toLowerCase().trim().replace(/\s+/g, '_') + '.json';
+
+        const newSeriesData = {
+          bible_series: importedSeries,
+          series_content: importedContent
+        };
+
+        try {
+          const res = await fetch('/api/series', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename,
+              content: newSeriesData,
+              checkExists: true
+            })
+          });
+
+          if (res.ok) {
+            await fetchSeriesList();
+            setSelectedFile(filename);
+            setBibleSeries(newSeriesData.bible_series);
+            setSeriesContent(newSeriesData.series_content);
+            setEditingIndex(null);
+            alert('Series loaded and saved successfully!');
+          } else if (res.status === 409) {
+            alert('A series with this filename already exists on the server. Please check the name or delete the existing file.');
+          } else {
+            alert('Failed to save loaded series');
+          }
+        } catch (err) {
+          console.error('Error saving loaded series:', err);
+          alert('Error saving loaded series');
+        }
+
+      } catch (err) {
+        console.error("Error parsing JSON", err);
+        alert("Failed to parse JSON file");
+      }
+    };
+    reader.readAsText(file);
   };
 
   const saveSeries = async () => {
@@ -308,10 +393,23 @@ function BibleSeriesManager() {
         icon={BookOpen}
         fullWidth
         actions={
-          <button onClick={createNewSeries} className="flex items-center space-x-2 bg-brand text-white px-3 py-1.5 rounded-md hover:bg-brand-600 transition-all shadow-sm text-sm" title="New Series">
-            <Plus size={16} />
-            <span>New Series</span>
-          </button>
+          <>
+            <button onClick={createNewSeries} className="flex items-center space-x-2 bg-brand text-white px-3 py-1.5 rounded-md hover:bg-brand-600 transition-all shadow-sm text-sm" title="New Series">
+              <Plus size={16} />
+              <span>New Series</span>
+            </button>
+            <button onClick={handleLoadJsonClick} className="flex items-center space-x-2 bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-all shadow-sm text-sm" title="Load JSON">
+              <Upload size={16} />
+              <span>Load JSON</span>
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleJsonFileChange}
+              accept=".json"
+              className="hidden"
+            />
+          </>
         }
       />
       <div className="flex flex-1 overflow-hidden">
