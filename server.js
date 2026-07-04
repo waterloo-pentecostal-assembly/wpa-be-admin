@@ -9,6 +9,7 @@ import { DataFetchingService } from './src/services/dataFetchingService.js';
 import { UserManagerService } from './src/services/userManagerService.js';
 import { DataLoaderService } from './src/services/dataLoaderService.js';
 import { NotificationTestingService } from './src/services/notificationTestingService.js';
+import { generateSeriesFromOutline, populateBibleVerses } from './src/services/bibleSeriesGeneratorService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -249,6 +250,50 @@ app.post('/api/series', (req, res) => {
         fs.writeFileSync(filepath, JSON.stringify(content, null, 4));
         res.json({ success: true, filename: safeFilename });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Generate Series from Outline (AI Agent)
+app.post('/api/series/generate-from-outline', async (req, res) => {
+    try {
+        const { outlineText, startYear, apiKey } = req.body;
+        if (!outlineText) {
+            return res.status(400).json({ error: 'Outline text is required' });
+        }
+
+        // Determine API key
+        const resolvedApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+        if (!resolvedApiKey) {
+            return res.status(400).json({ 
+                error: 'Gemini API key is required. Please provide it in the request or set GEMINI_API_KEY/GOOGLE_API_KEY in the server environment.' 
+            });
+        }
+
+        const year = startYear || new Date().getFullYear();
+
+        // 1. Generate structured series from outline using Gemini
+        console.log("Calling Gemini to parse outline...");
+        const generatedData = await generateSeriesFromOutline(outlineText, year, resolvedApiKey);
+        console.log("Gemini parse successful.");
+
+        // 2. Load niv.json and populate actual verses if it exists
+        if (fs.existsSync(NIV_FILE)) {
+            console.log("NIV Bible data found. Populating verse texts...");
+            try {
+                const nivData = JSON.parse(fs.readFileSync(NIV_FILE, 'utf8'));
+                generatedData.series_content = populateBibleVerses(generatedData.series_content, nivData);
+                console.log("Verse texts populated successfully.");
+            } catch (err) {
+                console.error("Error populating verses from NIV data:", err);
+            }
+        } else {
+            console.warn("NIV file not found at " + NIV_FILE + ". Skipping verse text population.");
+        }
+
+        res.json({ success: true, data: generatedData });
+    } catch (error) {
+        console.error("Error in /api/series/generate-from-outline:", error);
         res.status(500).json({ error: error.message });
     }
 });

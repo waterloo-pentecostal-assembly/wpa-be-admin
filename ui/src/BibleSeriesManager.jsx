@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen, CloudUpload, Upload } from 'lucide-react';
+import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen, CloudUpload, Upload, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from './components/Header';
 import SeriesForm from './components/SeriesForm';
@@ -7,6 +7,7 @@ import ContentList from './components/ContentList';
 import EngagementEditor from './components/EngagementEditor';
 import ScripturePicker from './components/ScripturePicker';
 import ConfirmModal from './components/ConfirmModal';
+import AiGeneratorModal from './components/AiGeneratorModal';
 
 function BibleSeriesManager() {
   const [seriesList, setSeriesList] = useState([]);
@@ -23,6 +24,7 @@ function BibleSeriesManager() {
   const [activeScriptureBlockIndex, setActiveScriptureBlockIndex] = useState(null);
   const [editingScriptureIndex, setEditingScriptureIndex] = useState(null); // null = adding new
   const [pickerInitialSelection, setPickerInitialSelection] = useState(null);
+  const [showAiGenerator, setShowAiGenerator] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -239,6 +241,56 @@ function BibleSeriesManager() {
     reader.readAsText(file);
   };
 
+  const handleAiGenerate = async (generatedData) => {
+    setShowAiGenerator(false);
+
+    if (!generatedData || !generatedData.bible_series) {
+      alert("Invalid data returned from AI generation.");
+      return;
+    }
+
+    const suggestedTitle = generatedData.bible_series.title || "New AI Series";
+    const name = window.prompt("Enter Series Name for the generated file:", suggestedTitle);
+    if (!name) return;
+
+    const filename = name.toLowerCase().trim().replace(/\s+/g, '_') + '.json';
+
+    if (seriesList.includes(filename)) {
+      if (!confirm('A series with this filename already exists. Overwrite?')) {
+        return;
+      }
+    }
+
+    // Update generated title with whatever name the user chose
+    generatedData.bible_series.title = name;
+
+    try {
+      const res = await fetch('/api/series', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename,
+          content: generatedData,
+          checkExists: false
+        })
+      });
+
+      if (res.ok) {
+        await fetchSeriesList();
+        setSelectedFile(filename);
+        setBibleSeries(generatedData.bible_series);
+        setSeriesContent(generatedData.series_content || []);
+        setEditingIndex(null);
+        alert('Series generated and saved successfully!');
+      } else {
+        alert('Failed to save generated series');
+      }
+    } catch (err) {
+      console.error('Error saving generated series:', err);
+      alert('Error saving generated series');
+    }
+  };
+
   const saveSeries = async () => {
     if (!selectedFile || !bibleSeries) return;
 
@@ -394,6 +446,10 @@ function BibleSeriesManager() {
         fullWidth
         actions={
           <>
+            <button onClick={() => setShowAiGenerator(true)} className="flex items-center space-x-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-all shadow-sm text-sm mr-1" title="Generate with AI">
+              <Sparkles size={16} />
+              <span>Generate with AI</span>
+            </button>
             <button onClick={createNewSeries} className="flex items-center space-x-2 bg-brand text-white px-3 py-1.5 rounded-md hover:bg-brand-600 transition-all shadow-sm text-sm" title="New Series">
               <Plus size={16} />
               <span>New Series</span>
@@ -534,6 +590,13 @@ function BibleSeriesManager() {
             onCancel={() => setShowUploadConfirm(false)}
             confirmText="Proceed"
             isDangerous={false} // Orange warning feels appropriate for duplication, not destruction
+          />
+        )}
+
+        {showAiGenerator && (
+          <AiGeneratorModal
+            onGenerate={handleAiGenerate}
+            onCancel={() => setShowAiGenerator(false)}
           />
         )}
       </div>

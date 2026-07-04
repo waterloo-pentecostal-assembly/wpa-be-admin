@@ -2,7 +2,7 @@
     "bible_series": {
         "title": "Matthew",
         "sub_title": "",
-        "image_gs_location": "",
+        "image_gs_location": "gs://wpa-be-app.appspot.com/bible_series/matthew/matthew.jpg",
         "is_active": false,
         "is_visible": false
     },
