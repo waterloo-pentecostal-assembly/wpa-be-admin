@@ -10,6 +10,8 @@ import { UserManagerService } from './src/services/userManagerService.js';
 import { DataLoaderService } from './src/services/dataLoaderService.js';
 import { NotificationTestingService } from './src/services/notificationTestingService.js';
 import { generateSeriesFromOutline, populateBibleVerses } from './src/services/bibleSeriesGeneratorService.js';
+import { loadBibleService } from './src/services/bibleService.js';
+import { createBibleRouter } from './src/routes/bibleRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +105,17 @@ app.use(express.json({ limit: '50mb' }));
 const DATA_DIR = path.join(__dirname, 'src', 'data', 'bible_series');
 const NIV_FILE = path.join(__dirname, 'src', 'data', 'niv.json');
 
+// Load the NIV Bible once for the Bible API (see /api/bible/niv below).
+// A missing or unreadable file must not stop the rest of the server:
+// the Bible endpoints report 503 while everything else keeps working.
+let bibleService = null;
+try {
+    bibleService = loadBibleService(NIV_FILE);
+    console.log(`NIV Bible data loaded (${bibleService.getBooks().books.length} books)`);
+} catch (error) {
+    console.warn(`NIV Bible data not available from ${NIV_FILE}: ${error.message}`);
+}
+
 // Get Firebase Client Config
 app.get('/api/firebase-config', (req, res) => {
     try {
@@ -191,7 +204,14 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// Get NIV Data
+// NIV Bible API — granular access to niv.json for the UI:
+//   GET /api/bible/niv/books
+//   GET /api/bible/niv/books/:book/chapters
+//   GET /api/bible/niv/books/:book/chapters/:chapter/verses
+//   GET /api/bible/niv/passage?ref=Romans%204%3A1-6
+app.use('/api/bible/niv', createBibleRouter(bibleService));
+
+// Get NIV Data (full file; kept for compatibility, prefer /api/bible/niv above)
 app.get('/api/niv', (req, res) => {
     try {
         if (fs.existsSync(NIV_FILE)) {

@@ -15,7 +15,6 @@ function BibleSeriesManager() {
   const [bibleSeries, setBibleSeries] = useState(null);
   const [seriesContent, setSeriesContent] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [nivData, setNivData] = useState(null);
 
   // Editor State
   const [editingIndex, setEditingIndex] = useState(null); // null = not editing
@@ -69,7 +68,6 @@ function BibleSeriesManager() {
 
   useEffect(() => {
     fetchSeriesList();
-    fetchNivData();
   }, []);
 
   const fetchSeriesList = async () => {
@@ -79,16 +77,6 @@ function BibleSeriesManager() {
       setSeriesList(data);
     } catch (err) {
       console.error("Failed to fetch series list", err);
-    }
-  };
-
-  const fetchNivData = async () => {
-    try {
-      const res = await fetch('/api/niv');
-      const data = await res.json();
-      setNivData(data);
-    } catch (err) {
-      console.error("Failed to fetch NIV data", err);
     }
   };
 
@@ -575,7 +563,6 @@ function BibleSeriesManager() {
 
         {showScripturePicker && (
           <ScripturePicker
-            nivData={nivData}
             onSelect={handleScriptureSelected}
             onCancel={() => setShowScripturePicker(false)}
             initialSelection={pickerInitialSelection}
