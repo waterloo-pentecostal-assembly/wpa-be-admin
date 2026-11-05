@@ -36,9 +36,19 @@ export class DataLoaderService {
         }
     }
 
-    async loadSeriesContent(data, bibleSeriesId) {
+    /**
+     * Writes each content entry under bible_series/{id}/series_content, one
+     * every 2 s. An entry that fails is logged and skipped so the rest still
+     * load; the returned report says which ones failed.
+     *
+     * @param {(progress: { written: number, failed: number, total: number }) => void} [options.onProgress]
+     * @returns {Promise<{ total: number, written: number, failed: Array<{ index: number, date: string, content_type: string, error: string }> }>}
+     */
+    async loadSeriesContent(data, bibleSeriesId, { onProgress } = {}) {
+        const report = { total: data.length, written: 0, failed: [] };
         try {
             for (var i = 0; i < data.length; i++) {
+                const { date, content_type } = data[i];
                 try {
 
                     // Convert date from string to millis with America/Toronto timezone
@@ -54,13 +64,17 @@ export class DataLoaderService {
                         .doc(bibleSeriesId)
                         .collection('series_content')
                         .add(data[i]);
+                    report.written++;
                     await sleep(2000);
-                } catch {
-                    console.log(">>>>> Unable to load", data[i]);
+                } catch (error) {
+                    console.log(">>>>> Unable to load", data[i], error);
+                    report.failed.push({ index: i, date, content_type, error: error.message });
                 }
+                onProgress?.({ written: report.written, failed: report.failed.length, total: report.total });
             }
         } catch (e) {
             throw Error(`Unable to load bible series content: ${e}`);
         }
+        return report;
     }
 }

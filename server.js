@@ -12,6 +12,10 @@ import { NotificationTestingService } from './src/services/notificationTestingSe
 import { generateSeriesFromOutline, populateBibleVerses } from './src/services/bibleSeriesGeneratorService.js';
 import { loadBibleService } from './src/services/bibleService.js';
 import { createBibleRouter } from './src/routes/bibleRoutes.js';
+import { DraftService } from './src/services/draftService.js';
+import { StorageService } from './src/services/storageService.js';
+import { PublishService } from './src/services/publishService.js';
+import { createDraftRouter, createOembedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,52 +30,90 @@ let dataFetchingService = null;
 let userManagerService = null;
 let dataLoaderService = null;
 let notificationTestingService = null;
+let storageService = null;
 let currentEnv = 'prod'; // 'prod' or 'dev'
+
+// Series builder drafts live in their own named Firebase app that is not
+// touched by the env switcher, so switching env to publish never hides a
+// draft. Prod credentials are preferred; dev is used when prod is missing.
+let draftService = null;
+let draftsProjectId = null;
+
+function loadServiceAccount(env) {
+    let serviceAccount = null;
+    const filename = env === 'dev' ? 'service-account-dev.json' : 'service-account.json';
+
+    // 1. Try Render Secret File (Production)
+    const renderSecretPath = `/etc/secrets/${filename}`;
+    if (fs.existsSync(renderSecretPath)) {
+        try {
+            serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
+            console.log(`Loaded Firebase ${env} credentials from Render Secret File`);
+        } catch (e) {
+            console.error("Failed to parse Render Secret File", e);
+        }
+    }
+
+    // 2. Try Environment Variable (Fallback)
+    const envVarName = env === 'dev' ? 'FIREBASE_SERVICE_ACCOUNT_DEV' : 'FIREBASE_SERVICE_ACCOUNT';
+    if (!serviceAccount && process.env[envVarName]) {
+        try {
+            serviceAccount = JSON.parse(process.env[envVarName]);
+            console.log(`Loaded Firebase ${env} credentials from Environment Variable`);
+        } catch (e) {
+            console.error(`Failed to parse ${envVarName} env var`, e);
+        }
+    }
+
+    // 3. Try Local File (Development)
+    if (!serviceAccount) {
+        const serviceAccountPath = path.join(__dirname, 'src', 'config', filename);
+        if (fs.existsSync(serviceAccountPath)) {
+            serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+            console.log(`Loaded Firebase ${env} credentials from local file: ${filename}`);
+        }
+    }
+    return serviceAccount;
+}
+
+// Cover images go to the project's default bucket (<project>.appspot.com,
+// matching existing image_gs_location values) unless overridden.
+function storageBucketFor(env, serviceAccount) {
+    const override = env === 'dev' ? process.env.FIREBASE_STORAGE_BUCKET_DEV : process.env.FIREBASE_STORAGE_BUCKET;
+    return override || `${serviceAccount.project_id}.appspot.com`;
+}
+
+function initializeDraftStorage() {
+    for (const env of ['prod', 'dev']) {
+        const serviceAccount = loadServiceAccount(env);
+        if (!serviceAccount) continue;
+        try {
+            const app = admin.initializeApp({ credential: admin.credential.cert(serviceAccount) }, 'series-drafts');
+            draftService = new DraftService(app.firestore());
+            draftsProjectId = serviceAccount.project_id;
+            console.log(`Series builder drafts stored in ${draftsProjectId} (${env})`);
+            return;
+        } catch (error) {
+            console.error(`Failed to initialize draft storage with ${env} credentials:`, error);
+        }
+    }
+    console.warn('No Firebase credentials found for draft storage. The series builder will keep drafts in the browser only.');
+}
 
 async function initializeFirebase(env = 'prod') {
     try {
         // If an app already exists, delete it
-        if (admin.apps.length) {
+        if (admin.apps.some((a) => a.name === '[DEFAULT]')) {
             await admin.app().delete();
+            storageService = null;
         }
 
-        let serviceAccount;
-        const filename = env === 'dev' ? 'service-account-dev.json' : 'service-account.json';
-
-        // 1. Try Render Secret File (Production)
-        const renderSecretPath = `/etc/secrets/${filename}`;
-        if (fs.existsSync(renderSecretPath)) {
-            try {
-                serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
-                console.log(`Loaded Firebase ${env} credentials from Render Secret File`);
-            } catch (e) {
-                console.error("Failed to parse Render Secret File", e);
-            }
-        }
-
-        // 2. Try Environment Variable (Fallback)
-        const envVarName = env === 'dev' ? 'FIREBASE_SERVICE_ACCOUNT_DEV' : 'FIREBASE_SERVICE_ACCOUNT';
-        if (!serviceAccount && process.env[envVarName]) {
-            try {
-                serviceAccount = JSON.parse(process.env[envVarName]);
-                console.log(`Loaded Firebase ${env} credentials from Environment Variable`);
-            } catch (e) {
-                console.error(`Failed to parse ${envVarName} env var`, e);
-            }
-        }
-
-        // 3. Try Local File (Development)
-        if (!serviceAccount) {
-            const serviceAccountPath = path.join(__dirname, 'src', 'config', filename);
-            if (fs.existsSync(serviceAccountPath)) {
-                serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-                console.log(`Loaded Firebase ${env} credentials from local file: ${filename}`);
-            }
-        }
+        const serviceAccount = loadServiceAccount(env);
 
         if (serviceAccount) {
             admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
+                credential: admin.credential.cert(serviceAccount),
+                storageBucket: storageBucketFor(env, serviceAccount)
             });
             console.log(`Firebase Admin Initialized (${env})`);
 
@@ -83,6 +125,7 @@ async function initializeFirebase(env = 'prod') {
             userManagerService = new UserManagerService(db, auth, messaging);
             dataLoaderService = new DataLoaderService(db);
             notificationTestingService = new NotificationTestingService(admin);
+            storageService = new StorageService(admin.storage().bucket());
             currentEnv = env;
             return true;
         } else {
@@ -97,6 +140,7 @@ async function initializeFirebase(env = 'prod') {
 
 // Initialize default (prod) on startup
 initializeFirebase('prod');
+initializeDraftStorage();
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -211,6 +255,16 @@ app.get('/api/stats', async (req, res) => {
 //   GET /api/bible/niv/passage?ref=Romans%204%3A1-6
 app.use('/api/bible/niv', createBibleRouter(bibleService));
 
+// Series builder: drafts (autosave), cover image upload, song link titles
+const publishService = new PublishService({
+    getDrafts: () => draftService,
+    getLoader: () => dataLoaderService,
+    getEnv: () => currentEnv,
+});
+app.use('/api/drafts', createDraftRouter(() => ({ service: draftService, projectId: draftsProjectId }), publishService));
+app.use('/api/storage', createStorageRouter(() => ({ service: storageService, env: currentEnv })));
+app.use('/api/oembed', createOembedRouter());
+
 // Get NIV Data (full file; kept for compatibility, prefer /api/bible/niv above)
 app.get('/api/niv', (req, res) => {
     try {
@@ -237,38 +291,17 @@ app.get('/api/series', (req, res) => {
     }
 });
 
-// Get Specific Series
+// Get Specific Series (read-only; used to import a repo file into a draft)
 app.get('/api/series/:filename', (req, res) => {
     try {
-        const filepath = path.join(DATA_DIR, req.params.filename);
-        if (fs.existsSync(filepath)) {
+        // basename() keeps the lookup inside DATA_DIR (e.g. "..%2Fserver.js")
+        const filename = path.basename(req.params.filename);
+        const filepath = path.join(DATA_DIR, filename);
+        if (filename.endsWith('.json') && fs.existsSync(filepath)) {
             res.sendFile(filepath);
         } else {
             res.status(404).json({ error: 'File not found' });
         }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Save Series
-app.post('/api/series', (req, res) => {
-    try {
-        const { filename, content, checkExists } = req.body;
-        if (!filename || !content) {
-            return res.status(400).json({ error: 'Filename and content required' });
-        }
-
-        // Ensure filename ends with .json
-        const safeFilename = filename.endsWith('.json') ? filename : `${filename}.json`;
-        const filepath = path.join(DATA_DIR, safeFilename);
-
-        if (checkExists && fs.existsSync(filepath)) {
-            return res.status(409).json({ error: 'File already exists' });
-        }
-
-        fs.writeFileSync(filepath, JSON.stringify(content, null, 4));
-        res.json({ success: true, filename: safeFilename });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -336,10 +369,10 @@ app.post('/api/series/upload', async (req, res) => {
         console.log("Series uploaded with ID:", bibleSeriesId);
 
         console.log("Uploading content for series:", bibleSeriesId);
-        await dataLoaderService.loadSeriesContent(series_content, bibleSeriesId);
-        console.log("Content uploaded successfully");
+        const report = await dataLoaderService.loadSeriesContent(series_content, bibleSeriesId);
+        console.log(`Content uploaded: ${report.written}/${report.total} entries`);
 
-        res.json({ success: true, seriesId: bibleSeriesId });
+        res.json({ success: true, seriesId: bibleSeriesId, env: currentEnv, ...report });
     } catch (error) {
         console.error("Error uploading series:", error);
         res.status(500).json({ error: error.message });

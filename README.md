@@ -49,3 +49,29 @@ In order to run this application, you need to have appropriate access to the `wp
 1. `cd` to `wpa-be-admin` on the terminal. 
 2. Run `WPA_BE_ENV=dev bash -c 'npm run cli'`.
 3. Navigate CLI options to perform desired operation.
+
+# Series Builder (web UI)
+
+`/bible-series` in the admin console builds a Bible series and publishes it in the
+`{ bible_series, series_content }` format the app reads.
+
+- **Workflow:** pick the dates (weekdays, Mon/Wed/Fri, Tue/Thu, custom, or specific dates), pick the
+  engagements for each weekday (e.g. Devotional on Mondays only), then set each day's scripture (typeahead, paste a whole reading
+  plan, or Ctrl+Enter to save and move to the next day). Engagement content comes from per-series
+  **templates**; `{scripture}` in template text becomes each day's reference, and template blocks
+  marked *per day* (prayer points, song link, memory verse) are filled in on each day. **Copy to…**
+  copies an engagement or a day's scripture to all days, every Monday, the rest of the week, etc.
+- **Autosave:** drafts are saved to the `admin_series_drafts` Firestore collection (prod credentials
+  when available, otherwise dev, and never moved by the env switcher) and mirrored in the browser.
+  Without any Firebase credentials, drafts are kept in the browser only.
+- **Cover images** upload to the selected environment's bucket (`<project_id>.appspot.com`, or
+  `FIREBASE_STORAGE_BUCKET` / `FIREBASE_STORAGE_BUCKET_DEV`) under `bible_series/<series-slug>/`.
+- **Publishing** fills in NIV verse text, checks for problems, and publishes to the selected
+  environment on the server (`POST /api/drafts/:id/publish`). The server records each publish in the
+  draft document's `publishes` field (environment, Firestore series ID, progress, failed entries)
+  as soon as the `bible_series` document exists, then writes the content in the background, so
+  closing the browser mid-publish loses nothing. History is shown in Series details.
+- Existing series JSON files can be imported as drafts; repeated content becomes templates.
+
+The pure logic (schedule, templates, compiling to JSON, import) lives in `ui/src/series/` and is
+covered by `npm test`.

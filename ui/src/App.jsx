@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Home';
-import BibleSeriesManager from './BibleSeriesManager';
+import SeriesBuilderPage from './seriesBuilder/SeriesBuilderPage';
 import Stats from './Stats';
 import Login from './Login';
 import NotificationTester from './NotificationTester';
@@ -26,7 +26,7 @@ function App() {
                         path="/bible-series"
                         element={
                             <ProtectedRoute>
-                                <BibleSeriesManager />
+                                <SeriesBuilderPage />
                             </ProtectedRoute>
                         }
                     />

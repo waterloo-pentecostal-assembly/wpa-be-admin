@@ -180,6 +180,44 @@ export class BibleService {
     }
 
     /**
+     * Common abbreviations for each book in the data, for typeahead.
+     * @returns {{ version: string, aliases: Record<string, string[]> }}
+     */
+    getBookAliases() {
+        const aliases = {};
+        for (const name of Object.keys(this.bibleData)) aliases[name] = BOOK_ABBREVIATIONS[name] ?? [];
+        return { version: this.version, aliases };
+    }
+
+    /**
+     * Resolves many references at once. Each result is either
+     * `{ ok: true, passage }` or `{ ok: false, error, status }`, so one bad
+     * reference does not fail the batch.
+     *
+     * @param {string[]} references
+     * @returns {{ version: string, results: Record<string, object> }}
+     */
+    getPassages(references) {
+        if (!Array.isArray(references)) {
+            throw new BibleServiceError('refs must be an array of strings', 400);
+        }
+        if (references.length > 500) {
+            throw new BibleServiceError('Too many references (max 500)', 400);
+        }
+        const results = {};
+        for (const reference of references) {
+            if (typeof reference !== 'string' || Object.hasOwn(results, reference)) continue;
+            try {
+                results[reference] = { ok: true, passage: this.getPassage(reference) };
+            } catch (error) {
+                if (!(error instanceof BibleServiceError)) throw error;
+                results[reference] = { ok: false, error: error.message, status: error.status };
+            }
+        }
+        return { version: this.version, results };
+    }
+
+    /**
      * @param {string} book - Book name as requested (canonical name is returned)
      * @returns {{ version: string, book: string, chapters: Array<{ chapter: number, verseCount: number }> }}
      */

@@ -12,6 +12,8 @@ const CACHE_CONTROL = 'public, max-age=86400';
  * - GET /books/:book/chapters                     -> chapters for a book
  * - GET /books/:book/chapters/:chapter/verses     -> verses for a chapter
  * - GET /passage?ref=Romans%204%3A1-6             -> verses for a typed reference
+ * - POST /passages { refs: [...] }                 -> many references at once
+ * - GET /aliases                                   -> book abbreviations (typeahead)
  *
  * @param {import('../services/bibleService.js').BibleService|null} bibleService
  *   When null (niv.json unavailable), every endpoint returns 503.
@@ -52,6 +54,12 @@ export function createBibleRouter(bibleService) {
 
     // Get verses for a free-text reference, e.g. ?ref=Romans 4:1-6
     router.get('/passage', handle((req) => bibleService.getPassage(req.query.ref)));
+
+    // Get book abbreviations, e.g. { Matthew: ['Matt', 'Mt'] }
+    router.get('/aliases', handle(() => bibleService.getBookAliases()));
+
+    // Resolve many references in one request (series builder preview/publish)
+    router.post('/passages', express.json(), handle((req) => bibleService.getPassages(req.body?.refs)));
 
     return router;
 }
