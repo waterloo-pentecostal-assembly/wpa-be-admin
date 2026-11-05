@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Header from './components/Header';
-import { Bell, Send, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bell, Send, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 const NotificationTester = () => {
     const [token, setToken] = useState('');
@@ -43,55 +43,59 @@ const NotificationTester = () => {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans">
-            <Header title="Notification Tester" icon={Bell} />
+        <div className="flex flex-col h-screen bg-canvas">
+            <Header
+                title="Notification Tester"
+                subtitle="Send a test push notification to a single device"
+                icon={Bell}
+            />
 
-            <div className="flex-1 overflow-y-auto p-8">
-                <div className="max-w-xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                    <form onSubmit={handleSend} className="space-y-6">
+            <div className="flex-1 overflow-y-auto px-6 py-8">
+                <div className="max-w-xl mx-auto card card-body sm:p-8">
+                    <form onSubmit={handleSend} className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Device Token (FCM Token)</label>
+                            <label className="label">Device Token (FCM Token)</label>
                             <input
                                 type="text"
                                 required
                                 value={token}
                                 onChange={e => setToken(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent font-mono text-sm"
+                                className="input font-mono"
                                 placeholder="e.g. fH7n..."
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <label className="label">Title</label>
                             <input
                                 type="text"
                                 required
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
+                                className="input"
                                 placeholder="Notification Title"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
+                            <label className="label">Body</label>
                             <textarea
                                 required
                                 value={body}
                                 onChange={e => setBody(e.target.value)}
                                 rows={4}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent"
+                                className="input"
                                 placeholder="Notification Body..."
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Notification Type (Data Payload)</label>
+                            <label className="label">Notification Type (Data Payload)</label>
                             <input
                                 type="text"
                                 value={notificationType}
                                 onChange={e => setNotificationType(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent font-mono text-sm"
+                                className="input font-mono"
                                 placeholder="e.g. prayerRequestPrayed"
                             />
                         </div>
@@ -99,16 +103,16 @@ const NotificationTester = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full flex justify-center items-center space-x-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-brand hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className="btn btn-primary w-full py-2.5"
                         >
-                            {loading ? <span>Sending...</span> : <><Send size={18} /><span>Send Notification</span></>}
+                            {loading ? <><Loader2 size={18} className="animate-spin" /><span>Sending...</span></> : <><Send size={18} /><span>Send Notification</span></>}
                         </button>
                     </form>
 
                     {result && (
-                        <div className={`mt-6 p-4 rounded-lg flex items-start space-x-3 ${result.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-                            {result.type === 'success' ? <CheckCircle className="flex-shrink-0" size={20} /> : <AlertCircle className="flex-shrink-0" size={20} />}
-                            <div className="text-sm font-medium break-all">{result.message}</div>
+                        <div className={`alert mt-6 ${result.type === 'success' ? 'alert-success' : 'alert-error'}`}>
+                            {result.type === 'success' ? <CheckCircle className="shrink-0" size={20} /> : <AlertCircle className="shrink-0" size={20} />}
+                            <div className="font-medium break-all">{result.message}</div>
                         </div>
                     )}
                 </div>

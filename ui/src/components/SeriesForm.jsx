@@ -6,54 +6,56 @@ const SeriesForm = ({ data, onChange }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Series Metadata</h2>
-            <div className="grid grid-cols-1 gap-4">
+        <div className="card mb-6">
+            <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="card-title">Series Metadata</h2>
+            </div>
+            <div className="card-body grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <label className="label">Title</label>
                     <input
                         type="text"
                         value={data.title || ''}
                         onChange={(e) => handleChange('title', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand focus:border-brand"
+                        className="input"
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+                    <label className="label">Subtitle</label>
                     <input
                         type="text"
                         value={data.sub_title || ''}
                         onChange={(e) => handleChange('sub_title', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand focus:border-brand"
+                        className="input"
                     />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Image GS Location</label>
+                <div className="md:col-span-2">
+                    <label className="label">Image GS Location</label>
                     <input
                         type="text"
                         value={data.image_gs_location || ''}
                         onChange={(e) => handleChange('image_gs_location', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand focus:border-brand"
+                        className="input font-mono"
                     />
                 </div>
-                <div className="flex space-x-6">
-                    <label className="flex items-center space-x-2 cursor-pointer">
+                <div className="md:col-span-2 flex flex-wrap gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-4 py-2 hover:border-gray-300">
                         <input
                             type="checkbox"
                             checked={data.is_active || false}
                             onChange={(e) => handleChange('is_active', e.target.checked)}
-                            className="h-4 w-4 text-brand rounded border-gray-300 focus:ring-brand"
+                            className="checkbox"
                         />
-                        <span className="text-sm font-medium text-gray-700">Is Active</span>
+                        <span className="text-sm font-semibold text-gray-700">Is Active</span>
                     </label>
-                    <label className="flex items-center space-x-2 cursor-pointer">
+                    <label className="flex items-center gap-2 cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-4 py-2 hover:border-gray-300">
                         <input
                             type="checkbox"
                             checked={data.is_visible || false}
                             onChange={(e) => handleChange('is_visible', e.target.checked)}
-                            className="h-4 w-4 text-brand rounded border-gray-300 focus:ring-brand"
+                            className="checkbox"
                         />
-                        <span className="text-sm font-medium text-gray-700">Is Visible</span>
+                        <span className="text-sm font-semibold text-gray-700">Is Visible</span>
                     </label>
                 </div>
             </div>

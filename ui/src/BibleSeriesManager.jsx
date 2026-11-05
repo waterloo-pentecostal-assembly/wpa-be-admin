@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Save, Plus, Loader2, ArrowLeft, Download, BookOpen, CloudUpload, Upload, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { FileText, Save, Plus, Loader2, Download, BookOpen, CloudUpload, Upload, Sparkles } from 'lucide-react';
 import Header from './components/Header';
 import SeriesForm from './components/SeriesForm';
 import ContentList from './components/ContentList';
@@ -427,24 +426,25 @@ function BibleSeriesManager() {
 
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans">
+    <div className="flex flex-col h-screen bg-canvas">
       <Header
         title="Series Creator"
+        subtitle="Build, edit and publish Bible series content"
         icon={BookOpen}
         fullWidth
         actions={
           <>
-            <button onClick={() => setShowAiGenerator(true)} className="flex items-center space-x-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-all shadow-sm text-sm mr-1" title="Generate with AI">
-              <Sparkles size={16} />
+            <button onClick={() => setShowAiGenerator(true)} className="btn btn-secondary btn-sm" title="Generate with AI">
+              <Sparkles size={16} className="text-brand" />
               <span>Generate with AI</span>
             </button>
-            <button onClick={createNewSeries} className="flex items-center space-x-2 bg-brand text-white px-3 py-1.5 rounded-md hover:bg-brand-600 transition-all shadow-sm text-sm" title="New Series">
-              <Plus size={16} />
-              <span>New Series</span>
-            </button>
-            <button onClick={handleLoadJsonClick} className="flex items-center space-x-2 bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-all shadow-sm text-sm" title="Load JSON">
+            <button onClick={handleLoadJsonClick} className="btn btn-secondary btn-sm" title="Load JSON">
               <Upload size={16} />
               <span>Load JSON</span>
+            </button>
+            <button onClick={createNewSeries} className="btn btn-primary btn-sm" title="New Series">
+              <Plus size={16} />
+              <span>New Series</span>
             </button>
             <input
               type="file"
@@ -458,58 +458,68 @@ function BibleSeriesManager() {
       />
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - File List */}
-        <div className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-10">
-          <div className="flex-1 overflow-y-auto pt-2">
+        <aside className="w-72 bg-white border-r border-gray-200 flex flex-col z-10">
+          <div className="px-4 pt-5 pb-3 flex items-center justify-between">
+            <h2 className="section-label">Series Files</h2>
+            <span className="text-xs font-bold text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">{seriesList.length}</span>
+          </div>
+          <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5">
             {seriesList.map(file => (
               <div
                 key={file}
                 onClick={() => loadSeries(file)}
-                className={`px-4 py-3 cursor-pointer border-l-4 transition-colors text-sm ${selectedFile === file ? 'bg-brand-50 border-brand text-brand font-medium' : 'border-transparent text-gray-600 hover:bg-gray-50'}`}
+                className={`px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm ${selectedFile === file ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
               >
-                <div className="flex items-center space-x-2">
-                  <FileText size={14} className={selectedFile === file ? "text-brand" : "text-gray-400"} />
+                <div className="flex items-center gap-2">
+                  <FileText size={15} className={`shrink-0 ${selectedFile === file ? "text-brand" : "text-gray-400"}`} />
                   <span className="truncate">{file}</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </aside>
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto min-h-0">
           {bibleSeries ? (
-            <div className="max-w-5xl mx-auto p-8 pb-20">
-              <div className="flex justify-between items-center mb-8 sticky top-0 bg-gray-50/95 backdrop-blur py-4 z-10 border-b border-gray-200/50">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+            <div className="max-w-5xl mx-auto px-8 pb-20">
+              <div className="flex flex-wrap justify-between items-center gap-4 mb-6 sticky top-0 bg-canvas/95 backdrop-blur py-5 z-10 border-b border-gray-200">
+                <div className="min-w-0">
+                  <p className="eyebrow mb-1">Editing Series</p>
+                  <h1 className="page-title truncate">
                     {bibleSeries.title || 'Untitled Series'}
                   </h1>
-                  <p className="text-sm text-gray-500 mt-1">{selectedFile}</p>
+                  <p className="text-sm text-gray-500 mt-0.5 font-mono truncate">{selectedFile}</p>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-xs text-gray-400 px-2">{loading ? 'Loading...' : ''}</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {loading && (
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 px-2">
+                      <Loader2 size={14} className="animate-spin text-brand" />
+                      Loading...
+                    </span>
+                  )}
                   <button
                     onClick={handleDownloadJson}
-                    className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all shadow-sm hover:shadow active:scale-95"
+                    className="btn btn-secondary"
                     title="Download JSON"
                   >
-                    <Download size={18} />
+                    <Download size={16} />
                     <span>Download JSON</span>
                   </button>
                   <button
-                    onClick={saveSeries}
-                    className="flex items-center space-x-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-600 transition-all shadow-sm hover:shadow active:scale-95"
-                  >
-                    <Save size={18} />
-                    <span>Save Changes</span>
-                  </button>
-                  <button
                     onClick={handleUploadClick}
-                    className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all shadow-sm hover:shadow active:scale-95"
+                    className="btn btn-dark"
                     title="Upload to Firebase"
                   >
-                    <CloudUpload size={18} />
+                    <CloudUpload size={16} />
                     <span>Upload to Firebase</span>
+                  </button>
+                  <button
+                    onClick={saveSeries}
+                    className="btn btn-primary"
+                  >
+                    <Save size={16} />
+                    <span>Save Changes</span>
                   </button>
                 </div>
               </div>
@@ -521,10 +531,13 @@ function BibleSeriesManager() {
 
               <div className="mt-8">
                 <div className="flex justify-between items-end mb-4">
-                  <h2 className="text-xl font-bold text-gray-800">Content Schedule</h2>
+                  <div>
+                    <h2 className="text-lg font-bold text-ink">Content Schedule</h2>
+                    <p className="text-sm text-gray-500">{seriesContent.length} {seriesContent.length === 1 ? 'entry' : 'entries'}</p>
+                  </div>
                   <button
                     onClick={handleAddNewContent}
-                    className="flex items-center space-x-1 text-sm font-medium text-brand hover:bg-brand-50 px-3 py-1.5 rounded-md transition-colors"
+                    className="btn btn-ghost-brand btn-sm"
                   >
                     <Plus size={16} />
                     <span>Add Content</span>
@@ -540,12 +553,12 @@ function BibleSeriesManager() {
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
-              <div className="p-6 bg-white rounded-full mb-4 shadow-sm">
-                <FileText size={48} className="text-gray-300" />
+            <div className="h-full flex flex-col items-center justify-center text-center px-6">
+              <div className="w-20 h-20 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center mb-5">
+                <BookOpen size={36} className="text-brand-300" />
               </div>
-              <h3 className="text-lg font-medium text-gray-600">No Series Selected</h3>
-              <p className="text-sm">Select a file from the sidebar or create a new series.</p>
+              <h3 className="text-lg font-bold text-ink">No Series Selected</h3>
+              <p className="text-sm text-gray-500 mt-1">Select a file from the sidebar or create a new series.</p>
             </div>
           )}
         </div>
@@ -576,7 +589,7 @@ function BibleSeriesManager() {
             onConfirm={handleConfirmUpload}
             onCancel={() => setShowUploadConfirm(false)}
             confirmText="Proceed"
-            isDangerous={false} // Orange warning feels appropriate for duplication, not destruction
+            isDangerous={false} // Amber warning feels appropriate for duplication, not destruction
           />
         )}
 

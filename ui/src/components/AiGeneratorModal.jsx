@@ -59,22 +59,22 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+        <div className="modal-backdrop z-[60]">
+            <div className="modal-panel max-w-3xl max-h-[90vh]">
                 {/* Modal Header */}
-                <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                    <div className="flex items-center space-x-2">
-                        <div className="bg-brand-50 p-2 rounded-lg text-brand">
-                            <Sparkles size={20} className="text-blue-600" />
+                <div className="modal-header">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand flex items-center justify-center shrink-0">
+                            <Sparkles size={20} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg text-gray-800">Generate Series with AI Agent</h3>
+                            <h3 className="font-bold text-lg text-ink">Generate Series with AI Agent</h3>
                             <p className="text-xs text-gray-500">Convert plain text or markdown outlines into structured series JSON</p>
                         </div>
                     </div>
-                    <button 
-                        onClick={onCancel} 
-                        className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                    <button
+                        onClick={onCancel}
+                        className="icon-btn"
                         disabled={loading}
                     >
                         <X size={18} />
@@ -82,9 +82,9 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
                 </div>
 
                 {/* Modal Body */}
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        <div className="alert alert-error">
                             {error}
                         </div>
                     )}
@@ -92,7 +92,7 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Start Year Input */}
                         <div>
-                            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <label className="label flex items-center gap-1.5">
                                 <Calendar size={14} className="text-gray-400" />
                                 Start Year
                             </label>
@@ -100,7 +100,7 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
                                 type="number"
                                 value={startYear}
                                 onChange={(e) => setStartYear(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                                className="input"
                                 placeholder="e.g. 2025"
                                 required
                                 disabled={loading}
@@ -109,7 +109,7 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
 
                         {/* API Key Input */}
                         <div>
-                            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <label className="label flex items-center gap-1.5">
                                 <Key size={14} className="text-gray-400" />
                                 Gemini API Key (Optional)
                             </label>
@@ -117,7 +117,7 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
                                 type="password"
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                                className="input"
                                 placeholder="Leave empty to use server env API key"
                                 disabled={loading}
                             />
@@ -126,13 +126,13 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
 
                     {/* Outline Text Area */}
                     <div>
-                        <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+                        <label className="label">
                             Outline Text / Markdown
                         </label>
                         <textarea
                             value={outlineText}
                             onChange={(e) => setOutlineText(e.target.value)}
-                            className="w-full h-72 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent resize-y"
+                            className="input h-72 font-mono resize-y"
                             placeholder={`Paste your outline here. E.g.,
 NUMBERS
 Dates: Oct 6 - Nov 28, 2025
@@ -149,18 +149,18 @@ Prayer:
                 </form>
 
                 {/* Modal Footer */}
-                <div className="p-4 border-t bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
+                <div className="modal-footer">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="btn btn-ghost"
                         disabled={loading}
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 active:scale-95 transition-all shadow flex items-center space-x-2"
+                        className="btn btn-primary"
                         disabled={loading}
                     >
                         {loading ? (

@@ -1,78 +1,71 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, LogOut, BarChart3, Bell } from 'lucide-react';
-import { useAuth } from './contexts/AuthContext';
-import EnvSwitcher from './components/EnvSwitcher';
+import { BookOpen, BarChart3, Bell, ArrowRight } from 'lucide-react';
+import Header from './components/Header';
 
-
-import logo from './assets/logo.png';
+const TOOLS = [
+    {
+        to: '/bible-series',
+        icon: BookOpen,
+        title: 'Bible Series Content Manager',
+        description: 'Create and manage daily engagement content for bible series.',
+    },
+    {
+        to: '/stats',
+        icon: BarChart3,
+        title: 'Stats Dashboard',
+        description: 'View app usage statistics, prayer requests, testimonies, and user progress.',
+    },
+    {
+        to: '/notifications',
+        icon: Bell,
+        title: 'Notification Tester',
+        description: 'Send test push notifications to specific devices.',
+    },
+];
 
 const Home = () => {
-    const { logout } = useAuth();
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-        } catch (error) {
-            console.error("Failed to log out", error);
-        }
-    };
-
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <div className="w-full bg-gray-800 shadow-sm mb-12">
-                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <img src={logo} alt="WPA Logo" className="h-12 w-auto" />
-                        <h1 className="text-2xl font-bold text-white tracking-tight">WPA BE Admin Console</h1>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <EnvSwitcher />
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-700"
-                            title="Sign Out"
-                        >
-                            <LogOut size={20} />
-                            <span className="text-sm font-medium">Sign Out</span>
-                        </button>
-                    </div>
+        <div className="min-h-screen bg-canvas flex flex-col">
+            <Header />
+
+            {/* Hero */}
+            <section className="bg-gradient-to-b from-ink-800 to-ink-700 text-white">
+                <div className="max-w-6xl mx-auto px-6 py-14">
+                    <p className="text-xs font-bold tracking-[0.2em] uppercase text-brand-300 mb-3">Bible Engagement App</p>
+                    <h1 className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight">
+                        WPA BE Admin Console
+                    </h1>
+                    <p className="mt-3 max-w-2xl text-white/70">
+                        Manage, monitor, and support the WPA Bible Engagement App.
+                    </p>
                 </div>
-            </div>
+            </section>
 
-            <div className="flex-1 flex flex-col items-center">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl w-full px-6">
-                    <Link to="/bible-series" className="group">
-                        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-brand-300 transition-all flex flex-col items-center text-center h-full">
-                            <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center text-brand mb-4 group-hover:bg-brand group-hover:text-white transition-colors">
-                                <BookOpen size={32} />
-                            </div>
-                            <h2 className="text-xl font-bold text-gray-800 mb-2">Bible Series Content Manager</h2>
-                            <p className="text-gray-500 text-sm">Create and manage daily engagement content for bible series.</p>
-                        </div>
-                    </Link>
-
-                    <Link to="/stats" className="group">
-                        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-brand-300 transition-all flex flex-col items-center text-center h-full">
-                            <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center text-brand mb-4 group-hover:bg-brand group-hover:text-white transition-colors">
-                                <BarChart3 size={32} />
-                            </div>
-                            <h2 className="text-xl font-bold text-gray-800 mb-2">Stats Dashboard</h2>
-                            <p className="text-gray-500 text-sm">View app usage statistics, prayer requests, testimonies, and user progress.</p>
-                        </div>
-                    </Link>
-
-                    <Link to="/notifications" className="group">
-                        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-brand-300 transition-all flex flex-col items-center text-center h-full">
-                            <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center text-brand mb-4 group-hover:bg-brand group-hover:text-white transition-colors">
-                                <Bell size={32} />
-                            </div>
-                            <h2 className="text-xl font-bold text-gray-800 mb-2">Notification Tester</h2>
-                            <p className="text-gray-500 text-sm">Send test push notifications to specific devices.</p>
-                        </div>
-                    </Link>
+            <main className="flex-1 w-full max-w-6xl mx-auto px-6 -mt-8 pb-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {TOOLS.map(({ to, icon, title, description }) => {
+                        const Icon = icon;
+                        return (
+                            <Link
+                                key={to}
+                                to={to}
+                                className="group card p-6 flex flex-col h-full transition-all hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-200"
+                            >
+                                <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand flex items-center justify-center mb-5 transition-colors group-hover:bg-brand group-hover:text-white">
+                                    <Icon size={24} />
+                                </div>
+                                <h2 className="text-lg font-bold text-ink mb-2">{title}</h2>
+                                <p className="text-sm text-gray-500 flex-1">{description}</p>
+                                <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-brand">
+                                    Open
+                                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                                </span>
+                            </Link>
+                        );
+                    })}
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

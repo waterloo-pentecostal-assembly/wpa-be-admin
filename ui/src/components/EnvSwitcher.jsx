@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Zap, ShieldCheck } from 'lucide-react';
+import { Zap, ShieldCheck } from 'lucide-react';
 
 const EnvSwitcher = () => {
     const [env, setEnv] = useState('prod');
@@ -43,18 +43,22 @@ const EnvSwitcher = () => {
         }
     };
 
-    if (loading) return <div className="text-white/50 text-xs">...</div>;
+    if (loading) {
+        return <div className="h-7 w-16 rounded-full bg-white/10 animate-pulse" aria-label="Loading environment" />;
+    }
+
+    const isProd = env === 'prod';
 
     return (
         <button
             onClick={toggleEnv}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${env === 'prod'
-                    ? 'bg-blue-900 border-blue-700 text-blue-100 hover:bg-blue-800'
-                    : 'bg-amber-900 border-amber-700 text-amber-100 hover:bg-amber-800'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-colors border ${isProd
+                ? 'bg-white/5 border-white/20 text-white hover:bg-white/10'
+                : 'bg-amber-400/15 border-amber-400/50 text-amber-200 hover:bg-amber-400/25'
                 }`}
             title={`Current Environment: ${env.toUpperCase()}. Click to switch.`}
         >
-            {env === 'prod' ? <ShieldCheck size={14} /> : <Zap size={14} />}
+            {isProd ? <ShieldCheck size={14} className="text-emerald-400" /> : <Zap size={14} />}
             <span>{env.toUpperCase()}</span>
         </button>
     );

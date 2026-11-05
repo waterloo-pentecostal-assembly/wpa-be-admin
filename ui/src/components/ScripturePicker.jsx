@@ -158,48 +158,56 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection }) => {
         }
     };
 
+    const selectedCount = Object.keys(selectedVerses).length;
+
     return (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-8">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[80vh] flex flex-col">
-                <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl gap-4">
-                    <h3 className="font-bold text-lg whitespace-nowrap">Select Scripture</h3>
+        <div className="modal-backdrop z-[60] sm:p-8">
+            <div className="modal-panel max-w-5xl h-[80vh]">
+                <div className="modal-header">
+                    <div className="shrink-0">
+                        <p className="eyebrow">Scripture</p>
+                        <h3 className="text-lg font-bold text-ink whitespace-nowrap">Select Scripture</h3>
+                    </div>
 
                     <input
                         type="text"
                         placeholder="Title (Optional, e.g. 'The Parable of the Sower')"
-                        className="flex-1 p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none"
+                        className="input flex-1"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                     />
 
-                    <div className="space-x-2 flex-shrink-0">
-                        <button onClick={onCancel} className="px-3 py-1 text-gray-600 hover:bg-gray-200 rounded">Cancel</button>
+                    <div className="flex gap-2 shrink-0">
+                        <button onClick={onCancel} className="btn btn-ghost">Cancel</button>
                         <button
                             onClick={handleConfirm}
-                            disabled={Object.keys(selectedVerses).length === 0}
-                            className="px-4 py-1 bg-brand text-white rounded hover:bg-brand-600 disabled:opacity-50"
+                            disabled={selectedCount === 0}
+                            className="btn btn-primary"
                         >
                             Confirm Selection
+                            {selectedCount > 0 && (
+                                <span className="rounded-full bg-white/20 px-1.5 text-xs tabular-nums">{selectedCount}</span>
+                            )}
                         </button>
                     </div>
                 </div>
 
                 {loadError && (
-                    <div className="px-4 py-2 bg-red-50 border-b border-red-200 text-sm text-red-700">
+                    <div className="px-6 py-2 bg-red-50 border-b border-red-200 text-sm text-red-700">
                         Failed to load Bible data: {loadError}
                     </div>
                 )}
 
                 <div className="flex-1 overflow-hidden flex divide-x divide-gray-200">
                     {/* Books */}
-                    <div className="w-1/4 overflow-y-auto p-2">
-                        <h4 className="font-semibold text-xs text-gray-500 uppercase mb-2 px-2">Book</h4>
+                    <div className="w-1/4 overflow-y-auto p-3">
+                        <h4 className="section-label mb-2 px-2">Book</h4>
                         {loadingBooks && <div className="px-3 py-2 text-sm text-gray-400">Loading books...</div>}
                         {books.map(({ name }) => (
                             <div
                                 key={name}
                                 onClick={() => handleBookSelect(name)}
-                                className={`px-3 py-2 rounded cursor-pointer text-sm ${selectedBook === name ? 'bg-brand-100 text-brand font-medium' : 'hover:bg-gray-50'}`}
+                                className={`px-3 py-1.5 rounded-lg cursor-pointer text-sm transition-colors ${selectedBook === name ? 'bg-brand text-white font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
                             >
                                 {name}
                             </div>
@@ -207,14 +215,14 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection }) => {
                     </div>
 
                     {/* Chapters */}
-                    <div className="w-24 overflow-y-auto p-2 bg-gray-50/50">
-                        <h4 className="font-semibold text-xs text-gray-500 uppercase mb-2 px-2">Ch</h4>
-                        {loadingChapters && <div className="px-3 py-2 text-sm text-gray-400">Loading...</div>}
+                    <div className="w-24 overflow-y-auto p-3 bg-gray-50">
+                        <h4 className="section-label mb-2 text-center">Ch</h4>
+                        {loadingChapters && <div className="py-2 text-sm text-gray-400 text-center">Loading...</div>}
                         {chapters.map(({ chapter }) => (
                             <div
                                 key={chapter}
                                 onClick={() => handleChapterSelect(chapter)}
-                                className={`px-3 py-2 rounded cursor-pointer text-sm text-center ${selectedChapter === chapter ? 'bg-brand-100 text-brand font-medium' : 'hover:bg-gray-100'}`}
+                                className={`px-3 py-1.5 rounded-lg cursor-pointer text-sm text-center tabular-nums transition-colors ${selectedChapter === chapter ? 'bg-brand text-white font-semibold' : 'text-gray-700 hover:bg-gray-200'}`}
                             >
                                 {chapter}
                             </div>
@@ -223,38 +231,43 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection }) => {
 
                     {/* Verses */}
                     <div className="flex-1 overflow-y-auto p-4">
-                        <div className="flex justify-between items-center mb-2">
-                            <h4 className="font-semibold text-xs text-gray-500 uppercase">Verses</h4>
+                        <div className="flex justify-between items-center mb-2 px-1">
+                            <h4 className="section-label">
+                                {selectedBook && selectedChapter != null ? `${selectedBook} ${selectedChapter}` : 'Verses'}
+                            </h4>
                             {selectedBook && selectedChapter != null && chapterVerses.length > 0 && (
                                 <button
                                     onClick={toggleSelectAll}
-                                    className="text-xs text-brand hover:underline font-medium"
+                                    className="btn btn-ghost-brand btn-sm"
                                 >
                                     {allVersesSelected ? 'Deselect All' : 'Select All'}
                                 </button>
                             )}
                         </div>
                         {loadingVerses ? (
-                            <div className="text-gray-400 text-center mt-10">Loading verses...</div>
+                            <div className="text-gray-400 text-sm text-center mt-10">Loading verses...</div>
                         ) : selectedBook && selectedChapter != null ? (
                             <div className="grid grid-cols-1 gap-1">
                                 {chapterVerses.map(({ verse, text }) => (
                                     <div
                                         key={verse}
                                         onClick={(e) => handleVerseClick(verse, text, e)}
-                                        className={`p-2 rounded border cursor-pointer text-sm flex space-x-3 hover:border-brand-300 ${selectedVerses[String(verse)] ? 'bg-brand-50 border-brand-200' : 'border-transparent'}`}
+                                        className={`p-2 rounded-lg border cursor-pointer text-sm flex gap-3 select-none transition-colors ${selectedVerses[String(verse)] ? 'bg-brand-50 border-brand-200' : 'border-transparent hover:bg-gray-50 hover:border-gray-200'}`}
                                     >
-                                        <div className={`w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full border ${selectedVerses[String(verse)] ? 'bg-brand border-brand text-white' : 'border-gray-300 text-gray-400'}`}>
-                                            {selectedVerses[String(verse)] ? <Check size={14} /> : <span className="text-xs">{verse}</span>}
+                                        <div className={`w-6 h-6 shrink-0 flex items-center justify-center rounded-full border ${selectedVerses[String(verse)] ? 'bg-brand border-brand text-white' : 'border-gray-300 text-gray-400'}`}>
+                                            {selectedVerses[String(verse)] ? <Check size={14} /> : <span className="text-xs tabular-nums">{verse}</span>}
                                         </div>
                                         <p className="text-gray-800 leading-relaxed">{text}</p>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-gray-400 text-center mt-10">Select a book and chapter to view verses</div>
+                            <div className="text-gray-400 text-sm text-center mt-10">Select a book and chapter to view verses</div>
                         )}
                     </div>
+                </div>
+                <div className="px-6 py-2 border-t border-gray-200 bg-gray-50 text-xs text-gray-500">
+                    Tip: hold <kbd className="rounded border border-gray-300 bg-white px-1 font-sans">Shift</kbd> and click to select a range of verses.
                 </div>
             </div>
         </div>
