@@ -1,26 +1,44 @@
-import React, { useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Trash2, Plus, Image as ImageIcon, CalendarDays, Heading, Loader2 } from 'lucide-react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { ArrowDown, ArrowUp, Trash2, Plus, Image as ImageIcon, CalendarDays, Heading, Loader2, X } from 'lucide-react';
 import { SCRIPTURE_TOKEN } from '../series/engagementTypes';
 import { BLOCK_KINDS, newBlock } from '../series/blocks';
 import { fetchLinkInfo } from '../api/seriesBuilderApi';
 import ScriptureInput from './ScriptureInput';
 import { AutoTextarea } from './ui';
 
+/** Inserts {scripture} at the selection of `el` (or the end of `value`). */
+function insertTokenAt(el, value, onInsert) {
+    const start = el?.selectionStart ?? value.length;
+    const end = el?.selectionEnd ?? value.length;
+    onInsert(value.slice(0, start) + SCRIPTURE_TOKEN + value.slice(end));
+    requestAnimationFrame(() => {
+        el?.focus();
+        el?.setSelectionRange(start + SCRIPTURE_TOKEN.length, start + SCRIPTURE_TOKEN.length);
+    });
+}
+
+/** Live preview of {scripture} and the "Insert {scripture}" button under a text field. */
+function TokenFooter({ hasToken, readingLabel, onInsert }) {
+    return (
+        <div className="mt-1 flex items-start justify-between gap-3 text-xs">
+            <span className="min-w-0 text-gray-400">
+                {hasToken && readingLabel !== undefined && (
+                    readingLabel
+                        ? <>{'{scripture}'} → <span className="font-medium text-gray-600">{readingLabel}</span></>
+                        : <span className="text-amber-600">{'{scripture}'} needs the day’s scripture</span>
+                )}
+                {hasToken && readingLabel === undefined && <>{'{scripture}'} is replaced with each day’s scripture</>}
+            </span>
+            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={onInsert} className="shrink-0 font-semibold text-brand hover:text-brand-700">
+                + Insert {'{scripture}'}
+            </button>
+        </div>
+    );
+}
+
 /** Text area with an "Insert {scripture}" button and a live preview of the token. */
 function TokenTextarea({ value, onChange, placeholder, readingLabel, minRows = 2, coalesceKey }) {
     const ref = useRef(null);
-    const insertToken = () => {
-        const el = ref.current;
-        const start = el?.selectionStart ?? value.length;
-        const end = el?.selectionEnd ?? value.length;
-        const next = value.slice(0, start) + SCRIPTURE_TOKEN + value.slice(end);
-        onChange(next, coalesceKey);
-        requestAnimationFrame(() => {
-            el?.focus();
-            el?.setSelectionRange(start + SCRIPTURE_TOKEN.length, start + SCRIPTURE_TOKEN.length);
-        });
-    };
-    const hasToken = value.includes(SCRIPTURE_TOKEN);
     return (
         <div>
             <AutoTextarea
@@ -30,19 +48,106 @@ function TokenTextarea({ value, onChange, placeholder, readingLabel, minRows = 2
                 placeholder={placeholder}
                 onChange={(e) => onChange(e.target.value, coalesceKey)}
             />
-            <div className="mt-1 flex items-start justify-between gap-3 text-xs">
-                <span className="min-w-0 text-gray-400">
-                    {hasToken && readingLabel !== undefined && (
-                        readingLabel
-                            ? <>{'{scripture}'} → <span className="font-medium text-gray-600">{readingLabel}</span></>
-                            : <span className="text-amber-600">{'{scripture}'} needs the day’s scripture</span>
-                    )}
-                    {hasToken && readingLabel === undefined && <>{'{scripture}'} is replaced with each day’s scripture</>}
-                </span>
-                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={insertToken} className="shrink-0 font-semibold text-brand hover:text-brand-700">
-                    + Insert {'{scripture}'}
-                </button>
-            </div>
+            <TokenFooter
+                hasToken={value.includes(SCRIPTURE_TOKEN)}
+                readingLabel={readingLabel}
+                onInsert={() => insertTokenAt(ref.current, value, (next) => onChange(next, coalesceKey))}
+            />
+        </div>
+    );
+}
+
+/**
+ * Questions edited one per field. They are stored as newline-separated text,
+ * so Enter starts a new question, Backspace at the start of one joins it to
+ * the one above, and pasted lines become separate questions.
+ */
+function QuestionList({ value, onChange, placeholder, readingLabel, coalesceKey }) {
+    const questions = value ? value.split('\n') : [''];
+    const refs = useRef([]); // one { current } per question, as AutoTextarea needs a ref object
+    const refFor = (index) => (refs.current[index] ??= { current: null });
+    const pendingFocus = useRef(null); // { index, caret }
+    const lastFocused = useRef(0);
+
+    useLayoutEffect(() => {
+        const focus = pendingFocus.current;
+        if (!focus) return;
+        pendingFocus.current = null;
+        const el = refs.current[focus.index]?.current;
+        el?.focus();
+        el?.setSelectionRange(focus.caret, focus.caret);
+    });
+
+    // Typing coalesces into one undo step; adding, splitting and removing questions don't.
+    const commit = (next, focus, coalesce) => {
+        if (focus) pendingFocus.current = focus;
+        onChange(next.join('\n'), coalesce);
+    };
+    const replace = (index, count, ...items) => [...questions.slice(0, index), ...items, ...questions.slice(index + count)];
+
+    const edit = (index, text) => {
+        const lines = text.split(/\r?\n/);
+        if (lines.length === 1) commit(replace(index, 1, text), null, coalesceKey);
+        else commit(replace(index, 1, ...lines), { index: index + lines.length - 1, caret: lines.at(-1).length });
+    };
+    const onKeyDown = (index, e) => {
+        const el = e.currentTarget;
+        const caret = el.selectionStart;
+        const collapsed = caret === el.selectionEnd;
+        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            const text = questions[index];
+            commit(replace(index, 1, text.slice(0, caret), text.slice(el.selectionEnd)), { index: index + 1, caret: 0 });
+        } else if (e.key === 'Backspace' && collapsed && caret === 0 && index > 0) {
+            e.preventDefault();
+            const above = questions[index - 1];
+            commit(replace(index - 1, 2, above + questions[index]), { index: index - 1, caret: above.length });
+        }
+    };
+    const remove = (index) => {
+        const next = replace(index, 1);
+        commit(next.length ? next : [''], { index: Math.max(0, index - 1), caret: (next[index - 1] ?? '').length });
+    };
+    const add = () => commit([...questions, ''], { index: questions.length, caret: 0 });
+
+    return (
+        <div>
+            <ol className="space-y-1.5">
+                {questions.map((question, index) => (
+                    <li key={index} className="group/q flex items-start gap-2">
+                        <span className="mt-2.5 w-4 shrink-0 text-right text-xs font-semibold text-gray-400">{index + 1}.</span>
+                        <AutoTextarea
+                            textareaRef={refFor(index)}
+                            value={question}
+                            minRows={1}
+                            placeholder={index === 0 ? (placeholder ?? 'Type a question') : 'Next question'}
+                            onFocus={() => { lastFocused.current = index; }}
+                            onKeyDown={(e) => onKeyDown(index, e)}
+                            onChange={(e) => edit(index, e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            className="icon-btn mt-1 p-1 opacity-0 group-hover/q:opacity-100 focus:opacity-100 hover:bg-red-50 hover:text-red-600"
+                            title="Remove question"
+                            onClick={() => remove(index)}
+                            disabled={questions.length === 1 && !question}
+                        >
+                            <X size={14} />
+                        </button>
+                    </li>
+                ))}
+            </ol>
+            <button type="button" onClick={add} className="mt-1.5 ml-6 inline-flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-brand-700">
+                <Plus size={12} /> Add question
+            </button>
+            <TokenFooter
+                hasToken={value.includes(SCRIPTURE_TOKEN)}
+                readingLabel={readingLabel}
+                onInsert={() => {
+                    const index = Math.min(lastFocused.current, questions.length - 1);
+                    insertTokenAt(refFor(index).current, questions[index], (text) => commit(replace(index, 1, text), null, coalesceKey));
+                }}
+            />
         </div>
     );
 }
@@ -107,12 +212,11 @@ export function BlockContentEditor({ block, onChange, readingLabel, placeholder,
             );
         case 'question':
             return (
-                <TokenTextarea
+                <QuestionList
                     value={block.text ?? ''}
                     onChange={(text, key) => onChange({ text }, key)}
-                    placeholder={placeholder ?? 'One question per line'}
+                    placeholder={placeholder}
                     readingLabel={readingLabel}
-                    minRows={3}
                     coalesceKey={coalesceKey}
                 />
             );

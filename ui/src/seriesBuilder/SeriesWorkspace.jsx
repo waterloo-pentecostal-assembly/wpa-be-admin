@@ -128,12 +128,13 @@ export default function SeriesWorkspace({ draftId, selection, onSelect, onExit }
     // Templates and series details preview the day that was open last.
     const previewDay = day ?? draft.days.find((d) => d.id === lastDayId) ?? draft.days[0] ?? null;
     const errorCount = issues.filter((i) => i.level === 'error').length;
+    const linked = !!publishes.seriesId;
 
     return (
         <div className="flex min-h-0 flex-1 flex-col">
             {/* Toolbar */}
             <div className="flex h-12 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-3">
-                <button className="btn btn-ghost btn-sm" onClick={onExit} title="All drafts"><ArrowLeft size={16} /> Drafts</button>
+                <button className="btn btn-ghost btn-sm px-2" onClick={onExit} title="All series" aria-label="All series"><ArrowLeft size={16} /></button>
                 <span className="h-5 w-px bg-gray-200" />
                 <button className="min-w-0 truncate text-sm font-bold text-ink hover:text-brand" onClick={() => onSelect('series')}>
                     {draft.meta.title || 'Untitled series'}
@@ -142,7 +143,9 @@ export default function SeriesWorkspace({ draftId, selection, onSelect, onExit }
                 {activePublish && (
                     <button className="flex items-center gap-1.5 text-xs text-brand" onClick={() => onSelect('series')} title="Publishing; see Series details">
                         <Loader2 size={13} className="animate-spin" />
-                        Publishing to {activePublish.env} · {(activePublish.written ?? 0) + (activePublish.failedCount ?? 0)}/{activePublish.total}
+                        {activePublish.kind === 'update'
+                            ? 'Updating'
+                            : `Publishing · ${(activePublish.written ?? 0) + (activePublish.failed_count ?? 0)}/${activePublish.total}`}
                     </button>
                 )}
                 <div className="ml-auto flex items-center gap-1">
@@ -161,7 +164,7 @@ export default function SeriesWorkspace({ draftId, selection, onSelect, onExit }
                         <PanelRight size={15} /> Preview
                     </button>
                     <button className={`btn btn-sm ${env === 'prod' ? 'btn-dark' : 'btn-primary'}`} onClick={() => setModal({ type: 'publish' })}>
-                        <CloudUpload size={15} /> Publish{env ? ` to ${env}` : ''}
+                        <CloudUpload size={15} /> {linked ? `Update${env ? ` ${env}` : ''}` : `Publish${env ? ` to ${env}` : ''}`}
                         {errorCount > 0 && <span className="rounded-full bg-red-500 px-1.5 text-[10px]">{errorCount}</span>}
                     </button>
                 </div>

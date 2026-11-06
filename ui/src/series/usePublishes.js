@@ -1,4 +1,4 @@
-// Publish records for a draft, polled while a publish is running.
+// A draft's linked series and publish records, polled while a publish is running.
 import { useCallback, useEffect, useState } from 'react';
 import { getPublishes } from '../api/seriesBuilderApi';
 import { isLocalId } from './localDrafts';
@@ -8,6 +8,7 @@ const POLL_MS = 2000;
 
 export function usePublishes(draftId) {
     const [publishes, setPublishes] = useState([]);
+    const [seriesId, setSeriesId] = useState(null);
     const [error, setError] = useState(null);
     const [tick, setTick] = useState(0);
     const local = isLocalId(draftId);
@@ -18,9 +19,10 @@ export function usePublishes(draftId) {
         if (local) return undefined;
         let ignore = false;
         getPublishes(draftId)
-            .then((list) => {
+            .then((result) => {
                 if (ignore) return;
-                setPublishes(list);
+                setPublishes(result.publishes);
+                setSeriesId(result.seriesId);
                 setError(null);
             })
             .catch((e) => !ignore && setError(e.message));
@@ -34,5 +36,5 @@ export function usePublishes(draftId) {
         return () => clearTimeout(timer);
     }, [active, publishes, refresh]);
 
-    return { publishes, error, refresh, local };
+    return { publishes, seriesId, error, refresh, local };
 }

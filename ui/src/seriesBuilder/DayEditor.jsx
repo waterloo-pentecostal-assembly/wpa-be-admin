@@ -32,9 +32,11 @@ export default function DayEditor({
     const dayIssues = issues.filter((i) => i.dayId === day.id);
     const issuesFor = (engagementId) => dayIssues.filter((i) => i.engagementId === engagementId);
 
+    // Every type can be added, even one the day already has (e.g. a second Reflect).
+    // Planned types the day is missing come first and stand out.
     const presentTypes = new Set(day.engagements.map((e) => e.type));
     const missingDefaults = typesForDate(draft.engagementPlan, day.date).filter((t) => !presentTypes.has(t));
-    const otherTypes = ENGAGEMENT_TYPES.map((t) => t.id).filter((t) => !presentTypes.has(t) && !missingDefaults.includes(t));
+    const otherTypes = ENGAGEMENT_TYPES.map((t) => t.id).filter((t) => !missingDefaults.includes(t));
 
     const prevDay = draft.days[dayIndex - 1];
     const readingSuggestion = useMemo(() => {

@@ -9,7 +9,7 @@ import {
 } from '../ui/src/series/schedule.js';
 import { formatVerseRanges, referenceFromScriptures, splitReference } from '../ui/src/series/scriptureRefs.js';
 import {
-    ALL_WEEKDAYS, applySchedule, copyEngagementToDays, createDraft, detachEngagement, effectiveBlocks,
+    ALL_WEEKDAYS, addEngagement, applySchedule, copyEngagementToDays, createDraft, detachEngagement, effectiveBlocks,
     migrateDraft, movePlanType, relinkEngagement, scheduleChangeImpact, setEngagementValue, toggleTypeWeekday,
     updateDay, weekdayToggleImpact,
 } from '../ui/src/series/draftModel.js';
@@ -18,6 +18,7 @@ import { collectRefs, compileDraft, createLookup } from '../ui/src/series/compil
 import { importSeriesJson } from '../ui/src/series/importSeries.js';
 import { extractReference } from '../ui/src/series/planParsing.js';
 import { STALE_AFTER_MS, publishState } from '../ui/src/series/publishes.js';
+import { diffLines, entryLines } from '../ui/src/series/entryDiff.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -199,6 +200,28 @@ describe('draft model and compile', () => {
         assert.equal(draft.days[1].engagements.findIndex((e) => e.type === 'memorize'), memorizeIndex);
     });
 
+    test('a day can have two engagements of one type; copying the second replaces the second', () => {
+        let draft = setup();
+        const [d0, d1, d2] = draft.days;
+        draft = addEngagement(draft, d0.id, 'memorize');
+        draft = addEngagement(draft, d1.id, 'memorize');
+        const second = draft.days[0].engagements.filter((e) => e.type === 'memorize')[1];
+        const verseBlock = draft.templates.memorize.blocks.find((b) => b.perDay);
+        draft = setEngagementValue(draft, d0.id, second.id, verseBlock.id, { ref: 'John 3:16' });
+
+        const json = compileDraft(draft, lookupFor(draft)).json;
+        assert.equal(json.series_content.filter((e) => e.date === d0.date && e.content_type === 'memorize').length, 2);
+
+        const d1Before = draft.days[1].engagements.filter((e) => e.type === 'memorize');
+        draft = copyEngagementToDays(draft, d0.id, second.id, [d1.id, d2.id]);
+        const d1After = draft.days[1].engagements.filter((e) => e.type === 'memorize');
+        assert.equal(d1After.length, 2);
+        assert.equal(d1After[0].id, d1Before[0].id);
+        assert.equal(d1After[1].values[verseBlock.id].ref, 'John 3:16');
+        // Day 2 has one Memorize, so the copy of the second is added beside it.
+        assert.equal(draft.days[2].engagements.filter((e) => e.type === 'memorize').length, 2);
+    });
+
     test('applySchedule keeps sequence or dates, and reports what would be lost', () => {
         const draft = setup();
         const later = { ...schedule, start: '2026-02-09', end: '2026-02-13' };
@@ -285,10 +308,10 @@ describe('engagements by weekday', () => {
 describe('publish state', () => {
     test('active publishes become interrupted when the server stops updating them', () => {
         const now = 10_000_000;
-        assert.equal(publishState({ status: 'publishing', updatedAt: now - 1000 }, now), 'active');
-        assert.equal(publishState({ status: 'publishing', updatedAt: now - STALE_AFTER_MS - 1 }, now), 'interrupted');
-        assert.equal(publishState({ status: 'done', failedCount: 0 }, now), 'done');
-        assert.equal(publishState({ status: 'done', failedCount: 2 }, now), 'partial');
+        assert.equal(publishState({ status: 'publishing', updated_at: now - 1000 }, now), 'active');
+        assert.equal(publishState({ status: 'publishing', updated_at: now - STALE_AFTER_MS - 1 }, now), 'interrupted');
+        assert.equal(publishState({ status: 'done', failed_count: 0 }, now), 'done');
+        assert.equal(publishState({ status: 'done', failed_count: 2 }, now), 'partial');
         assert.equal(publishState({ status: 'failed' }, now), 'failed');
     });
 });
@@ -341,5 +364,46 @@ describe('importing existing series', () => {
         assert.ok(memorize.linked);
         const verse = effectiveBlocks(draft, memorize).find((b) => b.kind === 'scripture');
         assert.equal(verse.ref, 'Romans 1:16');
+    });
+});
+
+describe('update review diff', () => {
+    const entry = {
+        title: 'Read',
+        content_type: 'read',
+        body: [
+            { body_type: 'text', paragraphs: ['Read Romans 1:1-7 '] },
+            {
+                body_type: 'scripture', bible_version: 'NIV', attribution: 'Biblica',
+                scriptures: [{ book: 'Romans', chapter: '1', title: '', verses: { 2: 'the gospel he promised', 1: 'Paul, a servant' } }],
+            },
+        ],
+    };
+
+    test('entryLines shows every field, verses in order and trailing spaces', () => {
+        assert.deepEqual(entryLines(entry), [
+            'Title: Read',
+            '— Text',
+            'Read Romans 1:1-7·',
+            '— Scripture',
+            'Romans 1 · title: (blank)',
+            '1  Paul, a servant',
+            '2  the gospel he promised',
+            'attribution: Biblica',
+            'bible_version: NIV',
+        ]);
+    });
+
+    test('diffLines marks changed words and collapses unchanged lines', () => {
+        const before = ['a', 'b', 'c', 'd', 'e', 'Pray for the church', 'f'];
+        const after = ['a', 'b', 'c', 'd', 'e', 'Pray for our city', 'f', 'g'];
+        const diff = diffLines(before, after, { context: 1 });
+        assert.deepEqual(diff.map((l) => (l.type === 'skip' ? `skip ${l.count}` : `${l.type} ${l.text}`)), [
+            'skip 4', 'same e', 'del Pray for the church', 'add Pray for our city', 'same f', 'add g',
+        ]);
+        const changed = (segments) => segments.filter((s) => s.changed).map((s) => s.text);
+        assert.deepEqual(changed(diff[2].segments), ['the church']);
+        assert.deepEqual(changed(diff[3].segments), ['our city']);
+        assert.equal(diff[5].segments, undefined, 'a line with nothing to pair has no word highlights');
     });
 });

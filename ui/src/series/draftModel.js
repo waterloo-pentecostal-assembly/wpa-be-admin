@@ -308,20 +308,37 @@ function cloneEngagement(engagement) {
     return copy;
 }
 
+/** Which engagement of its type this is on the day: 0 for the first Reflect, 1 for the second, and so on. */
+export function typeOccurrence(day, engagementId) {
+    const engagement = day.engagements.find((e) => e.id === engagementId);
+    if (!engagement) return -1;
+    return day.engagements.filter((e) => e.type === engagement.type).findIndex((e) => e.id === engagementId);
+}
+
+/** Index in the day's engagements of the `occurrence`-th engagement of `type`, or -1. */
+export function indexOfTypeOccurrence(day, type, occurrence) {
+    let seen = -1;
+    return day.engagements.findIndex((e) => e.type === type && ++seen === occurrence);
+}
+
 /**
- * Copies an engagement to other days. On each target day an engagement of
- * the same type is replaced (keeping its position); otherwise it is added.
+ * Copies an engagement to other days. A day can have several engagements of
+ * one type, so on each target day the one in the same place among its type
+ * (e.g. the second Reflect) is replaced, keeping its position; otherwise the
+ * copy is added.
  */
 export function copyEngagementToDays(draft, sourceDayId, engagementId, targetDayIds) {
-    const source = draft.days.find((d) => d.id === sourceDayId)?.engagements.find((e) => e.id === engagementId);
+    const sourceDay = draft.days.find((d) => d.id === sourceDayId);
+    const source = sourceDay?.engagements.find((e) => e.id === engagementId);
     if (!source) return draft;
+    const occurrence = typeOccurrence(sourceDay, engagementId);
     const targets = new Set(targetDayIds.filter((id) => id !== sourceDayId));
     return {
         ...draft,
         days: draft.days.map((day) => {
             if (!targets.has(day.id)) return day;
             const copy = cloneEngagement(source);
-            const index = day.engagements.findIndex((e) => e.type === source.type);
+            const index = indexOfTypeOccurrence(day, source.type, occurrence);
             const engagements = [...day.engagements];
             if (index >= 0) engagements[index] = copy;
             else engagements.push(copy);

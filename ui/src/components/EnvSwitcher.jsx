@@ -1,26 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Zap, ShieldCheck } from 'lucide-react';
+import { useEnv } from '../contexts/EnvContext';
 
 const EnvSwitcher = () => {
-    const [env, setEnv] = useState('prod');
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetch('/api/env/current')
-            .then(res => res.json())
-            .then(data => {
-                setEnv(data.env);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Failed to fetch env', err);
-                setLoading(false);
-            });
-    }, []);
+    const { env: currentEnv, loaded } = useEnv();
+    const [switching, setSwitching] = useState(false);
+    const env = currentEnv ?? 'prod';
+    const loading = !loaded || switching;
 
     const toggleEnv = async () => {
         const newEnv = env === 'prod' ? 'dev' : 'prod';
-        setLoading(true);
+        setSwitching(true);
         try {
             const res = await fetch('/api/env/switch', {
                 method: 'POST',
@@ -29,18 +19,22 @@ const EnvSwitcher = () => {
             });
             const data = await res.json();
             if (data.success) {
-                setEnv(data.env);
-                // Reload the page to ensure all data is fresh from new DB
-                window.location.reload();
-            } else {
-                alert('Failed to switch environment');
+                // Reload with the new env in the URL so all data is fresh from
+                // the new DB. An open series builder draft belongs to the old
+                // env, so it is dropped.
+                const url = new URL(window.location.href);
+                url.searchParams.set('env', data.env);
+                url.searchParams.delete('draft');
+                url.searchParams.delete('view');
+                window.location.replace(url);
+                return;
             }
+            alert('Failed to switch environment');
         } catch (error) {
             console.error('Error switching env', error);
             alert('Error switching environment');
-        } finally {
-            setLoading(false);
         }
+        setSwitching(false);
     };
 
     if (loading) {

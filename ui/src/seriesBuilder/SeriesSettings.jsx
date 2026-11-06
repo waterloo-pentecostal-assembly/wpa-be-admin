@@ -3,7 +3,7 @@ import { CalendarRange, CloudUpload } from 'lucide-react';
 import { describeSchedule } from '../series/schedule';
 import { formatShort } from '../series/dates';
 import ImageUploader from './ImageUploader';
-import PublishStatus from './PublishStatus';
+import PublishStatus, { CopyId } from './PublishStatus';
 
 export default function SeriesSettings({ draft, update, env, publishes, onEditSchedule }) {
     const meta = draft.meta;
@@ -59,7 +59,8 @@ export default function SeriesSettings({ draft, update, env, publishes, onEditSc
             <div className="card mt-5 p-5">
                 <div className="mb-3 flex items-center gap-2">
                     <CloudUpload size={18} className="text-brand" />
-                    <h3 className="font-semibold text-ink">Published</h3>
+                    <h3 className="font-semibold text-ink">{publishes.seriesId ? 'Published' : 'Not published'}</h3>
+                    {publishes.seriesId && <span className="ml-auto flex items-center gap-1.5 text-xs text-gray-500">Series ID <CopyId id={publishes.seriesId} /></span>}
                 </div>
                 {publishes.local ? (
                     <p className="text-sm text-gray-500">This draft is only in this browser, so publishes aren’t recorded.</p>

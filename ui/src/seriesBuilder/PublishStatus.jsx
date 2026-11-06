@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Loader2, AlertCircle, AlertTriangle, Copy, Check } from 'lucide-react';
 import { publishState } from '../series/publishes';
+import { useAuth } from '../contexts/AuthContext';
 
-function CopyId({ id }) {
+export function CopyId({ id }) {
     const [copied, setCopied] = useState(false);
     return (
         <button
@@ -19,11 +20,14 @@ function CopyId({ id }) {
     );
 }
 
-/** One publish record: environment, status/progress, series ID and any failed entries. */
+/** One publish record: status/progress, who started it and any failed entries. */
 export default function PublishStatus({ publish, large = false }) {
     const [showFailed, setShowFailed] = useState(false);
+    const uid = useAuth()?.currentUser?.uid;
+    // `updated_by` is a Firebase Auth user ID.
+    const byYou = !!publish.updated_by && publish.updated_by === uid;
     const state = publishState(publish);
-    const done = (publish.written ?? 0) + (publish.failedCount ?? 0);
+    const done = (publish.written ?? 0) + (publish.failed_count ?? 0);
     const pct = publish.total ? Math.round((done / publish.total) * 100) : 0;
 
     const icon = {
@@ -34,10 +38,17 @@ export default function PublishStatus({ publish, large = false }) {
         interrupted: <AlertCircle size={large ? 20 : 15} className="text-red-500" />,
     }[state];
 
-    const label = {
+    const changes = `${publish.updated ?? 0} changed, ${publish.added ?? 0} added, ${publish.removed ?? 0} removed`;
+    const label = publish.kind === 'update' ? {
+        active: `Updating… (${changes})`,
+        done: `Updated: ${changes}`,
+        partial: `Updated: ${changes}`,
+        failed: `Update failed${publish.error ? `: ${publish.error}` : ''}`,
+        interrupted: 'Update interrupted (the server stopped). Open Publish to review and finish it.',
+    }[state] : publish.kind === 'import' ? `Opened from the app (${publish.total} entries)` : {
         active: publish.status === 'starting' ? 'Creating series…' : `Writing entries… ${done} of ${publish.total}`,
         done: `Published ${publish.written} entries`,
-        partial: `Published ${publish.written} of ${publish.total} entries · ${publish.failedCount} failed`,
+        partial: `Published ${publish.written} of ${publish.total} entries · ${publish.failed_count} failed`,
         failed: `Failed${publish.error ? `: ${publish.error}` : ''}`,
         interrupted: `Interrupted after ${done} of ${publish.total} entries (the server stopped). Check the series in Firebase before publishing again.`,
     }[state];
@@ -48,16 +59,17 @@ export default function PublishStatus({ publish, large = false }) {
                 <span className="mt-0.5 shrink-0">{icon}</span>
                 <div className="min-w-0 flex-1">
                     <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${large ? 'text-base font-semibold text-ink' : 'text-sm text-gray-800'}`}>
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${publish.env === 'prod' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'}`}>{publish.env}</span>
                         <span>{label}</span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                        <span>{new Date(publish.startedAt).toLocaleString()}</span>
-                        {publish.seriesId && <>· Series ID <CopyId id={publish.seriesId} /></>}
+                        <span>{new Date(publish.started_at).toLocaleString()}</span>
+                        {publish.updated_by && (byYou
+                            ? <span>· by you</span>
+                            : <span>· by <span className="font-mono">{publish.updated_by}</span></span>)}
                     </div>
                 </div>
             </div>
-            {state === 'active' && publish.status === 'publishing' && (
+            {state === 'active' && publish.status === 'publishing' && !publish.kind && (
                 <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
                     <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${pct}%` }} />
                 </div>

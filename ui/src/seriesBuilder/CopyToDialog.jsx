@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { copyEngagementToDays, copyReadingToDays } from '../series/draftModel';
+import { copyEngagementToDays, copyReadingToDays, indexOfTypeOccurrence, typeOccurrence } from '../series/draftModel';
 import { formatShort, startOfWeek, weekdayOf, WEEKDAY_LONG, WEEKDAY_SHORT } from '../series/dates';
 import { typeLabel } from '../series/engagementTypes';
 import { Dialog, TypeChip } from './ui';
@@ -42,8 +42,9 @@ export default function CopyToDialog({ draft, sourceDayId, target, update, onClo
         return next;
     });
 
+    const occurrence = engagement ? typeOccurrence(sourceDay, engagement.id) : -1;
     const replaceCount = engagement
-        ? draft.days.filter((d) => selected.has(d.id) && d.engagements.some((e) => e.type === engagement.type)).length
+        ? draft.days.filter((d) => selected.has(d.id) && indexOfTypeOccurrence(d, engagement.type, occurrence) >= 0).length
         : draft.days.filter((d) => selected.has(d.id) && d.reading?.ref).length;
 
     const confirm = () => {

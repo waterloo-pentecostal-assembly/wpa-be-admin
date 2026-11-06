@@ -57,7 +57,8 @@ function TemplateBlockPreview({ block, readingLabel }) {
                     {block.title && <p className="font-semibold text-gray-700">{block.title}</p>}
                     {block.kind === 'question' ? (
                         <ol className="list-decimal pl-5 space-y-0.5">
-                            {lines.map((l, i) => <li key={i} className="line-clamp-1">{substitute(l, readingLabel)}</li>)}
+                            {/* Clamp an inner element: line-clamp on the <li> replaces display: list-item and hides the number. */}
+                            {lines.map((l, i) => <li key={i}><span className="line-clamp-1">{substitute(l, readingLabel)}</span></li>)}
                         </ol>
                     ) : (
                         lines.map((l, i) => <p key={i} className="line-clamp-2">{substitute(l, readingLabel)}</p>)

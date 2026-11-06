@@ -51,7 +51,7 @@ export function listLocalOnly() {
                 dayCount: days.length,
                 startDate: days[0]?.date ?? '',
                 endDate: days.at(-1)?.date ?? '',
-                publishedCount: 0,
+                seriesId: null,
                 updatedAt: entry.savedAt,
                 local: true,
             });

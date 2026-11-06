@@ -15,7 +15,9 @@ import { createBibleRouter } from './src/routes/bibleRoutes.js';
 import { DraftService } from './src/services/draftService.js';
 import { StorageService } from './src/services/storageService.js';
 import { PublishService } from './src/services/publishService.js';
-import { createDraftRouter, createOembedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
+import { PublishedSeriesService } from './src/services/publishedSeries.js';
+import { createRecompiler } from './src/services/seriesBaseline.js';
+import { createDraftRouter, createOembedRouter, createPublishedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,13 +33,14 @@ let userManagerService = null;
 let dataLoaderService = null;
 let notificationTestingService = null;
 let storageService = null;
+let publishedSeriesService = null;
 let currentEnv = 'prod'; // 'prod' or 'dev'
 
-// Series builder drafts live in their own named Firebase app that is not
-// touched by the env switcher, so switching env to publish never hides a
-// draft. Prod credentials are preferred; dev is used when prod is missing.
-let draftService = null;
-let draftsProjectId = null;
+// Series builder drafts are kept per environment, in that environment's own
+// Firestore: the env switcher changes which drafts are listed, and a draft is
+// moved across with "Copy to prod/dev". Each env has its own named Firebase
+// app so draft storage survives the default app being recreated on a switch.
+const draftStores = {}; // env -> { service: DraftService, projectId }
 
 function loadServiceAccount(env) {
     let serviceAccount = null;
@@ -88,16 +91,22 @@ function initializeDraftStorage() {
         const serviceAccount = loadServiceAccount(env);
         if (!serviceAccount) continue;
         try {
-            const app = admin.initializeApp({ credential: admin.credential.cert(serviceAccount) }, 'series-drafts');
-            draftService = new DraftService(app.firestore());
-            draftsProjectId = serviceAccount.project_id;
-            console.log(`Series builder drafts stored in ${draftsProjectId} (${env})`);
-            return;
+            const app = admin.initializeApp({ credential: admin.credential.cert(serviceAccount) }, `series-drafts-${env}`);
+            const service = new DraftService(app.firestore(), { env });
+            draftStores[env] = { service, projectId: serviceAccount.project_id };
+            console.log(`Series builder ${env} drafts stored in ${serviceAccount.project_id}`);
+            // Drafts written before the snake_case keys are rewritten once; they
+            // are readable either way, so this runs in the background.
+            service.migrateKeys()
+                .then((count) => count && console.log(`Migrated ${count} ${env} drafts to snake_case keys`))
+                .catch((error) => console.error(`Could not migrate ${env} draft keys:`, error));
         } catch (error) {
-            console.error(`Failed to initialize draft storage with ${env} credentials:`, error);
+            console.error(`Failed to initialize ${env} draft storage:`, error);
         }
     }
-    console.warn('No Firebase credentials found for draft storage. The series builder will keep drafts in the browser only.');
+    if (!Object.keys(draftStores).length) {
+        console.warn('No Firebase credentials found for draft storage. The series builder will keep drafts in the browser only.');
+    }
 }
 
 async function initializeFirebase(env = 'prod') {
@@ -106,6 +115,7 @@ async function initializeFirebase(env = 'prod') {
         if (admin.apps.some((a) => a.name === '[DEFAULT]')) {
             await admin.app().delete();
             storageService = null;
+            publishedSeriesService = null;
         }
 
         const serviceAccount = loadServiceAccount(env);
@@ -124,6 +134,7 @@ async function initializeFirebase(env = 'prod') {
             dataFetchingService = new DataFetchingService(db);
             userManagerService = new UserManagerService(db, auth, messaging);
             dataLoaderService = new DataLoaderService(db);
+            publishedSeriesService = new PublishedSeriesService(db, { recompile: createRecompiler(bibleService) });
             notificationTestingService = new NotificationTestingService(admin);
             storageService = new StorageService(admin.storage().bucket());
             currentEnv = env;
@@ -137,13 +148,6 @@ async function initializeFirebase(env = 'prod') {
         return false;
     }
 }
-
-// Initialize default (prod) on startup
-initializeFirebase('prod');
-initializeDraftStorage();
-
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
 
 // Paths
 const DATA_DIR = path.join(__dirname, 'src', 'data', 'bible_series');
@@ -159,6 +163,13 @@ try {
 } catch (error) {
     console.warn(`NIV Bible data not available from ${NIV_FILE}: ${error.message}`);
 }
+
+// Initialize default (prod) on startup (after the Bible data, which updates use)
+initializeFirebase('prod');
+initializeDraftStorage();
+
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
 
 // Get Firebase Client Config
 app.get('/api/firebase-config', (req, res) => {
@@ -255,13 +266,20 @@ app.get('/api/stats', async (req, res) => {
 //   GET /api/bible/niv/passage?ref=Romans%204%3A1-6
 app.use('/api/bible/niv', createBibleRouter(bibleService));
 
-// Series builder: drafts (autosave), cover image upload, song link titles
+// Series builder: drafts (autosave), publishing/updating series, cover
+// image upload, song link titles
 const publishService = new PublishService({
-    getDrafts: () => draftService,
+    getDrafts: () => draftStores[currentEnv]?.service ?? null,
     getLoader: () => dataLoaderService,
+    getPublished: () => publishedSeriesService,
     getEnv: () => currentEnv,
 });
-app.use('/api/drafts', createDraftRouter(() => ({ service: draftService, projectId: draftsProjectId }), publishService));
+app.use('/api/drafts', createDraftRouter(
+    () => ({ service: draftStores[currentEnv]?.service ?? null, projectId: draftStores[currentEnv]?.projectId ?? null, env: currentEnv }),
+    publishService,
+    (env) => draftStores[env]?.service ?? null,
+));
+app.use('/api/published', createPublishedRouter(() => ({ service: publishedSeriesService, env: currentEnv })));
 app.use('/api/storage', createStorageRouter(() => ({ service: storageService, env: currentEnv })));
 app.use('/api/oembed', createOembedRouter());
 

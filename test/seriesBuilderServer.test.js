@@ -24,24 +24,18 @@ function fakeFirestore() {
         set: async (data) => { docs.set(id, { ...data }); },
         update: async (patch) => { docs.set(id, { ...docs.get(id), ...patch }); },
     });
+    const all = async () => ({ docs: [...docs.keys()].map(snapshot) });
     const collection = {
         doc: (id) => docRef(id ?? `doc${++counter}`),
-        orderBy: () => ({
-            limit: () => ({
-                get: async () => ({
-                    docs: [...docs.keys()]
-                        .sort((a, b) => docs.get(b).updatedAt.toMillis() - docs.get(a).updatedAt.toMillis())
-                        .map(snapshot),
-                }),
-            }),
-        }),
+        get: all,
+        select: () => ({ get: all }),
     };
     return {
         docs,
         collection: () => collection,
         runTransaction: async (fn) => fn({
             get: (ref) => ref.get(),
-            update: (ref, patch) => { docs.set(ref.id, { ...docs.get(ref.id), ...patch }); },
+            set: (ref, data) => { docs.set(ref.id, { ...data }); },
         }),
     };
 }
@@ -113,20 +107,74 @@ describe('publish records', () => {
         const firestore = fakeFirestore();
         const service = new DraftService(firestore, { now });
         const { id } = await service.create(draftFixture());
-        const publish = await service.addPublish(id, { env: 'dev', status: 'starting', seriesId: null, total: 2 });
-        await service.updatePublish(id, publish.id, { status: 'publishing', seriesId: 'S1' });
+        assert.equal((await service.list())[0].seriesId, null);
+        const publish = await service.addPublish(id, { status: 'starting', total: 2, updated_by: 'uid-admin-1' });
+        await service.setSeriesId(id, 'S1');
+        await service.updatePublish(id, publish.id, { status: 'publishing' });
         await service.save(id, draftFixture('renamed'), 1);
         await service.updatePublish(id, publish.id, { status: 'done', written: 2 });
 
-        const [record] = await service.getPublishes(id);
-        assert.equal(record.seriesId, 'S1');
+        const { seriesId, publishes: [record] } = await service.getPublishes(id);
+        assert.equal(seriesId, 'S1');
         assert.equal(record.status, 'done');
-        assert.equal(typeof record.finishedAt, 'number');
+        assert.equal(record.updated_by, 'uid-admin-1');
+        assert.equal(typeof record.finished_at, 'number');
+        assert.equal(firestore.docs.get(id).series_id, 'S1');
         assert.equal(firestore.docs.get(id).publishes.length, 1);
         assert.ok(!JSON.parse(firestore.docs.get(id).data).publishes, 'not part of the draft data');
         const [summary] = await service.list();
-        assert.equal(summary.publishedCount, 1);
+        assert.equal(summary.seriesId, 'S1');
         assert.equal(summary.title, 'renamed');
+    });
+
+    test('camelCase documents from before are read, rewritten on write, and migrated', async () => {
+        const firestore = fakeFirestore();
+        const service = new DraftService(firestore, { now, env: 'prod' });
+        const ts = (t) => ({ toMillis: () => t });
+        const legacy = (title, updatedAt) => ({
+            title, dayCount: 2, startDate: '2026-02-02', endDate: '2026-02-03', data: JSON.stringify(draftFixture(title)),
+            rev: 1, createdAt: ts(1), updatedAt: ts(updatedAt), deleted: false, source: { env: 'dev', draftId: 'D1' },
+            publishes: [{ id: 'p1', env: 'prod', seriesId: 'S1', status: 'done', failedCount: 0, startedAt: ts(1), updatedAt: ts(2), finishedAt: ts(2) }],
+        });
+        firestore.docs.set('old', legacy('Old', 5));
+        firestore.docs.set('older', legacy('Older', 3));
+        const { id: fresh } = await service.create(draftFixture('New'));
+
+        const listed = await service.list();
+        assert.deepEqual(listed.map((d) => [d.title, d.dayCount, d.seriesId]), [['New', 2, null], ['Old', 2, 'S1'], ['Older', 2, 'S1']]);
+        const { publishes: [record] } = await service.getPublishes('old');
+        assert.equal(record.failed_count, 0);
+        assert.equal(record.finished_at, 2);
+        await assert.rejects(service.copyIn(draftFixture(), { env: 'dev', draft_id: 'D1' }), (e) => e.status === 409 && e.details.draftId === 'old');
+
+        const camel = (doc) => JSON.stringify(doc).match(/"[a-z]+[A-Z]\w*":/g) ?? [];
+        await service.save('old', draftFixture('Old 2'), 1);
+        assert.deepEqual(camel(firestore.docs.get('old')), [], 'a write rewrites the whole document');
+        assert.equal(firestore.docs.get('old').series_id, 'S1');
+        assert.equal(firestore.docs.get('old').source.draft_id, 'D1');
+
+        assert.equal(await service.migrateKeys(), 1);
+        assert.deepEqual(camel(firestore.docs.get('older')), []);
+        assert.equal(firestore.docs.get('older').updated_at.toMillis(), 3);
+        assert.equal(await service.migrateKeys(), 0, 'safe to run again');
+        assert.deepEqual(camel(firestore.docs.get(fresh)), []);
+    });
+
+    test('drafts saved before series_id existed take it from their publish records', async () => {
+        const firestore = fakeFirestore();
+        const service = new DraftService(firestore, { now, env: 'prod' });
+        const { id } = await service.create(draftFixture());
+        const { series_id: _omit, ...legacy } = firestore.docs.get(id);
+        firestore.docs.set(id, {
+            ...legacy,
+            publishes: [
+                { id: 'p1', env: 'prod', seriesId: 'PROD1', status: 'done' },
+                { id: 'p2', env: 'dev', seriesId: 'DEV1', status: 'done' },
+                { id: 'p3', env: 'prod', seriesId: 'PROD1', kind: 'update', status: 'done' },
+            ],
+        });
+        assert.equal((await service.getPublishes(id)).seriesId, 'PROD1', 'the dev series belongs to the dev drafts');
+        assert.equal((await service.list())[0].seriesId, 'PROD1');
     });
 });
 
@@ -159,17 +207,19 @@ describe('PublishService', () => {
     test('records the series ID immediately and the result when content finishes', async () => {
         const { drafts, publisher, calls } = setup();
         const { id: draftId } = await drafts.create(draftFixture());
-        const started = await publisher.start(draftId, structuredClone(json));
+        const started = await publisher.start(draftId, structuredClone(json), { updatedBy: 'uid-admin-1' });
         assert.equal(started.seriesId, 'SERIES1');
         assert.equal(started.status, 'publishing');
-        assert.equal(started.env, 'dev');
+        assert.equal((await drafts.getPublishes(draftId)).seriesId, 'SERIES1', 'linked before the content is written');
 
         await Promise.all(publisher.running.values());
-        const [record] = await drafts.getPublishes(draftId);
+        const { seriesId, publishes: [record] } = await drafts.getPublishes(draftId);
+        assert.equal(seriesId, 'SERIES1');
         assert.equal(record.status, 'done');
-        assert.equal(record.seriesId, 'SERIES1');
+        assert.equal(record.updated_by, 'uid-admin-1');
+        assert.ok(!('env' in record) && !('seriesId' in record));
         assert.equal(record.written, 1);
-        assert.equal(record.failedCount, 1);
+        assert.equal(record.failed_count, 1);
         assert.equal(record.failed[0].error, 'boom');
         assert.deepEqual(calls, ['series', 'content:SERIES1']);
     });
@@ -178,7 +228,8 @@ describe('PublishService', () => {
         const { drafts, publisher, calls } = setup({ loadBibleSeries: async () => { throw new Error('permission denied'); } });
         const { id: draftId } = await drafts.create(draftFixture());
         await assert.rejects(publisher.start(draftId, structuredClone(json)), (e) => e instanceof PublishError && e.status === 502);
-        const [record] = await drafts.getPublishes(draftId);
+        const { seriesId, publishes: [record] } = await drafts.getPublishes(draftId);
+        assert.equal(seriesId, null);
         assert.equal(record.status, 'failed');
         assert.match(record.error, /permission denied/);
         assert.deepEqual(calls, []);
@@ -200,13 +251,16 @@ describe('PublishService', () => {
 describe('DataLoaderService.loadSeriesContent', () => {
     test('reports written and failed entries', async () => {
         const added = [];
+        let snippet = null;
         const firestore = {
             collection: () => ({
                 doc: () => ({
+                    update: async (patch) => { snippet = patch; },
                     collection: () => ({
                         add: async (entry) => {
                             if (entry.content_type === 'bad') throw new Error('write rejected');
                             added.push(entry);
+                            return { id: `C${added.length}` };
                         },
                     }),
                 }),
@@ -222,6 +276,7 @@ describe('DataLoaderService.loadSeriesContent', () => {
         assert.deepEqual(report.failed.map((f) => [f.index, f.date, f.content_type, f.error]), [[0, '2026-02-02', 'bad', 'write rejected']]);
         assert.deepEqual(progress.at(-1), { written: 1, failed: 1, total: 2 });
         assert.equal(added.length, 1);
+        assert.deepEqual(snippet.series_content_snippet.map((d) => d.content_types), [[{ content_type: 'read', content_id: 'C1' }]]);
     });
 });
 
@@ -250,12 +305,12 @@ describe('draft routes', () => {
         assert.equal(conflict.status, 409);
         assert.equal((await conflict.json()).rev, 2);
         const status = await (await fetch(`${base}/api/drafts/status`)).json();
-        assert.deepEqual(status, { available: true, projectId: 'test-project' });
+        assert.deepEqual(status, { available: true, projectId: 'test-project', env: null });
     });
 
     test('reports 503 when draft storage is unavailable', async () => {
         assert.equal((await fetch(`${base}/api/none`)).status, 503);
-        assert.deepEqual(await (await fetch(`${base}/api/none/status`)).json(), { available: false, projectId: null });
+        assert.deepEqual(await (await fetch(`${base}/api/none/status`)).json(), { available: false, projectId: null, env: null });
     });
 });
 
