@@ -1,26 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Database, Zap, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Zap, ShieldCheck } from 'lucide-react';
+import { useEnv } from '../contexts/EnvContext';
 
 const EnvSwitcher = () => {
-    const [env, setEnv] = useState('prod');
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetch('/api/env/current')
-            .then(res => res.json())
-            .then(data => {
-                setEnv(data.env);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Failed to fetch env', err);
-                setLoading(false);
-            });
-    }, []);
+    const { env: currentEnv, loaded } = useEnv();
+    const [switching, setSwitching] = useState(false);
+    const env = currentEnv ?? 'prod';
+    const loading = !loaded || switching;
 
     const toggleEnv = async () => {
         const newEnv = env === 'prod' ? 'dev' : 'prod';
-        setLoading(true);
+        setSwitching(true);
         try {
             const res = await fetch('/api/env/switch', {
                 method: 'POST',
@@ -29,32 +19,40 @@ const EnvSwitcher = () => {
             });
             const data = await res.json();
             if (data.success) {
-                setEnv(data.env);
-                // Reload the page to ensure all data is fresh from new DB
-                window.location.reload();
-            } else {
-                alert('Failed to switch environment');
+                // Reload with the new env in the URL so all data is fresh from
+                // the new DB. An open series builder draft belongs to the old
+                // env, so it is dropped.
+                const url = new URL(window.location.href);
+                url.searchParams.set('env', data.env);
+                url.searchParams.delete('draft');
+                url.searchParams.delete('view');
+                window.location.replace(url);
+                return;
             }
+            alert('Failed to switch environment');
         } catch (error) {
             console.error('Error switching env', error);
             alert('Error switching environment');
-        } finally {
-            setLoading(false);
         }
+        setSwitching(false);
     };
 
-    if (loading) return <div className="text-white/50 text-xs">...</div>;
+    if (loading) {
+        return <div className="h-7 w-16 rounded-full bg-white/10 animate-pulse" aria-label="Loading environment" />;
+    }
+
+    const isProd = env === 'prod';
 
     return (
         <button
             onClick={toggleEnv}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${env === 'prod'
-                    ? 'bg-blue-900 border-blue-700 text-blue-100 hover:bg-blue-800'
-                    : 'bg-amber-900 border-amber-700 text-amber-100 hover:bg-amber-800'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-colors border ${isProd
+                ? 'bg-white/5 border-white/20 text-white hover:bg-white/10'
+                : 'bg-amber-400/15 border-amber-400/50 text-amber-200 hover:bg-amber-400/25'
                 }`}
             title={`Current Environment: ${env.toUpperCase()}. Click to switch.`}
         >
-            {env === 'prod' ? <ShieldCheck size={14} /> : <Zap size={14} />}
+            {isProd ? <ShieldCheck size={14} className="text-emerald-400" /> : <Zap size={14} />}
             <span>{env.toUpperCase()}</span>
         </button>
     );

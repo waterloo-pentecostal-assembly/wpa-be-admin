@@ -9,6 +9,15 @@ import { DataFetchingService } from './src/services/dataFetchingService.js';
 import { UserManagerService } from './src/services/userManagerService.js';
 import { DataLoaderService } from './src/services/dataLoaderService.js';
 import { NotificationTestingService } from './src/services/notificationTestingService.js';
+import { generateSeriesFromOutline, populateBibleVerses } from './src/services/bibleSeriesGeneratorService.js';
+import { loadBibleService } from './src/services/bibleService.js';
+import { createBibleRouter } from './src/routes/bibleRoutes.js';
+import { DraftService } from './src/services/draftService.js';
+import { StorageService } from './src/services/storageService.js';
+import { PublishService } from './src/services/publishService.js';
+import { PublishedSeriesService } from './src/services/publishedSeries.js';
+import { createRecompiler } from './src/services/seriesBaseline.js';
+import { createDraftRouter, createOembedRouter, createPublishedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,52 +32,98 @@ let dataFetchingService = null;
 let userManagerService = null;
 let dataLoaderService = null;
 let notificationTestingService = null;
+let storageService = null;
+let publishedSeriesService = null;
 let currentEnv = 'prod'; // 'prod' or 'dev'
+
+// Series builder drafts are kept per environment, in that environment's own
+// Firestore: the env switcher changes which drafts are listed, and a draft is
+// moved across with "Copy to prod/dev". Each env has its own named Firebase
+// app so draft storage survives the default app being recreated on a switch.
+const draftStores = {}; // env -> { service: DraftService, projectId }
+
+function loadServiceAccount(env) {
+    let serviceAccount = null;
+    const filename = env === 'dev' ? 'service-account-dev.json' : 'service-account.json';
+
+    // 1. Try Render Secret File (Production)
+    const renderSecretPath = `/etc/secrets/${filename}`;
+    if (fs.existsSync(renderSecretPath)) {
+        try {
+            serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
+            console.log(`Loaded Firebase ${env} credentials from Render Secret File`);
+        } catch (e) {
+            console.error("Failed to parse Render Secret File", e);
+        }
+    }
+
+    // 2. Try Environment Variable (Fallback)
+    const envVarName = env === 'dev' ? 'FIREBASE_SERVICE_ACCOUNT_DEV' : 'FIREBASE_SERVICE_ACCOUNT';
+    if (!serviceAccount && process.env[envVarName]) {
+        try {
+            serviceAccount = JSON.parse(process.env[envVarName]);
+            console.log(`Loaded Firebase ${env} credentials from Environment Variable`);
+        } catch (e) {
+            console.error(`Failed to parse ${envVarName} env var`, e);
+        }
+    }
+
+    // 3. Try Local File (Development)
+    if (!serviceAccount) {
+        const serviceAccountPath = path.join(__dirname, 'src', 'config', filename);
+        if (fs.existsSync(serviceAccountPath)) {
+            serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+            console.log(`Loaded Firebase ${env} credentials from local file: ${filename}`);
+        }
+    }
+    return serviceAccount;
+}
+
+// Cover images go to the project's default bucket (<project>.appspot.com,
+// matching existing image_gs_location values) unless overridden.
+function storageBucketFor(env, serviceAccount) {
+    const override = env === 'dev' ? process.env.FIREBASE_STORAGE_BUCKET_DEV : process.env.FIREBASE_STORAGE_BUCKET;
+    return override || `${serviceAccount.project_id}.appspot.com`;
+}
+
+function initializeDraftStorage() {
+    for (const env of ['prod', 'dev']) {
+        const serviceAccount = loadServiceAccount(env);
+        if (!serviceAccount) continue;
+        try {
+            const app = admin.initializeApp({ credential: admin.credential.cert(serviceAccount) }, `series-drafts-${env}`);
+            const service = new DraftService(app.firestore(), { env });
+            draftStores[env] = { service, projectId: serviceAccount.project_id };
+            console.log(`Series builder ${env} drafts stored in ${serviceAccount.project_id}`);
+            // Drafts written before the snake_case keys are rewritten once; they
+            // are readable either way, so this runs in the background.
+            service.migrateKeys()
+                .then((count) => count && console.log(`Migrated ${count} ${env} drafts to snake_case keys`))
+                .catch((error) => console.error(`Could not migrate ${env} draft keys:`, error));
+        } catch (error) {
+            console.error(`Failed to initialize ${env} draft storage:`, error);
+        }
+    }
+    if (!Object.keys(draftStores).length) {
+        console.warn('No Firebase credentials found for draft storage. The series builder will keep drafts in the browser only.');
+    }
+}
 
 async function initializeFirebase(env = 'prod') {
     try {
         // If an app already exists, delete it
-        if (admin.apps.length) {
+        if (admin.apps.some((a) => a.name === '[DEFAULT]')) {
             await admin.app().delete();
+            storageService = null;
+            publishedSeriesService = null;
         }
 
-        let serviceAccount;
-        const filename = env === 'dev' ? 'service-account-dev.json' : 'service-account.json';
-
-        // 1. Try Render Secret File (Production)
-        const renderSecretPath = `/etc/secrets/${filename}`;
-        if (fs.existsSync(renderSecretPath)) {
-            try {
-                serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
-                console.log(`Loaded Firebase ${env} credentials from Render Secret File`);
-            } catch (e) {
-                console.error("Failed to parse Render Secret File", e);
-            }
-        }
-
-        // 2. Try Environment Variable (Fallback)
-        const envVarName = env === 'dev' ? 'FIREBASE_SERVICE_ACCOUNT_DEV' : 'FIREBASE_SERVICE_ACCOUNT';
-        if (!serviceAccount && process.env[envVarName]) {
-            try {
-                serviceAccount = JSON.parse(process.env[envVarName]);
-                console.log(`Loaded Firebase ${env} credentials from Environment Variable`);
-            } catch (e) {
-                console.error(`Failed to parse ${envVarName} env var`, e);
-            }
-        }
-
-        // 3. Try Local File (Development)
-        if (!serviceAccount) {
-            const serviceAccountPath = path.join(__dirname, 'src', 'config', filename);
-            if (fs.existsSync(serviceAccountPath)) {
-                serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-                console.log(`Loaded Firebase ${env} credentials from local file: ${filename}`);
-            }
-        }
+        const serviceAccount = loadServiceAccount(env);
 
         if (serviceAccount) {
             admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
+                credential: admin.credential.cert(serviceAccount),
+                storageBucket: storageBucketFor(env, serviceAccount)
             });
             console.log(`Firebase Admin Initialized (${env})`);
 
@@ -79,7 +134,9 @@ async function initializeFirebase(env = 'prod') {
             dataFetchingService = new DataFetchingService(db);
             userManagerService = new UserManagerService(db, auth, messaging);
             dataLoaderService = new DataLoaderService(db);
+            publishedSeriesService = new PublishedSeriesService(db, { recompile: createRecompiler(bibleService) });
             notificationTestingService = new NotificationTestingService(admin);
+            storageService = new StorageService(admin.storage().bucket());
             currentEnv = env;
             return true;
         } else {
@@ -92,15 +149,27 @@ async function initializeFirebase(env = 'prod') {
     }
 }
 
-// Initialize default (prod) on startup
-initializeFirebase('prod');
-
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-
 // Paths
 const DATA_DIR = path.join(__dirname, 'src', 'data', 'bible_series');
 const NIV_FILE = path.join(__dirname, 'src', 'data', 'niv.json');
+
+// Load the NIV Bible once for the Bible API (see /api/bible/niv below).
+// A missing or unreadable file must not stop the rest of the server:
+// the Bible endpoints report 503 while everything else keeps working.
+let bibleService = null;
+try {
+    bibleService = loadBibleService(NIV_FILE);
+    console.log(`NIV Bible data loaded (${bibleService.getBooks().books.length} books)`);
+} catch (error) {
+    console.warn(`NIV Bible data not available from ${NIV_FILE}: ${error.message}`);
+}
+
+// Initialize default (prod) on startup (after the Bible data, which updates use)
+initializeFirebase('prod');
+initializeDraftStorage();
+
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
 
 // Get Firebase Client Config
 app.get('/api/firebase-config', (req, res) => {
@@ -190,7 +259,31 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// Get NIV Data
+// NIV Bible API — granular access to niv.json for the UI:
+//   GET /api/bible/niv/books
+//   GET /api/bible/niv/books/:book/chapters
+//   GET /api/bible/niv/books/:book/chapters/:chapter/verses
+//   GET /api/bible/niv/passage?ref=Romans%204%3A1-6
+app.use('/api/bible/niv', createBibleRouter(bibleService));
+
+// Series builder: drafts (autosave), publishing/updating series, cover
+// image upload, song link titles
+const publishService = new PublishService({
+    getDrafts: () => draftStores[currentEnv]?.service ?? null,
+    getLoader: () => dataLoaderService,
+    getPublished: () => publishedSeriesService,
+    getEnv: () => currentEnv,
+});
+app.use('/api/drafts', createDraftRouter(
+    () => ({ service: draftStores[currentEnv]?.service ?? null, projectId: draftStores[currentEnv]?.projectId ?? null, env: currentEnv }),
+    publishService,
+    (env) => draftStores[env]?.service ?? null,
+));
+app.use('/api/published', createPublishedRouter(() => ({ service: publishedSeriesService, env: currentEnv })));
+app.use('/api/storage', createStorageRouter(() => ({ service: storageService, env: currentEnv })));
+app.use('/api/oembed', createOembedRouter());
+
+// Get NIV Data (full file; kept for compatibility, prefer /api/bible/niv above)
 app.get('/api/niv', (req, res) => {
     try {
         if (fs.existsSync(NIV_FILE)) {
@@ -216,11 +309,13 @@ app.get('/api/series', (req, res) => {
     }
 });
 
-// Get Specific Series
+// Get Specific Series (read-only; used to import a repo file into a draft)
 app.get('/api/series/:filename', (req, res) => {
     try {
-        const filepath = path.join(DATA_DIR, req.params.filename);
-        if (fs.existsSync(filepath)) {
+        // basename() keeps the lookup inside DATA_DIR (e.g. "..%2Fserver.js")
+        const filename = path.basename(req.params.filename);
+        const filepath = path.join(DATA_DIR, filename);
+        if (filename.endsWith('.json') && fs.existsSync(filepath)) {
             res.sendFile(filepath);
         } else {
             res.status(404).json({ error: 'File not found' });
@@ -230,25 +325,46 @@ app.get('/api/series/:filename', (req, res) => {
     }
 });
 
-// Save Series
-app.post('/api/series', (req, res) => {
+// Generate Series from Outline (AI Agent)
+app.post('/api/series/generate-from-outline', async (req, res) => {
     try {
-        const { filename, content, checkExists } = req.body;
-        if (!filename || !content) {
-            return res.status(400).json({ error: 'Filename and content required' });
+        const { outlineText, startYear, apiKey } = req.body;
+        if (!outlineText) {
+            return res.status(400).json({ error: 'Outline text is required' });
         }
 
-        // Ensure filename ends with .json
-        const safeFilename = filename.endsWith('.json') ? filename : `${filename}.json`;
-        const filepath = path.join(DATA_DIR, safeFilename);
-
-        if (checkExists && fs.existsSync(filepath)) {
-            return res.status(409).json({ error: 'File already exists' });
+        // Determine API key
+        const resolvedApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+        if (!resolvedApiKey) {
+            return res.status(400).json({ 
+                error: 'Gemini API key is required. Please provide it in the request or set GEMINI_API_KEY/GOOGLE_API_KEY in the server environment.' 
+            });
         }
 
-        fs.writeFileSync(filepath, JSON.stringify(content, null, 4));
-        res.json({ success: true, filename: safeFilename });
+        const year = startYear || new Date().getFullYear();
+
+        // 1. Generate structured series from outline using Gemini
+        console.log("Calling Gemini to parse outline...");
+        const generatedData = await generateSeriesFromOutline(outlineText, year, resolvedApiKey);
+        console.log("Gemini parse successful.");
+
+        // 2. Load niv.json and populate actual verses if it exists
+        if (fs.existsSync(NIV_FILE)) {
+            console.log("NIV Bible data found. Populating verse texts...");
+            try {
+                const nivData = JSON.parse(fs.readFileSync(NIV_FILE, 'utf8'));
+                generatedData.series_content = populateBibleVerses(generatedData.series_content, nivData);
+                console.log("Verse texts populated successfully.");
+            } catch (err) {
+                console.error("Error populating verses from NIV data:", err);
+            }
+        } else {
+            console.warn("NIV file not found at " + NIV_FILE + ". Skipping verse text population.");
+        }
+
+        res.json({ success: true, data: generatedData });
     } catch (error) {
+        console.error("Error in /api/series/generate-from-outline:", error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -271,10 +387,10 @@ app.post('/api/series/upload', async (req, res) => {
         console.log("Series uploaded with ID:", bibleSeriesId);
 
         console.log("Uploading content for series:", bibleSeriesId);
-        await dataLoaderService.loadSeriesContent(series_content, bibleSeriesId);
-        console.log("Content uploaded successfully");
+        const report = await dataLoaderService.loadSeriesContent(series_content, bibleSeriesId);
+        console.log(`Content uploaded: ${report.written}/${report.total} entries`);
 
-        res.json({ success: true, seriesId: bibleSeriesId });
+        res.json({ success: true, seriesId: bibleSeriesId, env: currentEnv, ...report });
     } catch (error) {
         console.error("Error uploading series:", error);
         res.status(500).json({ error: error.message });

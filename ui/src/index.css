@@ -1,41 +1,156 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens - aligned with the wpa.church brand:
+ * deep navy/ink header & footer, white logo, #1e73be accent blue,
+ * Montserrat headings and Open Sans body copy.
+ */
 @theme {
-  --color-brand: #0191d7;
-  --color-brand-50: #f0f9ff;
-  --color-brand-100: #e0f2fe;
-  --color-brand-200: #bae6fd;
-  --color-brand-300: #7dd3fc;
-  --color-brand-400: #38bdf8;
-  --color-brand-500: #0191d7;
-  --color-brand-600: #0284c7;
-  --color-brand-700: #0369a1;
-}
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display: "Montserrat", "Open Sans", ui-sans-serif, system-ui, sans-serif;
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --color-brand: #1e73be;
+  --color-brand-50: #eff6fc;
+  --color-brand-100: #dcebf8;
+  --color-brand-200: #b8d6f0;
+  --color-brand-300: #84b8e3;
+  --color-brand-400: #4b94d2;
+  --color-brand-500: #1e73be;
+  --color-brand-600: #1a64a6;
+  --color-brand-700: #155185;
+  --color-brand-800: #0f3859;
+  --color-brand-900: #0b2840;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --color-ink: #13131a;
+  --color-ink-800: #1a1a22;
+  --color-ink-700: #2c2c3b;
+  --color-ink-600: #32373c;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --color-canvas: #f7f8f9;
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+  --animate-pop-in: pop-in 160ms ease-out;
+  --animate-slide-in: slide-in 200ms ease-out;
+
+  @keyframes pop-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes slide-in {
+    from { transform: translateX(24px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
   }
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+@layer base {
+  :root {
+    color-scheme: light;
+    line-height: 1.5;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    @apply bg-canvas font-sans text-gray-800;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-ink;
+  }
+
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* ---------- Buttons ---------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .btn-primary {
+    @apply bg-brand text-white shadow-sm hover:bg-brand-600;
+  }
+  .btn-dark {
+    @apply bg-ink-600 text-white shadow-sm hover:bg-ink;
+  }
+  .btn-secondary {
+    @apply border border-gray-300 bg-white text-gray-700 shadow-sm hover:border-gray-400 hover:bg-gray-50;
+  }
+  .btn-ghost {
+    @apply text-gray-600 hover:bg-gray-100 hover:text-gray-900;
+  }
+  .btn-ghost-brand {
+    @apply text-brand hover:bg-brand-50;
+  }
+  .btn-danger {
+    @apply bg-red-600 text-white shadow-sm hover:bg-red-700;
+  }
+  .icon-btn {
+    @apply inline-flex items-center justify-center rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:opacity-30 disabled:hover:bg-transparent;
+  }
+
+  /* ---------- Forms ---------- */
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-gray-700;
+  }
+  .input {
+    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs transition-colors placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-gray-50 disabled:text-gray-500;
+  }
+  .checkbox {
+    @apply h-4 w-4 rounded border-gray-300 accent-brand;
+  }
+
+  /* ---------- Surfaces ---------- */
+  .card {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  }
+  .card-body {
+    @apply p-6;
+  }
+  .card-title {
+    @apply text-lg font-bold text-ink;
+  }
+  .eyebrow {
+    @apply text-xs font-bold tracking-[0.12em] text-brand uppercase;
+  }
+  .section-label {
+    @apply text-xs font-bold tracking-wider text-gray-500 uppercase;
+  }
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-ink;
+  }
+
+  /* ---------- Feedback ---------- */
+  .alert {
+    @apply flex items-start gap-3 rounded-lg border px-4 py-3 text-sm;
+  }
+  .alert-error {
+    @apply border-red-200 bg-red-50 text-red-700;
+  }
+  .alert-success {
+    @apply border-green-200 bg-green-50 text-green-800;
+  }
+
+  /* ---------- Overlays ---------- */
+  .modal-backdrop {
+    @apply fixed inset-0 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-[2px];
+  }
+  .modal-panel {
+    @apply flex w-full animate-pop-in flex-col overflow-hidden rounded-2xl bg-white shadow-2xl;
+  }
+  .modal-header {
+    @apply flex items-center justify-between gap-4 border-b border-gray-200 px-6 py-4;
+  }
+  .modal-footer {
+    @apply flex justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4;
+  }
 }

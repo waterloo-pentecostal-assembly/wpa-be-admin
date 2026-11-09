@@ -1,0 +1,250 @@
+{
+    "bible_series": {
+        "title": "Test",
+        "sub_title": "",
+        "image_gs_location": "gs://wpa-be-app-dev.appspot.com/bible_series/test_series/sample.png",
+        "is_active": false,
+        "is_visible": false
+    },
+    "series_content": [
+        {
+            "title": "",
+            "date": "2026-11-09",
+            "content_type": "read",
+            "body": [
+                {
+                    "body_type": "scripture",
+                    "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+                    "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+                    "scriptures": [
+                        {
+                            "book": "Psalms",
+                            "chapter": "1",
+                            "title": "",
+                            "verses": {
+                                "4": "Not so the wicked! They are like chaff that the wind blows away.",
+                                "5": "Therefore the wicked will not stand in the judgment, nor sinners in the assembly of the righteous.",
+                                "6": "For the LORD watches over the way of the righteous, but the way of the wicked will perish."
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-09",
+            "content_type": "reflect",
+            "body": [
+                {
+                    "body_type": "text",
+                    "paragraphs": [
+                        "Read through {{scripture}} and reflect on the questions below."
+                    ]
+                },
+                {
+                    "body_type": "question",
+                    "questions": [
+                        "Scripture: Read {{scripture}}. Look for a verse that was meaningful to you and write it down.",
+                        "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+                        "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+                        "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may reveal to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-10",
+            "content_type": "read",
+            "body": [
+                {
+                    "body_type": "scripture",
+                    "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+                    "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+                    "scriptures": [
+                        {
+                            "book": "Psalms",
+                            "chapter": "5",
+                            "title": "",
+                            "verses": {
+                                "1": "Give ear to my words, O LORD, consider my sighing.",
+                                "2": "Listen to my cry for help, my King and my God, for to you I pray.",
+                                "3": "In the morning, O LORD, you hear my voice; in the morning I lay my requests before you and wait in expectation.",
+                                "4": "You are not a God who takes pleasure in evil; with you the wicked cannot dwell.",
+                                "5": "The arrogant cannot stand in your presence; you hate all who do wrong.",
+                                "6": "You destroy those who tell lies; bloodthirsty and deceitful men the LORD abhors."
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-10",
+            "content_type": "reflect",
+            "body": [
+                {
+                    "body_type": "text",
+                    "paragraphs": [
+                        "Read through {{scripture}} and reflect on the questions below."
+                    ]
+                },
+                {
+                    "body_type": "question",
+                    "questions": [
+                        "Scripture: Read {{scripture}}. Look for a verse that was meaningful to you and write it down.",
+                        "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+                        "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+                        "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may reveal to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-10",
+            "content_type": "devotional",
+            "body": [
+                {
+                    "body_type": "scripture",
+                    "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+                    "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+                    "scriptures": [
+                        {
+                            "book": "Psalms",
+                            "chapter": "5",
+                            "title": "",
+                            "verses": {
+                                "1": "Give ear to my words, O LORD, consider my sighing.",
+                                "2": "Listen to my cry for help, my King and my God, for to you I pray.",
+                                "3": "In the morning, O LORD, you hear my voice; in the morning I lay my requests before you and wait in expectation.",
+                                "4": "You are not a God who takes pleasure in evil; with you the wicked cannot dwell.",
+                                "5": "The arrogant cannot stand in your presence; you hate all who do wrong.",
+                                "6": "You destroy those who tell lies; bloodthirsty and deceitful men the LORD abhors."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "body_type": "text",
+                    "paragraphs": [
+                        "This is a devotional "
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-11",
+            "content_type": "read",
+            "body": [
+                {
+                    "body_type": "scripture",
+                    "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+                    "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+                    "scriptures": [
+                        {
+                            "book": "Psalms",
+                            "chapter": "5",
+                            "title": "",
+                            "verses": {
+                                "1": "Give ear to my words, O LORD, consider my sighing.",
+                                "2": "Listen to my cry for help, my King and my God, for to you I pray.",
+                                "3": "In the morning, O LORD, you hear my voice; in the morning I lay my requests before you and wait in expectation.",
+                                "4": "You are not a God who takes pleasure in evil; with you the wicked cannot dwell.",
+                                "5": "The arrogant cannot stand in your presence; you hate all who do wrong.",
+                                "6": "You destroy those who tell lies; bloodthirsty and deceitful men the LORD abhors."
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-11",
+            "content_type": "reflect",
+            "body": [
+                {
+                    "body_type": "text",
+                    "paragraphs": [
+                        "Read through {{scripture}} and reflect on the questions below."
+                    ]
+                },
+                {
+                    "body_type": "question",
+                    "questions": [
+                        "Scripture: Read {{scripture}}. Look for a verse that was meaningful to you and write it down.",
+                        "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+                        "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+                        "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may reveal to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-12",
+            "content_type": "read",
+            "body": [
+                {
+                    "body_type": "scripture",
+                    "attribution": "Copyright © 1973 1978 1984 2011 by Biblica, Inc. TM\nUsed by permission. All rights reserved worldwide",
+                    "bible_version": "Scripture quotations taken from The Holy Bible, New International Version® NIV®",
+                    "scriptures": [
+                        {
+                            "book": "Romans",
+                            "chapter": "12",
+                            "title": "",
+                            "verses": {
+                                "2": "Do not conform any longer to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God's will is--his good, pleasing and perfect will."
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-12",
+            "content_type": "listen",
+            "body": [
+                {
+                    "body_type": "text",
+                    "paragraphs": [
+                        "Tap below to listen to {{scripture}}"
+                    ]
+                },
+                {
+                    "body_type": "link",
+                    "text": "{{scripture}}",
+                    "link": "google.com"
+                }
+            ]
+        },
+        {
+            "title": "",
+            "date": "2026-11-12",
+            "content_type": "reflect",
+            "body": [
+                {
+                    "body_type": "text",
+                    "paragraphs": [
+                        "Read through {{scripture}} and reflect on the questions below."
+                    ]
+                },
+                {
+                    "body_type": "question",
+                    "questions": [
+                        "Scripture: Read {{scripture}}. Look for a verse that was meaningful to you and write it down.",
+                        "Observation: What is God saying to you in this scripture? Ask the Holy Spirit to teach you and reveal Jesus to you. Paraphrase and write this scripture down in your own words.",
+                        "Application: Personalize what you have read by asking yourself how it applies to your life right now. Perhaps it is instruction, encouragement, revelation, a new promise or corrections for an area of your life. Write down how this passage applies to you today.",
+                        "Prayer: This can be as simple as asking God to help you live out the truth from this passage, or it may be seeking God for a greater understanding of what He may reveal to you. Remember, prayer is a two-way conversation, so be sure to listen to what God has to say! Now write it down."
+                    ]
+                }
+            ]
+        }
+    ]
+}
