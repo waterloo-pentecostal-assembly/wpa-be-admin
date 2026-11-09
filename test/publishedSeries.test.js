@@ -44,7 +44,12 @@ function memoryFirestore() {
             limit: () => query(filter, order),
             get: async () => {
                 let docs = children().map(snapshot).filter((s) => filter(s.data()));
-                if (order) docs = docs.sort((a, b) => (order.dir === 'desc' ? -1 : 1) * (a.data()[order.field].toMillis() - b.data()[order.field].toMillis()));
+                if (order) {
+                    // Like Firestore, ordering by a field leaves out documents without it.
+                    const value = (s) => { const v = s.data()[order.field]; return v?.toMillis?.() ?? v; };
+                    docs = docs.filter((s) => value(s) !== undefined)
+                        .sort((a, b) => (order.dir === 'desc' ? -1 : 1) * (value(a) < value(b) ? -1 : value(a) > value(b) ? 1 : 0));
+                }
                 return { docs, empty: !docs.length, forEach: (fn) => docs.forEach(fn) };
             },
         });

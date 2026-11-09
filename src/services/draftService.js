@@ -112,18 +112,20 @@ export class DraftService {
         return new DraftServiceError(`Draft not found${this.env ? ` in ${this.env}` : ''}`, 404);
     }
 
-    /** Normalized documents with the given fields (and their legacy names). */
-    async #scan(fields) {
+    /** Normalized documents with the given fields (and their legacy names), optionally ordered by the query. */
+    async #scan(fields, orderBy) {
         const legacy = Object.entries(LEGACY_DOC_KEYS).filter(([, key]) => fields.includes(key)).map(([name]) => name);
-        const snapshot = await this.collection.select(...fields, ...legacy).get();
+        let query = this.collection.select(...fields, ...legacy);
+        if (orderBy) query = query.orderBy(...orderBy);
+        const snapshot = await query.get();
         return snapshot.docs.map((doc) => ({ id: doc.id, ...normalize(doc.data()) }));
     }
 
     async list() {
-        // Sorted here, not by the query: documents not yet migrated have no `updated_at`.
-        return (await this.#scan(SUMMARY_FIELDS))
+        // Newest series first. Every write sets `start_date` ('' with no days,
+        // which sorts last), so ordering by it doesn't drop any document.
+        return (await this.#scan(SUMMARY_FIELDS, ['start_date', 'desc']))
             .filter((d) => !d.deleted)
-            .sort((a, b) => (toMillis(b.updated_at) ?? 0) - (toMillis(a.updated_at) ?? 0))
             .slice(0, LIST_LIMIT)
             .map((d) => ({
                 id: d.id,

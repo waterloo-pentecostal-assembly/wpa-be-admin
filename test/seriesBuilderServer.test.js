@@ -25,10 +25,16 @@ function fakeFirestore() {
         update: async (patch) => { docs.set(id, { ...docs.get(id), ...patch }); },
     });
     const all = async () => ({ docs: [...docs.keys()].map(snapshot) });
+    // Like Firestore, ordering by a field leaves out documents without it.
+    const ordered = (field, dir) => async () => ({
+        docs: [...docs.keys()].map(snapshot)
+            .filter((s) => s.data()[field] !== undefined)
+            .sort((a, b) => (dir === 'desc' ? -1 : 1) * (a.data()[field] < b.data()[field] ? -1 : a.data()[field] > b.data()[field] ? 1 : 0)),
+    });
     const collection = {
         doc: (id) => docRef(id ?? `doc${++counter}`),
         get: all,
-        select: () => ({ get: all }),
+        select: () => ({ get: all, orderBy: (field, dir) => ({ get: ordered(field, dir) }) }),
     };
     return {
         docs,
@@ -79,6 +85,15 @@ describe('DraftService', () => {
         assert.equal(summary.dayCount, 2);
         assert.equal(summary.startDate, '2026-02-02');
         assert.equal(summary.rev, 3);
+    });
+
+    test('list shows the newest series first, whenever its draft was created or edited', async () => {
+        const service = new DraftService(fakeFirestore(), { now });
+        const newer = await service.create({ meta: { title: 'Newer' }, days: [{ date: '2026-07-06' }] });
+        await service.create({ meta: { title: 'Older' }, days: [{ date: '2021-04-07' }] });
+        await service.create({ meta: { title: 'Empty' }, days: [] });
+        await service.save(newer.id, { meta: { title: 'Newer' }, days: [{ date: '2026-07-06' }] }, newer.rev);
+        assert.deepEqual((await service.list()).map((d) => d.title), ['Newer', 'Older', 'Empty']);
     });
 
     test('remove is a soft delete hidden from list and get', async () => {
@@ -140,8 +155,6 @@ describe('publish records', () => {
         firestore.docs.set('older', legacy('Older', 3));
         const { id: fresh } = await service.create(draftFixture('New'));
 
-        const listed = await service.list();
-        assert.deepEqual(listed.map((d) => [d.title, d.dayCount, d.seriesId]), [['New', 2, null], ['Old', 2, 'S1'], ['Older', 2, 'S1']]);
         const { publishes: [record] } = await service.getPublishes('old');
         assert.equal(record.failed_count, 0);
         assert.equal(record.finished_at, 2);
@@ -158,6 +171,10 @@ describe('publish records', () => {
         assert.equal(firestore.docs.get('older').updated_at.toMillis(), 3);
         assert.equal(await service.migrateKeys(), 0, 'safe to run again');
         assert.deepEqual(camel(firestore.docs.get(fresh)), []);
+
+        // The list is ordered by `start_date`, so it shows them once migrated (done at startup).
+        const listed = await service.list();
+        assert.deepEqual(listed.map((d) => [d.title, d.dayCount, d.seriesId]).sort(), [['New', 2, null], ['Old 2', 2, 'S1'], ['Older', 2, 'S1']]);
     });
 
     test('drafts saved before series_id existed take it from their publish records', async () => {
