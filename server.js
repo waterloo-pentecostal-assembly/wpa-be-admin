@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
 import { DataFetchingService } from './src/services/dataFetchingService.js';
 import { UserManagerService } from './src/services/userManagerService.js';
+import { UserAdminService, createImageSigner } from './src/services/userAdminService.js';
+import { createAuthEmailSender } from './src/services/authEmailService.js';
 import { DataLoaderService } from './src/services/dataLoaderService.js';
 import { NotificationTestingService } from './src/services/notificationTestingService.js';
 import { generateSeriesFromOutline, populateBibleVerses } from './src/services/bibleSeriesGeneratorService.js';
@@ -18,18 +20,21 @@ import { PublishService } from './src/services/publishService.js';
 import { PublishedSeriesService } from './src/services/publishedSeries.js';
 import { createRecompiler } from './src/services/seriesBaseline.js';
 import { createDraftRouter, createOembedRouter, createPublishedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
+import { createRequireAdmin, createUserRouter } from './src/routes/userRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Global Service Variables
 let db = null;
 let auth = null;
 let dataFetchingService = null;
 let userManagerService = null;
+let userAdminService = null;
+let currentProjectId = null;
 let dataLoaderService = null;
 let notificationTestingService = null;
 let storageService = null;
@@ -40,7 +45,7 @@ let currentEnv = 'prod'; // 'prod' or 'dev'
 // Firestore: the env switcher changes which drafts are listed, and a draft is
 // moved across with "Copy to prod/dev". Each env has its own named Firebase
 // app so draft storage survives the default app being recreated on a switch.
-const draftStores = {}; // env -> { service: DraftService, projectId }
+const draftStores = {}; // env -> { service: DraftService, projectId, app }
 
 function loadServiceAccount(env) {
     let serviceAccount = null;
@@ -79,6 +84,44 @@ function loadServiceAccount(env) {
     return serviceAccount;
 }
 
+/**
+ * The Firebase web (client) config: Render Secret File, then the
+ * FIREBASE_CLIENT_CONFIG env var, then src/config/firebase-client-config.json.
+ * Throws if a config file can't be parsed.
+ */
+function loadClientConfig() {
+    const renderSecretPath = '/etc/secrets/firebase-client-config.json';
+    if (fs.existsSync(renderSecretPath)) return JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
+    if (process.env.FIREBASE_CLIENT_CONFIG) {
+        try {
+            return JSON.parse(process.env.FIREBASE_CLIENT_CONFIG);
+        } catch (e) {
+            console.error("Failed to parse FIREBASE_CLIENT_CONFIG env var", e);
+        }
+    }
+    const localConfigPath = path.join(__dirname, 'src', 'config', 'firebase-client-config.json');
+    if (fs.existsSync(localConfigPath)) return JSON.parse(fs.readFileSync(localConfigPath, 'utf8'));
+    return null;
+}
+
+const webApiKeyVar = (env) => (env === 'dev' ? 'FIREBASE_WEB_API_KEY_DEV' : 'FIREBASE_WEB_API_KEY');
+
+/**
+ * The web API key Firebase Authentication emails are sent with (a service
+ * account has none): FIREBASE_WEB_API_KEY / FIREBASE_WEB_API_KEY_DEV, else
+ * the client config's apiKey when it is for this environment's project.
+ */
+function loadWebApiKey(env, projectId) {
+    if (process.env[webApiKeyVar(env)]) return process.env[webApiKeyVar(env)];
+    try {
+        const clientConfig = loadClientConfig();
+        if (clientConfig?.apiKey && clientConfig.projectId === projectId) return clientConfig.apiKey;
+    } catch (error) {
+        console.error('Could not read the Firebase client config for its API key:', error.message);
+    }
+    return null;
+}
+
 // Cover images go to the project's default bucket (<project>.appspot.com,
 // matching existing image_gs_location values) unless overridden.
 function storageBucketFor(env, serviceAccount) {
@@ -93,7 +136,7 @@ function initializeDraftStorage() {
         try {
             const app = admin.initializeApp({ credential: admin.credential.cert(serviceAccount) }, `series-drafts-${env}`);
             const service = new DraftService(app.firestore(), { env });
-            draftStores[env] = { service, projectId: serviceAccount.project_id };
+            draftStores[env] = { service, projectId: serviceAccount.project_id, app };
             console.log(`Series builder ${env} drafts stored in ${serviceAccount.project_id}`);
             // Drafts written before the snake_case keys are rewritten once; they
             // are readable either way, so this runs in the background.
@@ -116,6 +159,7 @@ async function initializeFirebase(env = 'prod') {
             await admin.app().delete();
             storageService = null;
             publishedSeriesService = null;
+            userAdminService = null;
         }
 
         const serviceAccount = loadServiceAccount(env);
@@ -133,11 +177,20 @@ async function initializeFirebase(env = 'prod') {
             const messaging = admin.messaging();
             dataFetchingService = new DataFetchingService(db);
             userManagerService = new UserManagerService(db, auth, messaging);
+            const webApiKey = loadWebApiKey(env, serviceAccount.project_id);
+            if (!webApiKey) console.warn(`No web API key for ${env}: the User Manager can't send Firebase emails (set ${webApiKeyVar(env)}).`);
+            userAdminService = new UserAdminService(db, auth, messaging, {
+                signImage: createImageSigner(admin.storage()),
+                storage: admin.storage(),
+                emailSender: webApiKey ? createAuthEmailSender({ apiKey: webApiKey, auth }) : null,
+                emailSetupHint: `Set ${webApiKeyVar(env)} to the ${serviceAccount.project_id} project's web API key (Firebase console → Project settings → General).`,
+            });
             dataLoaderService = new DataLoaderService(db);
             publishedSeriesService = new PublishedSeriesService(db, { recompile: createRecompiler(bibleService) });
             notificationTestingService = new NotificationTestingService(admin);
             storageService = new StorageService(admin.storage().bucket());
             currentEnv = env;
+            currentProjectId = serviceAccount.project_id;
             return true;
         } else {
             console.warn(`No Firebase credentials found for ${env}. Stats API will fail.`);
@@ -171,37 +224,10 @@ initializeDraftStorage();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// Get Firebase Client Config
+// Get Firebase Client Config (the project the console signs in to)
 app.get('/api/firebase-config', (req, res) => {
     try {
-        let clientConfig;
-
-        // 1. Try Render Secret File (Production)
-        const renderSecretPath = '/etc/secrets/firebase-client-config.json';
-        if (fs.existsSync(renderSecretPath)) {
-            clientConfig = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
-            // console.log("Loaded Firebase Client config from Render Secret File");
-        }
-
-        // 2. Try Environment Variable (Fallback)
-        if (!clientConfig && process.env.FIREBASE_CLIENT_CONFIG) {
-            try {
-                clientConfig = JSON.parse(process.env.FIREBASE_CLIENT_CONFIG);
-                // console.log("Loaded Firebase Client config from Environment Variable");
-            } catch (e) {
-                console.error("Failed to parse FIREBASE_CLIENT_CONFIG env var", e);
-            }
-        }
-
-        // 3. Try Local File (Development)
-        if (!clientConfig) {
-            const localConfigPath = path.join(__dirname, 'src', 'config', 'firebase-client-config.json');
-            if (fs.existsSync(localConfigPath)) {
-                clientConfig = JSON.parse(fs.readFileSync(localConfigPath, 'utf8'));
-                // console.log("Loaded Firebase Client config from local file");
-            }
-        }
-
+        const clientConfig = loadClientConfig();
         if (clientConfig) {
             res.json(clientConfig);
         } else {
@@ -282,6 +308,15 @@ app.use('/api/drafts', createDraftRouter(
 app.use('/api/published', createPublishedRouter(() => ({ service: publishedSeriesService, env: currentEnv })));
 app.use('/api/storage', createStorageRouter(() => ({ service: storageService, env: currentEnv })));
 app.use('/api/oembed', createOembedRouter());
+
+// User Manager: Firebase Auth accounts + Firestore profiles of the selected
+// environment. Unlike the routes above, every request must carry a signed-in
+// admin's Firebase ID token, verified by whichever project issued it.
+const requireAdmin = createRequireAdmin((projectId) => {
+    const store = Object.values(draftStores).find((s) => s.projectId === projectId);
+    return store ? { auth: store.app.auth(), firestore: store.app.firestore() } : null;
+});
+app.use('/api/users', requireAdmin, createUserRouter(() => ({ service: userAdminService, projectId: currentProjectId, env: currentEnv })));
 
 // Get NIV Data (full file; kept for compatibility, prefer /api/bible/niv above)
 app.get('/api/niv', (req, res) => {
@@ -437,6 +472,12 @@ app.post('/api/env/switch', async (req, res) => {
     }
 });
 
+// Unknown API paths are a 404, not the UI's index.html below (which would
+// reach the client as a 200 it can't parse).
+app.use('/api', (req, res) => {
+    res.status(404).json({ error: `No API endpoint ${req.method} ${req.originalUrl}; restart the server if it was just added` });
+});
+
 // Serve Static Files (UI)
 const DIST_DIR = path.join(__dirname, 'dist');
 if (fs.existsSync(DIST_DIR)) {
@@ -449,6 +490,10 @@ if (fs.existsSync(DIST_DIR)) {
     });
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, (err) => {
+    if (err) {
+        console.error(`Failed to start server on port ${PORT}: ${err.message}`);
+        process.exit(1);
+    }
     console.log(`Server running on http://localhost:${PORT}`);
 });

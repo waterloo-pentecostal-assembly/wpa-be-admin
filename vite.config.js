@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [react()],
     server: {
         proxy: {
-            '/api': 'http://localhost:3001'
+            '/api': `http://localhost:${process.env.PORT || 3001}`
         }
     },
     build: {

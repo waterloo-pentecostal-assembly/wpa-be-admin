@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, BarChart3, Bell, ArrowRight } from 'lucide-react';
+import { BookOpen, BarChart3, Bell, Users, ArrowRight } from 'lucide-react';
 import Header from './components/Header';
 
 const TOOLS = [
@@ -15,6 +15,12 @@ const TOOLS = [
         icon: BarChart3,
         title: 'Stats Dashboard',
         description: 'View app usage statistics, prayer requests, testimonies, and user progress.',
+    },
+    {
+        to: '/users',
+        icon: Users,
+        title: 'User Manager',
+        description: 'Search users, send password reset links, verify, deactivate and manage admin access.',
     },
     {
         to: '/notifications',

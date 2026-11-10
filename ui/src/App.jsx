@@ -5,6 +5,7 @@ import SeriesBuilderPage from './seriesBuilder/SeriesBuilderPage';
 import Stats from './Stats';
 import Login from './Login';
 import NotificationTester from './NotificationTester';
+import UserManagerPage from './users/UserManagerPage';
 import EnvGate from './components/EnvGate';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
@@ -47,6 +48,14 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <NotificationTester />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/users"
+                                element={
+                                    <ProtectedRoute>
+                                        <UserManagerPage />
                                     </ProtectedRoute>
                                 }
                             />

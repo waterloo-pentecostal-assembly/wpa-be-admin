@@ -4,9 +4,9 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { switchEnv } from '../api/seriesBuilderApi';
 import { ENVS, useEnv } from '../contexts/EnvContext';
 
-// Page state that belongs to one environment (series builder drafts), dropped
-// when staying on the other one.
-const ENV_SCOPED_PARAMS = ['draft', 'view'];
+// Page state that belongs to one environment (series builder drafts, the
+// User Manager's selected user), dropped when staying on the other one.
+const ENV_SCOPED_PARAMS = ['draft', 'view', 'user'];
 
 function EnvMismatch({ linkEnv, serverEnv, onStay }) {
     const [switching, setSwitching] = useState(false);
