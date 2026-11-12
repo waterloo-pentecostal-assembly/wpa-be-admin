@@ -451,6 +451,8 @@ describe('published series routes', () => {
         const publisher = new PublishService({ getDrafts: () => drafts, getLoader: () => null, getPublished: () => published, getEnv: () => 'dev' });
         const app = express();
         app.use(express.json());
+        // As set by the API's admin check (src/routes/apiAuth.js).
+        app.use((req, res, next) => { req.admin = { uid: 'uid-admin-1', email: 'admin@wpa.church', projectId: 'p' }; next(); });
         app.use('/api/published', createPublishedRouter(() => ({ service: published, env: 'dev' })));
         app.use('/api/drafts', createDraftRouter(() => ({ service: drafts, projectId: 'p' }), publisher));
         const server = await new Promise((resolve) => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
@@ -473,7 +475,8 @@ describe('published series routes', () => {
             const json = { bible_series: { ...series, is_active: true }, series_content: content() };
             const preview = await (await post(`/api/drafts/${draftId}/update-preview`, { json })).json();
             assert.deepEqual(preview.series, [{ field: 'is_active', from: false, to: true }]);
-            const applied = await post(`/api/drafts/${draftId}/update`, { json, planHash: preview.planHash, updatedBy: 'uid-admin-1' });
+            // Who made the change is the verified admin, whatever the body claims.
+            const applied = await post(`/api/drafts/${draftId}/update`, { json, planHash: preview.planHash, updatedBy: 'someone-else' });
             assert.equal(applied.status, 200);
             assert.equal((await applied.json()).record.updated_by, 'uid-admin-1');
             assert.equal(firestore.store.get(`bible_series/${seriesId}`).is_active, true);

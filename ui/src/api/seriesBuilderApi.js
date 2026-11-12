@@ -1,5 +1,7 @@
 // Client for the series builder endpoints in server.js
-// (src/routes/seriesBuilderRoutes.js and the Bible/series routes).
+// (src/routes/seriesBuilderRoutes.js and the Bible/series routes), and the
+// request helper every API client uses.
+import { getIdToken } from '../firebase';
 
 export class ApiError extends Error {
     constructor(message, status, body) {
@@ -10,12 +12,27 @@ export class ApiError extends Error {
     }
 }
 
+/**
+ * Calls the API with the signed-in admin's ID token (the server requires it on
+ * every route but the few loaded before signing in) and returns the parsed
+ * body, throwing an ApiError with the server's message on failure.
+ */
 export async function request(url, { method = 'GET', json, body, headers } = {}) {
+    let token = null;
+    try {
+        token = await getIdToken();
+    } catch {
+        // Firebase couldn't start; the server will say the call needs signing in.
+    }
     let res;
     try {
         res = await fetch(url, {
             method,
-            headers: json !== undefined ? { 'Content-Type': 'application/json', ...headers } : headers,
+            headers: {
+                ...(json !== undefined && { 'Content-Type': 'application/json' }),
+                ...(token && { Authorization: `Bearer ${token}` }),
+                ...headers,
+            },
             body: json !== undefined ? JSON.stringify(json) : body,
         });
     } catch (error) {
@@ -39,19 +56,19 @@ export const copyDraftToEnv = (id, env, replace = false) =>
     request(`/api/drafts/${encodeURIComponent(id)}/copy-to`, { method: 'POST', json: { env, replace } });
 /** The draft's linked series and publish records: { seriesId, publishes }. */
 export const getPublishes = (id) => request(`/api/drafts/${encodeURIComponent(id)}/publishes`);
-// `updatedBy` (the signed-in admin's Firebase Auth user ID) is recorded on the publish record.
+// The publish record's `updated_by` is the signed-in admin, taken by the server from their ID token.
 /** Starts a server-side publish; resolves once the series document exists. */
-export const publishDraft = (id, json, updatedBy) =>
-    request(`/api/drafts/${encodeURIComponent(id)}/publish`, { method: 'POST', json: { json, updatedBy } });
+export const publishDraft = (id, json) =>
+    request(`/api/drafts/${encodeURIComponent(id)}/publish`, { method: 'POST', json: { json } });
 /** What updating the draft's series would change; nothing is written. */
 export const previewSeriesUpdate = (id, json) =>
     request(`/api/drafts/${encodeURIComponent(id)}/update-preview`, { method: 'POST', json: { json } });
 /** Applies the previewed update (`planHash` from the preview). */
-export const applySeriesUpdate = (id, json, planHash, updatedBy) =>
-    request(`/api/drafts/${encodeURIComponent(id)}/update`, { method: 'POST', json: { json, planHash, updatedBy } });
+export const applySeriesUpdate = (id, json, planHash) =>
+    request(`/api/drafts/${encodeURIComponent(id)}/update`, { method: 'POST', json: { json, planHash } });
 /** Links a draft opened from a published series to that series. */
-export const linkDraftToSeries = (id, seriesId, updatedBy) =>
-    request(`/api/drafts/${encodeURIComponent(id)}/link`, { method: 'POST', json: { seriesId, updatedBy } });
+export const linkDraftToSeries = (id, seriesId) =>
+    request(`/api/drafts/${encodeURIComponent(id)}/link`, { method: 'POST', json: { seriesId } });
 
 // ---------- Published series (selected environment) ----------
 export const listPublishedSeries = () => request('/api/published');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Loader2, Key, Calendar } from 'lucide-react';
+import { request } from '../api/seriesBuilderApi';
 
 const AiGeneratorModal = ({ onGenerate, onCancel }) => {
     const [outlineText, setOutlineText] = useState('');
@@ -34,20 +35,14 @@ const AiGeneratorModal = ({ onGenerate, onCancel }) => {
         }
 
         try {
-            const res = await fetch('/api/series/generate-from-outline', {
+            const result = await request('/api/series/generate-from-outline', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                json: {
                     outlineText,
                     startYear: parseInt(startYear),
                     apiKey: apiKey || undefined
-                })
+                }
             });
-
-            const result = await res.json();
-            if (!res.ok) {
-                throw new Error(result.error || 'Failed to generate series content');
-            }
 
             onGenerate(result.data);
         } catch (err) {

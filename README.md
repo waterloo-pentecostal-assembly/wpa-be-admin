@@ -37,6 +37,24 @@ In order to run this application, you need to have appropriate access to the `wp
 2. Click `Generate new private key`.
 3. Rename the downloaded JSON to `service-account-dev.json` and move it to `wpa-be-admin/src/config`.
 
+## API access
+
+Every `/api` route on the admin console's server requires a signed-in admin's Firebase ID token
+(`Authorization: Bearer <token>`); the UI sends it with every request. The project that issued
+the token verifies it, and the user's `users/{uid}` profile there must have `is_admin` set.
+Disabled and signed-out (revoked) admins are rejected. The only routes that answer without
+signing in are the two the console loads before its sign-in page: `GET /api/firebase-config`
+(the public Firebase client config) and `GET /api/env/current` (`prod` or `dev`). A verified
+token is trusted for up to a minute, so removing an admin or signing them out everywhere takes
+effect within a minute. Request bodies are only read once the caller is known to be an admin.
+Publish records' `updated_by` is the verified admin, never a value sent by the browser.
+
+The server doesn't answer other websites (no CORS). If something on another origin must call it,
+list the origins, comma-separated, in `CORS_ORIGINS` (e.g.
+`CORS_ORIGINS=https://admin.example.org`). The access control is `src/routes/apiAuth.js`,
+covered by `npm test` (`test/apiAuth.test.js`), including a check that `server.js` mounts it
+before every `/api` route.
+
 ## Running the CLI on Linux/macOS against local Firebase Emulator
 
 1. `cd` to `wpa-be-admin` on the terminal. 
@@ -147,10 +165,10 @@ in the selected environment.
   topics (`user_signup_notifications`, `user_delete_request`, `new_testimony_for_approval`,
   `new_prayer_request_for_approval`). Removing admin, deactivating or deleting an admin
   unsubscribes them, and reactivating an admin subscribes them again.
-- **Access:** unlike the other `/api` routes, `/api/users` requires the signed-in admin's Firebase
-  ID token. The project that issued the token verifies it (the console signs in to one project
-  but can manage either), and the server checks `is_admin` there. Disabled or signed-out admins
-  are rejected. Admins can't deactivate, delete or remove admin access from their own account.
+- **Access:** like every `/api` route (see *API access*), `/api/users` requires the signed-in
+  admin's Firebase ID token. The project that issued the token verifies it (the console signs in
+  to one project but can manage either), and the server checks `is_admin` there. Disabled or
+  signed-out admins are rejected. Admins can't deactivate, delete or remove admin access from their own account.
   Every change is logged on the server with the acting admin's email.
 
 The service is `src/services/userAdminService.js` and the routes are `src/routes/userRoutes.js`.
@@ -234,7 +252,8 @@ environment. It replaces the old single-token Notification Tester.
   (which can also rename it) or **Save as new**. Names are unique (ignoring case), and placeholders
   are checked when a template is saved. Templates are kept per environment in the
   `admin_notification_templates` collection, with who created and last updated each one.
-- **Access:** like `/api/users`, `/api/notifications` requires a signed-in admin's Firebase ID token.
+- **Access:** like every `/api` route (see *API access*), `/api/notifications` requires a signed-in
+  admin's Firebase ID token.
 - **Restarting the server:** `npm run server` doesn't reload when the code changes. Use `npm run
   start:dev` (or `npm run server:watch`), which restarts the server whenever its code changes. If
   the page says the server doesn't know a group, the server is older than the page; restart it.

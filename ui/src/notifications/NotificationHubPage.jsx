@@ -153,10 +153,20 @@ export default function NotificationHubPage() {
     const audienceKey = JSON.stringify([env, audience]);
     // A server started before this group was added rejects it; say so up front.
     const serverOutdated = serverAudiences !== null && !serverAudiences.includes(type);
-    const problem = serverOutdated ? 'Restart the server to use this group.' : audienceProblem(type, form);
+    // series: undefined while loading, null when none is active (or it failed
+    // to load, in which case seriesError is set and the server decides).
+    const noSeries = series === null && !seriesError;
+    const progressGroup = AUDIENCES.find((a) => a.type === type)?.progress === true;
+    const problem = serverOutdated ? 'Restart the server to use this group.'
+        : progressGroup && series === undefined ? 'Checking the current series…'
+            : progressGroup && noSeries ? 'No series is active, so this group can\'t be used.'
+                : audienceProblem(type, form);
     const message = { title: title.trim(), body: body.trim(), data: buildData(notificationType, dataRows) };
     const unknown = unknownPlaceholders(title, body);
-    const messageReady = !!message.title && !!message.body && !unknown.length;
+    // Series and progress placeholders can't be filled in without an active series.
+    const needsSeries = usesGroup('series', title, body) || usesGroup('progress', title, body);
+    const seriesPlaceholdersBlocked = noSeries && needsSeries;
+    const messageReady = !!message.title && !!message.body && !unknown.length && !seriesPlaceholdersBlocked;
     // Progress costs a read per user (their achievements), so the preview only
     // asks for it when the message shows it (progress audiences always get it).
     const needsProgress = usesGroup('progress', title, body);
@@ -473,6 +483,9 @@ export default function NotificationHubPage() {
                                 placeholder="e.g. You're {percent} through {series_title}. There's still time to catch up!" />
                             <Counter value={body} soft={BODY_SOFT_LIMIT} />
                         </div>
+                        {seriesPlaceholdersBlocked && (
+                            <p className="text-sm text-red-600">No series is active, so the series and progress placeholders can&apos;t be filled in. Remove them or make a series active first.</p>
+                        )}
                         {unknown.length > 0 && (
                             <p className="text-sm text-red-600">Unknown placeholder{unknown.length === 1 ? '' : 's'}: {unknown.map((k) => `{${k}}`).join(', ')}. Pick from the list below.</p>
                         )}
@@ -532,7 +545,7 @@ export default function NotificationHubPage() {
                                     {busy === 'dry' ? <Loader2 size={14} className="animate-spin" /> : <FlaskConical size={14} />} Dry run
                                 </button>
                             </div>
-                            {!messageReady && !unknown.length && <p className="text-xs text-gray-500">Enter a title and message to send.</p>}
+                            {!messageReady && !unknown.length && !seriesPlaceholdersBlocked && <p className="text-xs text-gray-500">Enter a title and message to send.</p>}
                         </div>
 
                         {result && <ResultPanel result={result} onDismiss={() => setResult(null)} />}

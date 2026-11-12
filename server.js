@@ -20,7 +20,8 @@ import { PublishService } from './src/services/publishService.js';
 import { PublishedSeriesService } from './src/services/publishedSeries.js';
 import { createRecompiler } from './src/services/seriesBaseline.js';
 import { createDraftRouter, createOembedRouter, createPublishedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
-import { createRequireAdmin, createUserRouter } from './src/routes/userRoutes.js';
+import { createUserRouter } from './src/routes/userRoutes.js';
+import { createRequireAdmin, protectApi } from './src/routes/apiAuth.js';
 import { createNotificationRouter } from './src/routes/notificationRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -227,7 +228,22 @@ try {
 initializeFirebase('prod');
 initializeDraftStorage();
 
-app.use(cors());
+// Cross-origin calls are refused unless CORS_ORIGINS lists the origin
+// (comma-separated). The console's UI is served from this server (and through
+// Vite's proxy in development), so it needs none.
+const corsOrigins = (process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
+if (corsOrigins.length) app.use(cors({ origin: corsOrigins }));
+
+// Every /api route needs a signed-in admin's Firebase ID token, verified by
+// whichever project issued it, except the few the console loads before
+// signing in (see PUBLIC_API_ROUTES in src/routes/apiAuth.js). This must stay
+// above every /api route.
+const requireAdmin = createRequireAdmin((projectId) => {
+    const store = Object.values(draftStores).find((s) => s.projectId === projectId);
+    return store ? { auth: store.app.auth(), firestore: store.app.firestore() } : null;
+});
+app.use('/api', protectApi(requireAdmin));
+// Bodies are only parsed once the caller is known to be an admin.
 app.use(express.json({ limit: '50mb' }));
 
 // Get Firebase Client Config (the project the console signs in to)
@@ -316,12 +332,8 @@ app.use('/api/storage', createStorageRouter(() => ({ service: storageService, en
 app.use('/api/oembed', createOembedRouter());
 
 // User Manager: Firebase Auth accounts + Firestore profiles of the selected
-// environment. Unlike the routes above, every request must carry a signed-in
-// admin's Firebase ID token, verified by whichever project issued it.
-const requireAdmin = createRequireAdmin((projectId) => {
-    const store = Object.values(draftStores).find((s) => s.projectId === projectId);
-    return store ? { auth: store.app.auth(), firestore: store.app.firestore() } : null;
-});
+// environment. (requireAdmin here is a no-op after the /api-wide check; it
+// keeps these routes protected if they are ever mounted elsewhere.)
 app.use('/api/users', requireAdmin, createUserRouter(() => ({ service: userAdminService, projectId: currentProjectId, env: currentEnv })));
 
 // Notification Hub: ad hoc push notifications to tokens, users or groups

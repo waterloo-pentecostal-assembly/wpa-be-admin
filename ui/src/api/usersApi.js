@@ -1,14 +1,9 @@
 // Client for the User Manager endpoints (src/routes/userRoutes.js). Every
-// request carries the signed-in admin's Firebase ID token.
-import { getAuthInstance } from '../firebase';
-import { ApiError, request } from './seriesBuilderApi';
+// request carries the signed-in admin's Firebase ID token (request() adds it).
+import { request } from './seriesBuilderApi';
 
-export async function authed(url, options = {}) {
-    const user = getAuthInstance()?.currentUser;
-    if (!user) throw new ApiError('You are signed out; sign in again', 401, null);
-    const token = await user.getIdToken();
-    return request(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } });
-}
+/** Kept for existing imports: every API call is authenticated now. */
+export const authed = request;
 
 const userUrl = (uid, action = '') => `/api/users/${encodeURIComponent(uid)}${action}`;
 const post = (url, json = {}) => authed(url, { method: 'POST', json });

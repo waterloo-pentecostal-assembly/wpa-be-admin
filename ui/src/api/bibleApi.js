@@ -2,16 +2,12 @@
 // Each function returns the parsed response body and throws an Error carrying
 // the server's message on a non-200 response.
 
+import { request } from './seriesBuilderApi';
+
 const BASE_URL = '/api/bible/niv';
 
-async function fetchJson(url) {
-    const res = await fetch(url);
-    const body = await res.json().catch(() => null);
-    if (!res.ok) {
-        throw new Error(body?.error || `Bible API request failed (${res.status})`);
-    }
-    return body;
-}
+// Signed in like every API call; errors carry the server's message.
+const fetchJson = (url) => request(url);
 
 /** @returns {Promise<{ version: string, books: Array<{ name: string, chapterCount: number }> }>} */
 export function fetchBibleBooks() {

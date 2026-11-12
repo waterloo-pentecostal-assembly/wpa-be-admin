@@ -4,7 +4,6 @@ import { compileDraft, collectRefs } from '../series/compile';
 import { ensureRefs, getLookup } from '../series/passageStore';
 import { applySeriesUpdate, getCurrentEnv, previewSeriesUpdate, publishDraft, publishSeries } from '../api/seriesBuilderApi';
 import { formatShort } from '../series/dates';
-import { useAuth } from '../contexts/AuthContext';
 import PublishStatus from './PublishStatus';
 import UpdateReview from './UpdateReview';
 import { Dialog } from './ui';
@@ -46,7 +45,6 @@ export default function PublishDialog({ draft, draftId, publishes, onClose, onGo
     const [preview, setPreview] = useState(null);
     const [confirmRemoval, setConfirmRemoval] = useState(false);
     const [updateResult, setUpdateResult] = useState(null);
-    const updatedBy = useAuth()?.currentUser?.uid ?? null;
 
     useEffect(() => {
         getCurrentEnv().then((r) => setEnv(r.env)).catch(() => setEnv(null));
@@ -88,7 +86,7 @@ export default function PublishDialog({ draft, draftId, publishes, onClose, onGo
         if (publishes.local) {
             setLocalResult(await publishSeries(compiled.json));
         } else {
-            const record = await publishDraft(draftId, compiled.json, updatedBy);
+            const record = await publishDraft(draftId, compiled.json);
             setPublishId(record.id);
             publishes.refresh();
         }
@@ -100,7 +98,7 @@ export default function PublishDialog({ draft, draftId, publishes, onClose, onGo
     });
 
     const applyUpdate = () => run(async () => {
-        setUpdateResult(await applySeriesUpdate(draftId, compiled.json, preview.planHash, updatedBy));
+        setUpdateResult(await applySeriesUpdate(draftId, compiled.json, preview.planHash));
         publishes.refresh();
     });
 

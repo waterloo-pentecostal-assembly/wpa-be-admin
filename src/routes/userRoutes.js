@@ -1,59 +1,9 @@
 import express from 'express';
 import { UserAdminError } from '../services/userAdminService.js';
 
-/** Reads a JWT's payload without verifying it (only to pick which project verifies it). */
-function decodeJwtPayload(token) {
-    try {
-        return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
-    } catch {
-        return null;
-    }
-}
-
-/**
- * Lets a request through only with a valid Firebase ID token of a signed-in
- * admin (profile `is_admin` true, matching the console's login check). The
- * token is verified by the project that issued it, which can differ from the
- * selected environment: the console signs in against one project and can
- * manage either. Disabled and signed-out (revoked) admins are rejected.
- * Sets `req.admin` = { uid, email, projectId }.
- *
- * @param {(projectId: string) => { auth: import('firebase-admin').auth.Auth, firestore: import('firebase-admin').firestore.Firestore }|null} resolveProject
- */
-export function createRequireAdmin(resolveProject) {
-    return async (req, res, next) => {
-        const token = /^Bearer (.+)$/i.exec(req.get('authorization') ?? '')?.[1];
-        if (!token) return res.status(401).json({ error: 'Sign in again to continue (no credentials were sent)' });
-
-        const projectId = decodeJwtPayload(token)?.aud;
-        const project = typeof projectId === 'string' ? resolveProject(projectId) : null;
-        if (!project) return res.status(401).json({ error: 'Your sign-in is for a Firebase project this server cannot verify' });
-
-        let decoded;
-        try {
-            decoded = await project.auth.verifyIdToken(token, true);
-        } catch {
-            return res.status(401).json({ error: 'Your session has expired or was revoked; sign in again' });
-        }
-
-        try {
-            const users = project.firestore.collection('users');
-            const own = await users.doc(decoded.uid).get();
-            let isAdmin = own.exists && own.data().is_admin === true;
-            if (!isAdmin && !own.exists && decoded.email) {
-                const byEmail = await users.where('email', '==', decoded.email).get();
-                isAdmin = byEmail.docs.some((doc) => doc.data().is_admin === true);
-            }
-            if (!isAdmin) return res.status(403).json({ error: 'Administrator access is required' });
-        } catch (error) {
-            console.error('Could not check admin access:', error);
-            return res.status(503).json({ error: 'Could not check administrator access' });
-        }
-
-        req.admin = { uid: decoded.uid, email: decoded.email ?? null, projectId };
-        return next();
-    };
-}
+// The admin check lives with the rest of the API's access control; kept
+// exported here for existing imports.
+export { createRequireAdmin } from './apiAuth.js';
 
 function sendError(res, error) {
     if (error instanceof UserAdminError) return res.status(error.status).json({ error: error.message });
@@ -62,7 +12,7 @@ function sendError(res, error) {
 }
 
 /**
- * User Manager API. Mount at `/api/users` behind `createRequireAdmin`.
+ * User Manager API. Mount at `/api/users` behind `createRequireAdmin` (see apiAuth.js).
  * Works on the selected environment's users.
  *
  * @param {() => { service: import('../services/userAdminService.js').UserAdminService|null, projectId: string|null, env: string }} getUsers

@@ -6,7 +6,6 @@ import { createDraft } from '../series/draftModel';
 import { importSeriesJson } from '../series/importSeries';
 import { listLocalOnly } from '../series/localDrafts';
 import { formatShort } from '../series/dates';
-import { useAuth } from '../contexts/AuthContext';
 import { deleteDraft, storeNewDraft } from './draftActions';
 import ImportDialog from './ImportDialog';
 import NewSeriesWizard from './NewSeriesWizard';
@@ -44,7 +43,6 @@ export default function DraftLibrary({ onOpen }) {
     const [copyNote, setCopyNote] = useState(null);
     const [fetchNote, setFetchNote] = useState(null); // { added, failed: string[] }
     const [query, setQuery] = useState('');
-    const updatedBy = useAuth()?.currentUser?.uid ?? null;
 
     const [reloadKey, setReloadKey] = useState(0);
     const refresh = () => setReloadKey((k) => k + 1);
@@ -100,7 +98,7 @@ export default function DraftLibrary({ onOpen }) {
         if (!draft.days.length) throw new Error('The series has no dated content to edit.');
         const id = await storeNewDraft(draft, true);
         try {
-            await linkDraftToSeries(id, json.seriesId, updatedBy);
+            await linkDraftToSeries(id, json.seriesId);
         } catch (e) {
             await deleteDraft(id).catch(() => {});
             if (e.status === 409 && e.body?.draftId) return { id: e.body.draftId, existing: true };

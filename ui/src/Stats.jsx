@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Header from './components/Header';
+import { request } from './api/seriesBuilderApi';
 import { BarChart3, MessageSquare, Heart, RefreshCw, Users } from 'lucide-react';
 
 export default function Stats() {
@@ -15,10 +16,7 @@ export default function Stats() {
             const queryParams = new URLSearchParams();
             if (dateFilter) queryParams.append('from', dateFilter);
 
-            const res = await fetch(`/api/stats?${queryParams.toString()}`);
-            if (!res.ok) throw new Error('Failed to fetch stats');
-            const data = await res.json();
-            setStats(data);
+            setStats(await request(`/api/stats?${queryParams.toString()}`));
         } catch (err) {
             setError(err.message);
         } finally {

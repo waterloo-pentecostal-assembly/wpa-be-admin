@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Zap, ShieldCheck } from 'lucide-react';
 import { useEnv } from '../contexts/EnvContext';
+import { switchEnv } from '../api/seriesBuilderApi';
 
 const EnvSwitcher = () => {
     const { env: currentEnv, loaded } = useEnv();
@@ -12,12 +13,7 @@ const EnvSwitcher = () => {
         const newEnv = env === 'prod' ? 'dev' : 'prod';
         setSwitching(true);
         try {
-            const res = await fetch('/api/env/switch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ env: newEnv })
-            });
-            const data = await res.json();
+            const data = await switchEnv(newEnv);
             if (data.success) {
                 // Reload with the new env in the URL so all data is fresh from
                 // the new DB. An open series builder draft belongs to the old
@@ -32,7 +28,7 @@ const EnvSwitcher = () => {
             alert('Failed to switch environment');
         } catch (error) {
             console.error('Error switching env', error);
-            alert('Error switching environment');
+            alert(`Error switching environment: ${error.message}`);
         }
         setSwitching(false);
     };
