@@ -4,7 +4,7 @@ import Home from './Home';
 import SeriesBuilderPage from './seriesBuilder/SeriesBuilderPage';
 import Stats from './Stats';
 import Login from './Login';
-import NotificationTester from './NotificationTester';
+import NotificationHubPage from './notifications/NotificationHubPage';
 import UserManagerPage from './users/UserManagerPage';
 import EnvGate from './components/EnvGate';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -47,7 +47,7 @@ function App() {
                                 path="/notifications"
                                 element={
                                     <ProtectedRoute>
-                                        <NotificationTester />
+                                        <NotificationHubPage />
                                     </ProtectedRoute>
                                 }
                             />

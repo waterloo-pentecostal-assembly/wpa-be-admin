@@ -155,3 +155,89 @@ in the selected environment.
 
 The service is `src/services/userAdminService.js` and the routes are `src/routes/userRoutes.js`.
 Both are covered by `npm test`.
+
+# Notification Hub (web UI)
+
+`/notifications` in the admin console sends ad hoc push notifications (FCM) in the selected
+environment. It replaces the old single-token Notification Tester.
+
+- **Audiences:**
+  - *Device tokens*: paste FCM tokens, one per line. Tokens that belong to a registered device are
+    matched to their user in the preview.
+  - *Specific users*: search and add users. Each one gets *All devices* or only the *Selected*
+    devices you tick.
+  - *Behind on series*: users whose completion percentage is below the expected percentage
+    (optionally by more than N percentage points). By default only days before today are expected
+    (tick *Count today as due* to include today). Users who haven't started at all are left out
+    unless you include them.
+  - *Ahead on series*: users whose completion percentage is above the percentage of days up to
+    and including today (optionally by more than N percentage points). Users who have finished
+    the series are left out; they're in *Completed series*.
+  - *Haven't started*: users with no completions in the active series.
+  - *Completed series*: users who have completed every day of the active series.
+  - *Signed up recently*: users whose sign-in account was created in the last N days (7 by
+    default).
+  - *All users* and *Admins*.
+
+  Progress is measured by day. The active series' `series_content_snippet` gives each day's
+  engagements (dates in the America/Toronto time zone). A day counts as complete when the user has
+  completed at least one of that day's engagements. A user's progress is their complete days as a
+  percentage of the series' days, compared with the percentage of days due. The percentage is read
+  as is from the user's `achievements` document (`series_progress`, kept up to date by a Cloud
+  Function on each completion and reset at the start of each series), one read per user. Behind
+  and ahead are the gap between it and the expected percentage, in percentage points. A
+  user who has done today's day but missed an earlier one is therefore on track. Today never
+  makes anyone ahead. Group
+  audiences skip deactivated users and profiles without a sign-in account by default, and can
+  skip users who turned off `daily_engagement_reminder` (on by default for the progress groups).
+- **Placeholders:** the title and message can include `{first_name}`, `{last_name}`,
+  `{full_name}`, `{series_title}`, `{total_days}`, `{percent}`, `{expected_percent}`,
+  `{percent_behind}`, `{percent_ahead}` and `{percent_left}`. They're listed under
+  *Personalize with placeholders*; clicking one inserts it at the cursor. Each recipient gets
+  their own values, worked out the same way as the progress groups, for any audience while a
+  series is active. `{key|fallback}` gives a fallback for anyone without a value (e.g.
+  `{first_name|friend}`). An empty value with no fallback is dropped, with the space before it.
+  Unknown placeholders are rejected before sending. The phone preview can show the message as
+  any previewed recipient (*Preview as*), and the history keeps the message as written, with its
+  placeholders. The placeholder code is `ui/src/notifications/placeholders.js`, which the server
+  also uses.
+- **Preview:** shows how many users and devices an audience reaches, who they are (with progress
+  while a series is active), and who was skipped and why. Choosing another group clears it. A
+  token shared by two accounts is only sent once. Clicking **Review & send** previews again, then asks you to confirm. If the send reaches 10
+  or more devices, you type the device count to confirm.
+- **Test on my devices** sends the message only to the devices of the admin account you're signed
+  in with. **Dry run** has FCM validate every message and token without delivering anything.
+- **Dead tokens:** when FCM reports a token as no longer registered (the app was uninstalled or the
+  token expired), the hub can remove that device document. This is on by default in the
+  confirmation and never happens on a dry run.
+- **History:** every real send is recorded in the environment's `admin_notification_log`
+  collection, with who sent it, the message, the audience (tokens masked) and the delivery counts.
+  **Reuse** copies a past message (and a group audience) back into the form, and the trash button
+  deletes a send from the history after you confirm. Deleting only removes the record; the
+  notifications were already delivered. The server logs who deleted it. The list scrolls within the
+  panel instead of growing the page.
+- **Opening the series in the app:** under *Data payload*, **Open the current Bible series** sets
+  `notificationType` to `dailyEngagementReminder` and `bibleSeriesId` to the active series' ID.
+  Those are the values the app's notification tap handler (wpa-be-app,
+  `lib/services/firebase_messaging_service.dart`) uses to open a series on the Engage tab. The
+  section then says which series a tap opens. If a template or reused send has the ID of a
+  different series, it says so and offers to switch to the current one. The app logs these taps
+  in Analytics as `daily_engagement_notification_clicked`, the same as its daily reminder.
+- **Templates:** save messages you send often. A template holds a name, the title, the message
+  (placeholders and all) and the data payload. It can also hold a group audience (e.g. *Behind on
+  series* by more than 5 points); lists of users or tokens aren't saved, because they go out of date.
+  The template dropdown at the top of the message shows the loaded template. Its menu lists each
+  template with its title and saved group (with a search box once there are several), and has
+  **Save as template** and **Manage** (rename or delete). Picking a template fills in the form (and
+  selects its group), with **Undo** in case it replaced something. The bookmark button beside the
+  dropdown also saves a new template. After you edit a loaded template, a bar offers **Update**
+  (which can also rename it) or **Save as new**. Names are unique (ignoring case), and placeholders
+  are checked when a template is saved. Templates are kept per environment in the
+  `admin_notification_templates` collection, with who created and last updated each one.
+- **Access:** like `/api/users`, `/api/notifications` requires a signed-in admin's Firebase ID token.
+- **Restarting the server:** `npm run server` doesn't reload when the code changes. Use `npm run
+  start:dev` (or `npm run server:watch`), which restarts the server whenever its code changes. If
+  the page says the server doesn't know a group, the server is older than the page; restart it.
+
+The service is `src/services/notificationHubService.js` and the routes are
+`src/routes/notificationRoutes.js`. Both are covered by `npm test`.

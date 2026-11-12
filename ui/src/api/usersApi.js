@@ -3,7 +3,7 @@
 import { getAuthInstance } from '../firebase';
 import { ApiError, request } from './seriesBuilderApi';
 
-async function authed(url, options = {}) {
+export async function authed(url, options = {}) {
     const user = getAuthInstance()?.currentUser;
     if (!user) throw new ApiError('You are signed out; sign in again', 401, null);
     const token = await user.getIdToken();

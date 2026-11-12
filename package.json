@@ -12,7 +12,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
-    "start:dev": "concurrently \"npm run server\" \"npm run dev\""
+    "server:watch": "node --watch server.js",
+    "start:dev": "concurrently \"npm run server:watch\" \"npm run dev\""
   },
   "author": "Joshua Ramsamooj",
   "license": "ISC",

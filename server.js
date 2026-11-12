@@ -10,7 +10,7 @@ import { UserManagerService } from './src/services/userManagerService.js';
 import { UserAdminService, createImageSigner } from './src/services/userAdminService.js';
 import { createAuthEmailSender } from './src/services/authEmailService.js';
 import { DataLoaderService } from './src/services/dataLoaderService.js';
-import { NotificationTestingService } from './src/services/notificationTestingService.js';
+import { NotificationHubService } from './src/services/notificationHubService.js';
 import { generateSeriesFromOutline, populateBibleVerses } from './src/services/bibleSeriesGeneratorService.js';
 import { loadBibleService } from './src/services/bibleService.js';
 import { createBibleRouter } from './src/routes/bibleRoutes.js';
@@ -21,6 +21,7 @@ import { PublishedSeriesService } from './src/services/publishedSeries.js';
 import { createRecompiler } from './src/services/seriesBaseline.js';
 import { createDraftRouter, createOembedRouter, createPublishedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
 import { createRequireAdmin, createUserRouter } from './src/routes/userRoutes.js';
+import { createNotificationRouter } from './src/routes/notificationRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +37,7 @@ let userManagerService = null;
 let userAdminService = null;
 let currentProjectId = null;
 let dataLoaderService = null;
-let notificationTestingService = null;
+let notificationHubService = null;
 let storageService = null;
 let publishedSeriesService = null;
 let currentEnv = 'prod'; // 'prod' or 'dev'
@@ -160,6 +161,7 @@ async function initializeFirebase(env = 'prod') {
             storageService = null;
             publishedSeriesService = null;
             userAdminService = null;
+            notificationHubService = null;
         }
 
         const serviceAccount = loadServiceAccount(env);
@@ -187,7 +189,11 @@ async function initializeFirebase(env = 'prod') {
             });
             dataLoaderService = new DataLoaderService(db);
             publishedSeriesService = new PublishedSeriesService(db, { recompile: createRecompiler(bibleService) });
-            notificationTestingService = new NotificationTestingService(admin);
+            const directoryOf = userAdminService;
+            notificationHubService = new NotificationHubService(db, messaging, {
+                loadDirectory: (options) => directoryOf.loadDirectory(options),
+                serverTimestamp: () => admin.firestore.FieldValue.serverTimestamp(),
+            });
             storageService = new StorageService(admin.storage().bucket());
             currentEnv = env;
             currentProjectId = serviceAccount.project_id;
@@ -318,6 +324,10 @@ const requireAdmin = createRequireAdmin((projectId) => {
 });
 app.use('/api/users', requireAdmin, createUserRouter(() => ({ service: userAdminService, projectId: currentProjectId, env: currentEnv })));
 
+// Notification Hub: ad hoc push notifications to tokens, users or groups
+// (e.g. users behind on the current series). Admins only, like /api/users.
+app.use('/api/notifications', requireAdmin, createNotificationRouter(() => ({ service: notificationHubService, projectId: currentProjectId, env: currentEnv })));
+
 // Get NIV Data (full file; kept for compatibility, prefer /api/bible/niv above)
 app.get('/api/niv', (req, res) => {
     try {
@@ -428,27 +438,6 @@ app.post('/api/series/upload', async (req, res) => {
         res.json({ success: true, seriesId: bibleSeriesId, env: currentEnv, ...report });
     } catch (error) {
         console.error("Error uploading series:", error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Send Test Notification
-app.post('/api/notifications/test', async (req, res) => {
-    try {
-        const { token, title, body, data } = req.body;
-        if (!token || !title || !body) {
-            return res.status(400).json({ error: 'Token, title, and body are required' });
-        }
-
-        if (!notificationTestingService) {
-            return res.status(503).json({ error: 'Notification service not available' });
-        }
-
-        const response = await notificationTestingService.sendTestNotification(token, title, body, data);
-        console.log('Successfully sent message:', response);
-        res.json({ success: true, messageId: response });
-    } catch (error) {
-        console.error('Error sending message:', error);
         res.status(500).json({ error: error.message });
     }
 });

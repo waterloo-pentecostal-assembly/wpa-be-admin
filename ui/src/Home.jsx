@@ -25,8 +25,8 @@ const TOOLS = [
     {
         to: '/notifications',
         icon: Bell,
-        title: 'Notification Tester',
-        description: 'Send test push notifications to specific devices.',
+        title: 'Notification Hub',
+        description: 'Send push notifications to devices, users, or groups such as users behind on the current series.',
     },
 ];
 
