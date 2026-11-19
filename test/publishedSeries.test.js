@@ -4,11 +4,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
-import { loadBibleService } from '../src/services/bibleService.js';
+import { createTestBible } from './helpers/fakeApiBible.js';
+import { memoryFirestore } from './helpers/memoryFirestore.js';
 import { collectRefs, compileDraft, createLookup } from '../ui/src/series/compile.js';
 import { importSeriesJson } from '../ui/src/series/importSeries.js';
 import { splitReference } from '../ui/src/series/scriptureRefs.js';
 import { createRecompiler } from '../src/services/seriesBaseline.js';
+import { ApiBibleError } from '../src/services/apiBibleClient.js';
 import { DataLoaderService } from '../src/services/dataLoaderService.js';
 import { DraftService } from '../src/services/draftService.js';
 import { PublishError, PublishService } from '../src/services/publishService.js';
@@ -16,76 +18,6 @@ import {
     PublishedSeriesService, buildSnippet, contentTimestamp, isoDateOf, planSeriesUpdate,
 } from '../src/services/publishedSeries.js';
 import { createDraftRouter, createPublishedRouter } from '../src/routes/seriesBuilderRoutes.js';
-
-// In-memory stand-in for the Firestore APIs used on bible_series, its
-// series_content subcollection, completions and the drafts collection.
-function memoryFirestore() {
-    const store = new Map(); // document path -> data
-    let counter = 0;
-    const snapshot = (path) => ({ id: path.split('/').at(-1), exists: store.has(path), data: () => (store.has(path) ? { ...store.get(path) } : undefined) });
-    const docRef = (path) => ({
-        id: path.split('/').at(-1),
-        path,
-        get: async () => snapshot(path),
-        set: async (data) => { store.set(path, { ...data }); },
-        update: async (patch) => {
-            if (!store.has(path)) throw new Error(`No document to update: ${path}`);
-            store.set(path, { ...store.get(path), ...patch });
-        },
-        delete: async () => { store.delete(path); },
-        collection: (name) => collection(`${path}/${name}`),
-    });
-    const collection = (path) => {
-        const children = () => [...store.keys()].filter((k) => k.startsWith(`${path}/`) && !k.slice(path.length + 1).includes('/'));
-        const query = (filter = () => true, order = null) => ({
-            where: (field, op, value) => query((d) => filter(d) && d[field] === value, order),
-            select: () => query(filter, order),
-            orderBy: (field, dir) => query(filter, { field, dir }),
-            limit: () => query(filter, order),
-            get: async () => {
-                let docs = children().map(snapshot).filter((s) => filter(s.data()));
-                if (order) {
-                    // Like Firestore, ordering by a field leaves out documents without it.
-                    const value = (s) => { const v = s.data()[order.field]; return v?.toMillis?.() ?? v; };
-                    docs = docs.filter((s) => value(s) !== undefined)
-                        .sort((a, b) => (order.dir === 'desc' ? -1 : 1) * (value(a) < value(b) ? -1 : value(a) > value(b) ? 1 : 0));
-                }
-                return { docs, empty: !docs.length, forEach: (fn) => docs.forEach(fn) };
-            },
-        });
-        return {
-            ...query(),
-            doc: (id) => docRef(`${path}/${id ?? `auto${String(++counter).padStart(4, '0')}`}`),
-            add: async (data) => {
-                const ref = docRef(`${path}/auto${String(++counter).padStart(4, '0')}`);
-                await ref.set(data);
-                return ref;
-            },
-        };
-    };
-    const batches = [];
-    return {
-        store,
-        batches,
-        collection,
-        batch: () => {
-            const ops = [];
-            return {
-                set: (ref, data) => ops.push(() => ref.set(data)),
-                update: (ref, patch) => ops.push(() => ref.update(patch)),
-                delete: (ref) => ops.push(() => ref.delete()),
-                commit: async () => {
-                    batches.push(ops.length);
-                    for (const op of ops) await op();
-                },
-            };
-        },
-        runTransaction: async (fn) => fn({
-            get: (ref) => ref.get(),
-            set: (ref, data) => { store.set(ref.path, { ...data }); },
-        }),
-    };
-}
 
 const series = { title: 'Matthew', sub_title: '', image_gs_location: 'gs://b/m.png', is_active: false, is_visible: true };
 const body = (text) => [{ body_type: 'text', paragraphs: [text] }];
@@ -265,25 +197,24 @@ describe('updating a published series', () => {
 
 describe('opening a published series in the builder', () => {
     const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-    const bible = loadBibleService(path.join(root, 'src', 'data', 'niv.json'));
-    const compile = (draft) => {
-        const singles = new Map();
-        for (const ref of collectRefs(draft)) {
-            for (const part of splitReference(ref)) singles.set(part, { ok: true, passage: bible.getPassage(part) });
-        }
-        return compileDraft(draft, createLookup(singles)).json;
+    const { service: bible } = createTestBible();
+    // Compiles a draft the way the builder does: references resolved through the Bible API.
+    const compile = async (draft) => {
+        const parts = [...new Set(collectRefs(draft).flatMap(splitReference))];
+        const { results } = await bible.getPassages('default', parts);
+        return compileDraft(draft, createLookup(new Map(Object.entries(results)))).json;
     };
 
     test('a series published from a draft opens and compiles back with nothing to update', async () => {
         const original = JSON.parse(fs.readFileSync(path.join(root, 'src', 'data', 'bible_series', 'matthew_2026.json'), 'utf8'));
-        const json = compile(importSeriesJson(original).draft);
+        const json = await compile(importSeriesJson(original).draft);
         const firestore = memoryFirestore();
         const loader = new DataLoaderService(firestore);
         const seriesId = await loader.loadBibleSeries(structuredClone(json.bible_series));
         await loader.loadSeriesContent(structuredClone(json.series_content), seriesId);
 
         const service = new PublishedSeriesService(firestore);
-        const reopened = compile(importSeriesJson(await service.export(seriesId)).draft);
+        const reopened = await compile(importSeriesJson(await service.export(seriesId)).draft);
         const { summary } = await service.plan(seriesId, reopened);
         assert.equal(summary.writeCount, 0);
         assert.equal(summary.unchanged, json.series_content.length);
@@ -309,7 +240,7 @@ describe('opening a published series in the builder', () => {
         await loader.loadSeriesContent(original.series_content, seriesId);
         const recompile = createRecompiler(bible);
         const service = new PublishedSeriesService(firestore, { recompile });
-        return { firestore, seriesId, service, opened: recompile(await service.export(seriesId)) };
+        return { firestore, seriesId, service, opened: await recompile(await service.export(seriesId)) };
     }
 
     test('series loaded with the CLI open with nothing to update', async () => {
@@ -481,6 +412,64 @@ describe('published series routes', () => {
             assert.equal((await applied.json()).record.updated_by, 'uid-admin-1');
             assert.equal(firestore.store.get(`bible_series/${seriesId}`).is_active, true);
             assert.equal((await post(`/api/drafts/${otherId}/update`, { json })).status, 404, 'not published');
+        } finally {
+            server.close();
+        }
+    });
+});
+
+describe('updates look up scripture as the requesting admin', () => {
+    async function start(recompile) {
+        const firestore = memoryFirestore();
+        const seriesId = await publishFixture(firestore);
+        const published = new PublishedSeriesService(firestore, { recompile });
+        const drafts = new DraftService(firestore, { now: () => { const t = Date.now(); return { toMillis: () => t }; } });
+        const publisher = new PublishService({ getDrafts: () => drafts, getLoader: () => null, getPublished: () => published, getEnv: () => 'dev' });
+        const { id: draftId } = await drafts.create({ meta: { title: 'Matthew' }, days: [] });
+        await publisher.link(draftId, seriesId);
+        const app = express();
+        app.use(express.json());
+        app.use((req, res, next) => { req.admin = { uid: 'uid-admin-1', email: 'admin@wpa.church', projectId: 'p' }; next(); });
+        app.use('/api/drafts', createDraftRouter(() => ({ service: drafts, projectId: 'p' }), publisher));
+        const server = await new Promise((resolve) => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
+        const base = `http://127.0.0.1:${server.address().port}`;
+        const post = (url, json) => fetch(`${base}${url}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer admin-id-token' },
+            body: JSON.stringify(json),
+        });
+        return { server, post, draftId };
+    }
+    const json = () => ({ bible_series: { ...series, is_active: true }, series_content: content() });
+
+    test('preview and apply forward the admin\'s ID token to the Bible proxy', async () => {
+        const bible = createTestBible();
+        const { server, post, draftId } = await start(createRecompiler(bible.service));
+        try {
+            const preview = await post(`/api/drafts/${draftId}/update-preview`, { json: json() });
+            assert.equal(preview.status, 200);
+            assert.equal(await bible.client.auths.at(-1).getToken(), 'admin-id-token');
+            const { planHash } = await preview.json();
+            bible.client.auths.length = 0;
+            assert.equal((await post(`/api/drafts/${draftId}/update`, { json: json(), planHash })).status, 200);
+            assert.equal(await bible.client.auths.at(-1).getToken(), 'admin-id-token');
+        } finally {
+            server.close();
+        }
+    });
+
+    test('the proxy\'s 401 and 429 reach the browser with their status (and Retry-After)', async () => {
+        let failure = new ApiBibleError('Your session has expired; sign in again', 401, 401);
+        const { server, post, draftId } = await start(async () => { throw failure; });
+        try {
+            const expired = await post(`/api/drafts/${draftId}/update-preview`, { json: json() });
+            assert.equal(expired.status, 401);
+            assert.match((await expired.json()).error, /sign in again/);
+
+            failure = new ApiBibleError('Too many scripture requests; try again in 20 seconds', 429, 429, { retryAfter: 20 });
+            const limited = await post(`/api/drafts/${draftId}/update-preview`, { json: json() });
+            assert.equal(limited.status, 429);
+            assert.equal(limited.headers.get('retry-after'), '20');
         } finally {
             server.close();
         }

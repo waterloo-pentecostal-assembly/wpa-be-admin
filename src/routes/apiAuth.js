@@ -23,6 +23,11 @@ function decodeJwtPayload(token) {
 
 const MAX_CACHED_SESSIONS = 500;
 
+/** The request's `Authorization: Bearer` token, or null. */
+export function bearerToken(req) {
+    return /^Bearer (.+)$/i.exec(req.get('authorization') ?? '')?.[1] ?? null;
+}
+
 /**
  * Lets a request through only with a valid Firebase ID token of a signed-in
  * admin (profile `is_admin` true, matching the console's login check). The
@@ -55,7 +60,7 @@ export function createRequireAdmin(resolveProject, { cacheMs = 60_000, now = () 
         // Already checked further up (the /api-wide guard).
         if (req.admin) return next();
 
-        const token = /^Bearer (.+)$/i.exec(req.get('authorization') ?? '')?.[1];
+        const token = bearerToken(req);
         if (!token) return res.status(401).json({ error: 'Sign in again to continue (no credentials were sent)' });
 
         const cached = verified.get(token);

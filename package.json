@@ -8,12 +8,16 @@
     "test": "node --test \"test/*.test.js\"",
     "lint": "node node_modules/eslint/bin/eslint.js .",
     "cli": "node src/cli/cli.js",
+    "cli:dev": "WPA_BE_ENV=dev node src/cli/cli.js",
+    "cli:prod": "WPA_BE_ENV=prod node src/cli/cli.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
     "server:watch": "node --watch server.js",
-    "start:dev": "concurrently \"npm run server:watch\" \"npm run dev\""
+    "start:dev": "concurrently \"npm run server:watch\" \"npm run dev\"",
+    "backfill:scripture": "node scripts/backfill-scripture.js",
+    "check:bible-proxy": "node scripts/check-bible-proxy.js"
   },
   "author": "Joshua Ramsamooj",
   "license": "ISC",

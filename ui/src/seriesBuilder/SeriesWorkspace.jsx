@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Undo2, Redo2, CalendarRange, CloudUpload, PanelRight, Loader2, AlertCircle, History } from 'lucide-react';
 import { collectRefs, compileDraft } from '../series/compile';
-import { useScriptureLookup } from '../series/passageStore';
+import { BibleProvider, bibleIdOf, useScriptureLookup } from '../series/passageStore';
 import { useDraftDocument } from '../series/useDraftDocument';
 import { usePublishes } from '../series/usePublishes';
 import { isActive } from '../series/publishes';
@@ -45,7 +45,8 @@ export default function SeriesWorkspace({ draftId, selection, onSelect, onExit }
     }, []);
 
     const refs = useMemo(() => (draft ? collectRefs(draft) : []), [draft]);
-    const lookup = useScriptureLookup(refs);
+    const bibleId = bibleIdOf(draft);
+    const lookup = useScriptureLookup(refs, bibleId);
     const issues = useMemo(
         () => (draft ? compileDraft(draft, lookup).issues.filter((i) => i.level !== 'pending') : []),
         [draft, lookup],
@@ -131,112 +132,114 @@ export default function SeriesWorkspace({ draftId, selection, onSelect, onExit }
     const linked = !!publishes.seriesId;
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col">
-            {/* Toolbar */}
-            <div className="flex h-12 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-3">
-                <button className="btn btn-ghost btn-sm px-2" onClick={onExit} title="All series" aria-label="All series"><ArrowLeft size={16} /></button>
-                <span className="h-5 w-px bg-gray-200" />
-                <button className="min-w-0 truncate text-sm font-bold text-ink hover:text-brand" onClick={() => onSelect('series')}>
-                    {draft.meta.title || 'Untitled series'}
-                </button>
-                <SaveIndicator doc={doc} />
-                {activePublish && (
-                    <button className="flex items-center gap-1.5 text-xs text-brand" onClick={() => onSelect('series')} title="Publishing; see Series details">
-                        <Loader2 size={13} className="animate-spin" />
-                        {activePublish.kind === 'update'
-                            ? 'Updating'
-                            : `Publishing · ${(activePublish.written ?? 0) + (activePublish.failed_count ?? 0)}/${activePublish.total}`}
+        <BibleProvider bibleId={bibleId}>
+            <div className="flex min-h-0 flex-1 flex-col">
+                {/* Toolbar */}
+                <div className="flex h-12 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-3">
+                    <button className="btn btn-ghost btn-sm px-2" onClick={onExit} title="All series" aria-label="All series"><ArrowLeft size={16} /></button>
+                    <span className="h-5 w-px bg-gray-200" />
+                    <button className="min-w-0 truncate text-sm font-bold text-ink hover:text-brand" onClick={() => onSelect('series')}>
+                        {draft.meta.title || 'Untitled series'}
                     </button>
-                )}
-                <div className="ml-auto flex items-center gap-1">
-                    <button className="icon-btn" onClick={undo} disabled={!doc.canUndo} title="Undo (Ctrl+Z)"><Undo2 size={16} /></button>
-                    <button className="icon-btn" onClick={redo} disabled={!doc.canRedo} title="Redo (Ctrl+Shift+Z)"><Redo2 size={16} /></button>
-                    <span className="mx-1 h-5 w-px bg-gray-200" />
-                    <button className="btn btn-ghost btn-sm" onClick={() => setModal({ type: 'schedule' })}><CalendarRange size={15} /> Schedule</button>
-                    <button
-                        className={`btn btn-ghost btn-sm hidden xl:inline-flex ${showPreview ? 'text-brand' : ''}`}
-                        onClick={() => {
-                            localStorage.setItem(PREVIEW_KEY, String(!showPreview));
-                            setShowPreview(!showPreview);
-                        }}
-                        title="Toggle preview"
-                    >
-                        <PanelRight size={15} /> Preview
-                    </button>
-                    <button className={`btn btn-sm ${env === 'prod' ? 'btn-dark' : 'btn-primary'}`} onClick={() => setModal({ type: 'publish' })}>
-                        <CloudUpload size={15} /> {linked ? `Update${env ? ` ${env}` : ''}` : `Publish${env ? ` to ${env}` : ''}`}
-                        {errorCount > 0 && <span className="rounded-full bg-red-500 px-1.5 text-[10px]">{errorCount}</span>}
-                    </button>
-                </div>
-            </div>
-
-            {doc.recovery && (
-                <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
-                    <History size={16} />
-                    Unsaved changes from {new Date(doc.recovery.savedAt).toLocaleString()} were found in this browser.
-                    <button className="btn btn-sm btn-secondary" onClick={doc.acceptRecovery}>Restore them</button>
-                    <button className="btn btn-sm btn-ghost" onClick={doc.dismissRecovery}>Discard</button>
-                </div>
-            )}
-
-            <div className="flex min-h-0 flex-1">
-                <DayRail
-                    draft={draft}
-                    selection={selection}
-                    onSelect={onSelect}
-                    issuesByDay={issuesByDay}
-                    filter={railFilter}
-                    onFilterChange={setRailFilter}
-                />
-                <main key={selection?.startsWith('day:') ? 'day' : selection} className="min-w-0 flex-1 overflow-y-auto">
-                    {selection === 'series' && (
-                        <SeriesSettings draft={draft} update={update} env={env} publishes={publishes} onEditSchedule={() => setModal({ type: 'schedule' })} />
+                    <SaveIndicator doc={doc} />
+                    {activePublish && (
+                        <button className="flex items-center gap-1.5 text-xs text-brand" onClick={() => onSelect('series')} title="Publishing; see Series details">
+                            <Loader2 size={13} className="animate-spin" />
+                            {activePublish.kind === 'update'
+                                ? 'Updating'
+                                : `Publishing · ${(activePublish.written ?? 0) + (activePublish.failed_count ?? 0)}/${activePublish.total}`}
+                        </button>
                     )}
-                    {selection === 'templates' && (
-                        <TemplatesEditor draft={draft} update={update} focusType={templateFocus} toast={toast} />
-                    )}
-                    {day && (
-                        <DayEditor
-                            key={day.id}
-                            draft={draft}
-                            day={day}
-                            dayIndex={dayIndex}
-                            lookup={lookup}
-                            issues={issues}
-                            update={update}
-                            toast={toast}
-                            readingInputRef={readingInputRef}
-                            onPrev={() => goDay(-1)}
-                            onNext={() => goDay(1, { focusReading: true })}
-                            onCopy={(target) => setModal({ type: 'copy', dayId: day.id, target })}
-                            onPastePlan={() => setModal({ type: 'paste', dayId: day.id })}
-                            onEditTemplate={(type) => {
-                                setTemplateFocus(type);
-                                onSelect('templates');
+                    <div className="ml-auto flex items-center gap-1">
+                        <button className="icon-btn" onClick={undo} disabled={!doc.canUndo} title="Undo (Ctrl+Z)"><Undo2 size={16} /></button>
+                        <button className="icon-btn" onClick={redo} disabled={!doc.canRedo} title="Redo (Ctrl+Shift+Z)"><Redo2 size={16} /></button>
+                        <span className="mx-1 h-5 w-px bg-gray-200" />
+                        <button className="btn btn-ghost btn-sm" onClick={() => setModal({ type: 'schedule' })}><CalendarRange size={15} /> Schedule</button>
+                        <button
+                            className={`btn btn-ghost btn-sm hidden xl:inline-flex ${showPreview ? 'text-brand' : ''}`}
+                            onClick={() => {
+                                localStorage.setItem(PREVIEW_KEY, String(!showPreview));
+                                setShowPreview(!showPreview);
                             }}
-                        />
-                    )}
-                </main>
-                {showPreview && <PreviewPane draft={draft} day={previewDay} lookup={lookup} />}
-            </div>
+                            title="Toggle preview"
+                        >
+                            <PanelRight size={15} /> Preview
+                        </button>
+                        <button className={`btn btn-sm ${env === 'prod' ? 'btn-dark' : 'btn-primary'}`} onClick={() => setModal({ type: 'publish' })}>
+                            <CloudUpload size={15} /> {linked ? `Update${env ? ` ${env}` : ''}` : `Publish${env ? ` to ${env}` : ''}`}
+                            {errorCount > 0 && <span className="rounded-full bg-red-500 px-1.5 text-[10px]">{errorCount}</span>}
+                        </button>
+                    </div>
+                </div>
 
-            {modal?.type === 'schedule' && <ScheduleDialog draft={draft} update={update} toast={toast} onClose={() => setModal(null)} />}
-            {modal?.type === 'copy' && (
-                <CopyToDialog draft={draft} sourceDayId={modal.dayId} target={modal.target} update={update} toast={toast} onClose={() => setModal(null)} />
-            )}
-            {modal?.type === 'paste' && (
-                <PastePlanDialog draft={draft} startDayId={modal.dayId} update={update} toast={toast} onClose={() => setModal(null)} />
-            )}
-            {modal?.type === 'publish' && (
-                <PublishDialog
-                    draft={draft}
-                    draftId={draftId}
-                    publishes={publishes}
-                    onClose={() => setModal(null)}
-                    onGoToDay={(dayId) => onSelect(dayId ? `day:${dayId}` : 'series')}
-                />
-            )}
-            <Toasts toasts={toasts} onDismiss={(id) => setToasts((t) => t.filter((x) => x.id !== id))} />
-        </div>
+                {doc.recovery && (
+                    <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+                        <History size={16} />
+                        Unsaved changes from {new Date(doc.recovery.savedAt).toLocaleString()} were found in this browser.
+                        <button className="btn btn-sm btn-secondary" onClick={doc.acceptRecovery}>Restore them</button>
+                        <button className="btn btn-sm btn-ghost" onClick={doc.dismissRecovery}>Discard</button>
+                    </div>
+                )}
+
+                <div className="flex min-h-0 flex-1">
+                    <DayRail
+                        draft={draft}
+                        selection={selection}
+                        onSelect={onSelect}
+                        issuesByDay={issuesByDay}
+                        filter={railFilter}
+                        onFilterChange={setRailFilter}
+                    />
+                    <main key={selection?.startsWith('day:') ? 'day' : selection} className="min-w-0 flex-1 overflow-y-auto">
+                        {selection === 'series' && (
+                            <SeriesSettings draft={draft} update={update} env={env} publishes={publishes} onEditSchedule={() => setModal({ type: 'schedule' })} />
+                        )}
+                        {selection === 'templates' && (
+                            <TemplatesEditor draft={draft} update={update} focusType={templateFocus} toast={toast} />
+                        )}
+                        {day && (
+                            <DayEditor
+                                key={day.id}
+                                draft={draft}
+                                day={day}
+                                dayIndex={dayIndex}
+                                lookup={lookup}
+                                issues={issues}
+                                update={update}
+                                toast={toast}
+                                readingInputRef={readingInputRef}
+                                onPrev={() => goDay(-1)}
+                                onNext={() => goDay(1, { focusReading: true })}
+                                onCopy={(target) => setModal({ type: 'copy', dayId: day.id, target })}
+                                onPastePlan={() => setModal({ type: 'paste', dayId: day.id })}
+                                onEditTemplate={(type) => {
+                                    setTemplateFocus(type);
+                                    onSelect('templates');
+                                }}
+                            />
+                        )}
+                    </main>
+                    {showPreview && <PreviewPane draft={draft} day={previewDay} lookup={lookup} />}
+                </div>
+
+                {modal?.type === 'schedule' && <ScheduleDialog draft={draft} update={update} toast={toast} onClose={() => setModal(null)} />}
+                {modal?.type === 'copy' && (
+                    <CopyToDialog draft={draft} sourceDayId={modal.dayId} target={modal.target} update={update} toast={toast} onClose={() => setModal(null)} />
+                )}
+                {modal?.type === 'paste' && (
+                    <PastePlanDialog draft={draft} startDayId={modal.dayId} update={update} toast={toast} onClose={() => setModal(null)} />
+                )}
+                {modal?.type === 'publish' && (
+                    <PublishDialog
+                        draft={draft}
+                        draftId={draftId}
+                        publishes={publishes}
+                        onClose={() => setModal(null)}
+                        onGoToDay={(dayId) => onSelect(dayId ? `day:${dayId}` : 'series')}
+                    />
+                )}
+                <Toasts toasts={toasts} onDismiss={(id) => setToasts((t) => t.filter((x) => x.id !== id))} />
+            </div>
+        </BibleProvider>
     );
 }

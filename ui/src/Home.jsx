@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, BarChart3, Bell, Users, ArrowRight } from 'lucide-react';
+import { BookOpen, BarChart3, Bell, Users, Database, Wrench, ArrowRight } from 'lucide-react';
 import Header from './components/Header';
 
 const TOOLS = [
@@ -27,6 +27,18 @@ const TOOLS = [
         icon: Bell,
         title: 'Notification Hub',
         description: 'Send push notifications to devices, users, or groups such as users behind on the current series.',
+    },
+    {
+        to: '/scripture-proxy',
+        icon: Database,
+        title: 'Scripture Proxy',
+        description: 'See the Bible proxy\'s cache hit rate and API.Bible usage, and purge cached scripture.',
+    },
+    {
+        to: '/maintenance',
+        icon: Wrench,
+        title: 'Maintenance',
+        description: 'Clean up old data: delete prayer requests and testimonies older than a date.',
     },
 ];
 

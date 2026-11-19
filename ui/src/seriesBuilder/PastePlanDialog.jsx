@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Check, AlertCircle, Loader2 } from 'lucide-react';
 import { assignReadings } from '../series/draftModel';
 import { formatShort } from '../series/dates';
-import { ensureRefs, getLookup } from '../series/passageStore';
+import { bibleIdOf, ensureRefs, getLookup } from '../series/passageStore';
 import { extractReference } from '../series/planParsing';
 import { Dialog } from './ui';
 
@@ -20,8 +20,8 @@ export default function PastePlanDialog({ draft, startDayId, update, onClose, to
     const check = async () => {
         setChecking(true);
         try {
-            await ensureRefs(lines);
-            const lookup = getLookup();
+            await ensureRefs(lines, bibleIdOf(draft));
+            const lookup = getLookup(bibleIdOf(draft));
             setChecked(lines.map((input) => ({ input, result: lookup(input) })));
         } finally {
             setChecking(false);

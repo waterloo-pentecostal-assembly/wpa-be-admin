@@ -16,7 +16,11 @@ import admin from 'firebase-admin';
 import { entryLines } from '../../ui/src/series/entryDiff.js';
 
 export const SERIES_ZONE = 'America/Toronto';
-const SERIES_FIELDS = ['title', 'sub_title', 'image_gs_location', 'is_active', 'is_visible'];
+// `scripture_bible_id` is admin-only: the API.Bible translation the stored
+// verse text is in (apps pick their own translation for passage IDs).
+const SERIES_FIELDS = ['title', 'sub_title', 'image_gs_location', 'is_active', 'is_visible', 'scripture_bible_id'];
+// Left out of builder JSON when empty, so series without it look as before.
+const OPTIONAL_FIELDS = new Set(['scripture_bible_id']);
 const BOOLEAN_FIELDS = new Set(['is_active', 'is_visible']);
 const CONTENT_FIELDS = ['date', 'content_type', 'title', 'body'];
 // Firestore allows 500 writes per batch.
@@ -123,10 +127,15 @@ function matchEntries(published, entries) {
     return matches;
 }
 
+/** seriesJson without empty optional fields. */
+function compactSeriesJson(series) {
+    return Object.fromEntries(Object.entries(seriesJson(series)).filter(([f, v]) => !OPTIONAL_FIELDS.has(f) || v !== ''));
+}
+
 /** Stored series as builder JSON ({ bible_series, series_content } with ISO dates). */
 function toBuilderJson({ series, content }) {
     return {
-        bible_series: seriesJson(series),
+        bible_series: compactSeriesJson(series),
         series_content: content.map((doc) => {
             const entry = { ...doc, date: isoDateOf(doc.date) };
             delete entry.id;
@@ -304,7 +313,7 @@ export class PublishedSeriesService {
                 const data = doc.data();
                 return {
                     id: doc.id,
-                    ...seriesJson(data),
+                    ...compactSeriesJson(data),
                     startDate: isoDateOf(data.start_date),
                     endDate: isoDateOf(data.end_date),
                 };
@@ -354,15 +363,18 @@ export class PublishedSeriesService {
         return counts;
     }
 
-    /** Plans the update of `seriesId` to match `json`; throws if the series doesn't exist. */
-    async plan(seriesId, json) {
+    /**
+     * Plans the update of `seriesId` to match `json`; throws if the series doesn't exist.
+     * `bibleAuth`: the admin whose ID token the recompile's scripture lookups use.
+     */
+    async plan(seriesId, json, { bibleAuth = null } = {}) {
         const [current, completions] = await Promise.all([this.read(seriesId), this.completionCounts(seriesId)]);
         if (!current.series) {
             const error = new Error(`Series ${seriesId} was not found`);
             error.code = 'not-found';
             throw error;
         }
-        const baseline = this.recompile ? baselineFor(current, this.recompile(toBuilderJson(current))) : null;
+        const baseline = this.recompile ? baselineFor(current, await this.recompile(toBuilderJson(current), { auth: bibleAuth })) : null;
         return planSeriesUpdate(current, json, { newId: () => this.newContentId(seriesId), completions, baseline });
     }
 

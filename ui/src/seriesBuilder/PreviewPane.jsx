@@ -48,6 +48,7 @@ function BodyBlock({ block }) {
                         </div>
                     ))}
                     <p className="text-[9px] leading-tight text-gray-400">{block.bible_version}</p>
+                    {block.attribution && <p className="whitespace-pre-line text-[9px] leading-tight text-gray-400">{block.attribution}</p>}
                 </div>
             );
         case 'image_input':

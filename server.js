@@ -1,3 +1,4 @@
+import './src/config/loadEnv.js'; // first: .env must be loaded before anything reads process.env
 
 import express from 'express';
 import fs from 'fs';
@@ -12,8 +13,10 @@ import { createAuthEmailSender } from './src/services/authEmailService.js';
 import { DataLoaderService } from './src/services/dataLoaderService.js';
 import { NotificationHubService } from './src/services/notificationHubService.js';
 import { generateSeriesFromOutline, populateBibleVerses } from './src/services/bibleSeriesGeneratorService.js';
-import { loadBibleService } from './src/services/bibleService.js';
-import { createBibleRouter } from './src/routes/bibleRoutes.js';
+import { createApiBibleService } from './src/config/apiBible.js';
+import { loadServiceAccount } from './src/config/serviceAccount.js';
+import { loadClientConfig, loadWebApiKey, webApiKeyVar } from './src/config/firebaseClient.js';
+import { bibleAuthFor, createBibleProxyAdminRouter, createBibleRouter } from './src/routes/bibleRoutes.js';
 import { DraftService } from './src/services/draftService.js';
 import { StorageService } from './src/services/storageService.js';
 import { PublishService } from './src/services/publishService.js';
@@ -23,6 +26,8 @@ import { createDraftRouter, createOembedRouter, createPublishedRouter, createSto
 import { createUserRouter } from './src/routes/userRoutes.js';
 import { createRequireAdmin, protectApi } from './src/routes/apiAuth.js';
 import { createNotificationRouter } from './src/routes/notificationRoutes.js';
+import { createMaintenanceRouter } from './src/routes/maintenanceRoutes.js';
+import { DataDeletingService } from './src/services/dataDeletingService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +44,7 @@ let userAdminService = null;
 let currentProjectId = null;
 let dataLoaderService = null;
 let notificationHubService = null;
+let dataDeletingService = null;
 let storageService = null;
 let publishedSeriesService = null;
 let currentEnv = 'prod'; // 'prod' or 'dev'
@@ -48,81 +54,6 @@ let currentEnv = 'prod'; // 'prod' or 'dev'
 // moved across with "Copy to prod/dev". Each env has its own named Firebase
 // app so draft storage survives the default app being recreated on a switch.
 const draftStores = {}; // env -> { service: DraftService, projectId, app }
-
-function loadServiceAccount(env) {
-    let serviceAccount = null;
-    const filename = env === 'dev' ? 'service-account-dev.json' : 'service-account.json';
-
-    // 1. Try Render Secret File (Production)
-    const renderSecretPath = `/etc/secrets/${filename}`;
-    if (fs.existsSync(renderSecretPath)) {
-        try {
-            serviceAccount = JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
-            console.log(`Loaded Firebase ${env} credentials from Render Secret File`);
-        } catch (e) {
-            console.error("Failed to parse Render Secret File", e);
-        }
-    }
-
-    // 2. Try Environment Variable (Fallback)
-    const envVarName = env === 'dev' ? 'FIREBASE_SERVICE_ACCOUNT_DEV' : 'FIREBASE_SERVICE_ACCOUNT';
-    if (!serviceAccount && process.env[envVarName]) {
-        try {
-            serviceAccount = JSON.parse(process.env[envVarName]);
-            console.log(`Loaded Firebase ${env} credentials from Environment Variable`);
-        } catch (e) {
-            console.error(`Failed to parse ${envVarName} env var`, e);
-        }
-    }
-
-    // 3. Try Local File (Development)
-    if (!serviceAccount) {
-        const serviceAccountPath = path.join(__dirname, 'src', 'config', filename);
-        if (fs.existsSync(serviceAccountPath)) {
-            serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-            console.log(`Loaded Firebase ${env} credentials from local file: ${filename}`);
-        }
-    }
-    return serviceAccount;
-}
-
-/**
- * The Firebase web (client) config: Render Secret File, then the
- * FIREBASE_CLIENT_CONFIG env var, then src/config/firebase-client-config.json.
- * Throws if a config file can't be parsed.
- */
-function loadClientConfig() {
-    const renderSecretPath = '/etc/secrets/firebase-client-config.json';
-    if (fs.existsSync(renderSecretPath)) return JSON.parse(fs.readFileSync(renderSecretPath, 'utf8'));
-    if (process.env.FIREBASE_CLIENT_CONFIG) {
-        try {
-            return JSON.parse(process.env.FIREBASE_CLIENT_CONFIG);
-        } catch (e) {
-            console.error("Failed to parse FIREBASE_CLIENT_CONFIG env var", e);
-        }
-    }
-    const localConfigPath = path.join(__dirname, 'src', 'config', 'firebase-client-config.json');
-    if (fs.existsSync(localConfigPath)) return JSON.parse(fs.readFileSync(localConfigPath, 'utf8'));
-    return null;
-}
-
-const webApiKeyVar = (env) => (env === 'dev' ? 'FIREBASE_WEB_API_KEY_DEV' : 'FIREBASE_WEB_API_KEY');
-
-/**
- * The web API key Firebase Authentication emails are sent with (a service
- * account has none): FIREBASE_WEB_API_KEY / FIREBASE_WEB_API_KEY_DEV, else
- * the client config's apiKey when it is for this environment's project.
- */
-function loadWebApiKey(env, projectId) {
-    if (process.env[webApiKeyVar(env)]) return process.env[webApiKeyVar(env)];
-    try {
-        const clientConfig = loadClientConfig();
-        if (clientConfig?.apiKey && clientConfig.projectId === projectId) return clientConfig.apiKey;
-    } catch (error) {
-        console.error('Could not read the Firebase client config for its API key:', error.message);
-    }
-    return null;
-}
 
 // Cover images go to the project's default bucket (<project>.appspot.com,
 // matching existing image_gs_location values) unless overridden.
@@ -163,6 +94,7 @@ async function initializeFirebase(env = 'prod') {
             publishedSeriesService = null;
             userAdminService = null;
             notificationHubService = null;
+            dataDeletingService = null;
         }
 
         const serviceAccount = loadServiceAccount(env);
@@ -196,6 +128,7 @@ async function initializeFirebase(env = 'prod') {
                 serverTimestamp: () => admin.firestore.FieldValue.serverTimestamp(),
             });
             storageService = new StorageService(admin.storage().bucket());
+            dataDeletingService = new DataDeletingService(db);
             currentEnv = env;
             currentProjectId = serviceAccount.project_id;
             return true;
@@ -211,20 +144,21 @@ async function initializeFirebase(env = 'prod') {
 
 // Paths
 const DATA_DIR = path.join(__dirname, 'src', 'data', 'bible_series');
-const NIV_FILE = path.join(__dirname, 'src', 'data', 'niv.json');
 
-// Load the NIV Bible once for the Bible API (see /api/bible/niv below).
-// A missing or unreadable file must not stop the rest of the server:
-// the Bible endpoints report 503 while everything else keeps working.
-let bibleService = null;
-try {
-    bibleService = loadBibleService(NIV_FILE);
-    console.log(`NIV Bible data loaded (${bibleService.getBooks().books.length} books)`);
-} catch (error) {
-    console.warn(`NIV Bible data not available from ${NIV_FILE}: ${error.message}`);
+// Scripture comes from API.Bible through our Bible proxy (BIBLE_API_BASE_URL;
+// see src/config/apiBible.js). The console holds no API.Bible key: each call
+// is made with the ID token of the admin whose request it serves.
+const { service: bibleService, config: bibleConfig } = createApiBibleService();
+{
+    const allowed = bibleConfig.bibleIds.length ? bibleConfig.bibleIds.join(', ') : 'any Bible the proxy serves';
+    const pacing = bibleConfig.rateLimit
+        ? `at most ${bibleConfig.rateLimit.requests} requests per ${bibleConfig.rateLimit.perMs / 1000}s`
+        : 'no request pacing';
+    console.log(`Scripture from the Bible proxy at ${bibleConfig.baseUrl}: default ${bibleService.defaultBibleId ?? '(none)'}; translations: ${allowed}; ${pacing}`);
+    if (!bibleService.defaultBibleId) console.warn('No default Bible set (API_BIBLE_DEFAULT_BIBLE_ID); series must pick a translation');
 }
 
-// Initialize default (prod) on startup (after the Bible data, which updates use)
+// Initialize default (prod) on startup (after the Bible service, which updates use)
 initializeFirebase('prod');
 initializeDraftStorage();
 
@@ -307,12 +241,17 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// NIV Bible API — granular access to niv.json for the UI:
-//   GET /api/bible/niv/books
-//   GET /api/bible/niv/books/:book/chapters
-//   GET /api/bible/niv/books/:book/chapters/:chapter/verses
-//   GET /api/bible/niv/passage?ref=Romans%204%3A1-6
-app.use('/api/bible/niv', createBibleRouter(bibleService));
+// Bible API backed by API.Bible via the Bible proxy, called with the
+// requesting admin's ID token (`:bibleId` is a translation ID or "default"):
+//   GET  /api/bible/translations
+//   GET  /api/bible/:bibleId/books
+//   GET  /api/bible/:bibleId/books/:book/chapters
+//   GET  /api/bible/:bibleId/books/:book/chapters/:chapter/verses
+//   GET  /api/bible/:bibleId/passage?ref=Romans%204%3A1-6
+//   POST /api/bible/:bibleId/passages
+app.use('/api/bible', createBibleRouter(bibleService));
+// The Bible proxy's admin endpoints (stats, whoami, routes, cache purge).
+app.use('/api/bible-proxy', createBibleProxyAdminRouter(bibleService));
 
 // Series builder: drafts (autosave), publishing/updating series, cover
 // image upload, song link titles
@@ -340,18 +279,9 @@ app.use('/api/users', requireAdmin, createUserRouter(() => ({ service: userAdmin
 // (e.g. users behind on the current series). Admins only, like /api/users.
 app.use('/api/notifications', requireAdmin, createNotificationRouter(() => ({ service: notificationHubService, projectId: currentProjectId, env: currentEnv })));
 
-// Get NIV Data (full file; kept for compatibility, prefer /api/bible/niv above)
-app.get('/api/niv', (req, res) => {
-    try {
-        if (fs.existsSync(NIV_FILE)) {
-            res.sendFile(NIV_FILE);
-        } else {
-            res.status(404).json({ error: 'NIV file not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+// Maintenance: delete old prayer requests and testimonies in the selected
+// environment. Admins only, like /api/users.
+app.use('/api/maintenance', requireAdmin, createMaintenanceRouter(() => ({ service: dataDeletingService, env: currentEnv })));
 
 // List Series
 app.get('/api/series', (req, res) => {
@@ -385,7 +315,7 @@ app.get('/api/series/:filename', (req, res) => {
 // Generate Series from Outline (AI Agent)
 app.post('/api/series/generate-from-outline', async (req, res) => {
     try {
-        const { outlineText, startYear, apiKey } = req.body;
+        const { outlineText, startYear, apiKey, bibleId } = req.body;
         if (!outlineText) {
             return res.status(400).json({ error: 'Outline text is required' });
         }
@@ -405,18 +335,17 @@ app.post('/api/series/generate-from-outline', async (req, res) => {
         const generatedData = await generateSeriesFromOutline(outlineText, year, resolvedApiKey);
         console.log("Gemini parse successful.");
 
-        // 2. Load niv.json and populate actual verses if it exists
-        if (fs.existsSync(NIV_FILE)) {
-            console.log("NIV Bible data found. Populating verse texts...");
-            try {
-                const nivData = JSON.parse(fs.readFileSync(NIV_FILE, 'utf8'));
-                generatedData.series_content = populateBibleVerses(generatedData.series_content, nivData);
-                console.log("Verse texts populated successfully.");
-            } catch (err) {
-                console.error("Error populating verses from NIV data:", err);
-            }
-        } else {
-            console.warn("NIV file not found at " + NIV_FILE + ". Skipping verse text population.");
+        // 2. Populate verse texts from API.Bible (via the Bible proxy, as this admin)
+        console.log("Populating verse texts from the Bible proxy...");
+        try {
+            generatedData.series_content = await populateBibleVerses(
+                generatedData.series_content,
+                bibleService.withAuth(bibleAuthFor(req)),
+                { bibleId: bibleId || 'default' },
+            );
+            console.log("Verse texts populated successfully.");
+        } catch (err) {
+            console.error("Error populating verses from the Bible proxy:", err);
         }
 
         res.json({ success: true, data: generatedData });

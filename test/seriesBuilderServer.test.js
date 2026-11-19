@@ -1,17 +1,14 @@
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { DraftService, DraftServiceError } from '../src/services/draftService.js';
 import { StorageService, safeFileName, slugify } from '../src/services/storageService.js';
 import { createDraftRouter, createOembedRouter, createStorageRouter } from '../src/routes/seriesBuilderRoutes.js';
-import { loadBibleService } from '../src/services/bibleService.js';
+import { createTestBible } from './helpers/fakeApiBible.js';
 import { PublishService, PublishError } from '../src/services/publishService.js';
 import { DataLoaderService } from '../src/services/dataLoaderService.js';
 import { createBibleRouter } from '../src/routes/bibleRoutes.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Minimal in-memory stand-in for the Firestore APIs DraftService uses.
 function fakeFirestore() {
@@ -409,10 +406,10 @@ describe('oembed route', () => {
 });
 
 describe('Bible batch endpoints', () => {
-    const service = loadBibleService(path.join(__dirname, '..', 'src', 'data', 'niv.json'));
+    const { service } = createTestBible();
 
-    test('getPassages resolves good references and reports bad ones individually', () => {
-        const { results } = service.getPassages(['Matthew 1:1-3', 'Matthew 99', 'Nope 1']);
+    test('getPassages resolves good references and reports bad ones individually', async () => {
+        const { results } = await service.getPassages('default', ['Matthew 1:1-3', 'Matthew 99', 'Nope 1']);
         assert.equal(results['Matthew 1:1-3'].ok, true);
         assert.equal(results['Matthew 1:1-3'].passage.verses.length, 3);
         assert.equal(results['Matthew 99'].ok, false);
@@ -422,19 +419,19 @@ describe('Bible batch endpoints', () => {
 
     test('POST /passages and GET /aliases', async () => {
         const app = express();
-        app.use('/api/bible/niv', createBibleRouter(service));
+        app.use('/api/bible', createBibleRouter(service));
         const { server, base } = await listen(app);
         try {
-            const res = await fetch(`${base}/api/bible/niv/passages`, {
+            const res = await fetch(`${base}/api/bible/default/passages`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refs: ['Jn 3:16'] }),
             });
             const body = await res.json();
             assert.equal(body.results['Jn 3:16'].passage.reference, 'John 3:16');
-            const bad = await fetch(`${base}/api/bible/niv/passages`, {
+            const bad = await fetch(`${base}/api/bible/default/passages`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refs: 'John 3' }),
             });
             assert.equal(bad.status, 400);
-            const aliases = await (await fetch(`${base}/api/bible/niv/aliases`)).json();
+            const aliases = await (await fetch(`${base}/api/bible/aliases`)).json();
             assert.ok(aliases.aliases.Matthew.includes('Mt'));
         } finally {
             server.close();

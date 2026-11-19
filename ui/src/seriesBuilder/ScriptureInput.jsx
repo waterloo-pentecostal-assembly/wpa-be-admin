@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, Check, AlertCircle, Loader2 } from 'lucide-react';
 import ScripturePicker from '../components/ScripturePicker';
-import { resolveOne, useScriptureLookup } from '../series/passageStore';
-import { referenceFromScriptures } from '../series/scriptureRefs';
+import { resolveOne, useBibleId, useScriptureLookup } from '../series/passageStore';
+import { passagesToScriptures, referenceFromScriptures } from '../series/scriptureRefs';
 import { findBook, loadBooks, loadChapters, splitTyped, suggestBooks } from './bibleBooks';
 
 /**
  * Scripture reference field with book typeahead ("mat" -> Matthew,
- * "1co" -> 1 Corinthians), validation against the NIV data and a Browse
+ * "1co" -> 1 Corinthians), validation against the series' translation
+ * (API.Bible, from BibleProvider) and a Browse
  * button for picking verses visually. Valid references are normalized to
  * their full form ("mt 5:1-12" -> "Matthew 5:1-12").
  *
@@ -33,7 +34,8 @@ export default function ScriptureInput({
     const localRef = useRef(null);
     const ref = inputRef ?? localRef;
 
-    const lookup = useScriptureLookup(value ? [value] : []);
+    const bibleId = useBibleId();
+    const lookup = useScriptureLookup(value ? [value] : [], bibleId);
     const resolved = value ? lookup(value) : null;
 
     // Follow external changes (undo, copy, other day) while not editing.
@@ -44,8 +46,8 @@ export default function ScriptureInput({
     }
 
     useEffect(() => {
-        loadBooks().then(setBooks).catch(() => setBooks([]));
-    }, []);
+        loadBooks(bibleId).then(setBooks).catch(() => setBooks([]));
+    }, [bibleId]);
 
     const { bookText, rest } = splitTyped(text);
     const suggestions = useMemo(
@@ -58,11 +60,11 @@ export default function ScriptureInput({
     useEffect(() => {
         if (!exactBook || !focused) return;
         let ignore = false;
-        loadChapters(exactBook.name)
+        loadChapters(exactBook.name, bibleId)
             .then((chapters) => !ignore && setChapterInfo({ book: exactBook.name, chapters }))
             .catch(() => {});
         return () => { ignore = true; };
-    }, [exactBook, focused]);
+    }, [exactBook, focused, bibleId]);
 
     const accept = (book) => {
         setText(`${book.name} `);
@@ -79,7 +81,7 @@ export default function ScriptureInput({
         }
         setChecking(true);
         try {
-            const result = await resolveOne(trimmed);
+            const result = await resolveOne(trimmed, bibleId);
             const next = result?.ok ? result.label : trimmed;
             setText(next);
             onChange(next);
@@ -119,7 +121,7 @@ export default function ScriptureInput({
         const ch = chapterNum ? chapterInfo.chapters.find((c) => c.chapter === Number(chapterNum)) : null;
         status = (
             <span className="text-gray-500">
-                {ch ? `${exactBook.name} ${ch.chapter} has ${ch.verseCount} verses` : `${exactBook.name} has ${chapterInfo.chapters.length} chapters`}
+                {ch?.verseCount ? `${exactBook.name} ${ch.chapter} has ${ch.verseCount} verses` : `${exactBook.name} has ${chapterInfo.chapters.length} chapters`}
             </span>
         );
     } else if (checking || (value && resolved === null)) {
@@ -191,10 +193,15 @@ export default function ScriptureInput({
 
             {showPicker && (
                 <ScripturePicker
+                    bibleId={bibleId}
+                    // Reopening starts from the current passages, so more can be added.
+                    initialSelection={resolved?.ok
+                        ? passagesToScriptures(resolved.passages).map(({ book, chapter, verses }) => ({ book, chapter, verses }))
+                        : null}
                     onCancel={() => setShowPicker(false)}
-                    onSelect={(s) => {
+                    onSelect={(scriptures) => {
                         setShowPicker(false);
-                        const refText = referenceFromScriptures([s]);
+                        const refText = referenceFromScriptures(scriptures);
                         setText(refText);
                         commit(refText);
                     }}

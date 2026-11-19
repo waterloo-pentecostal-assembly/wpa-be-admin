@@ -4,10 +4,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadBibleService } from '../src/services/bibleService.js';
+import { TEST_BIBLE } from './helpers/fakeApiBible.js';
 import {
     SCHEDULE_PRESETS, endDateForCount, generateDates, inferSchedule, toggleDate,
 } from '../ui/src/series/schedule.js';
-import { formatVerseRanges, referenceFromScriptures, splitReference } from '../ui/src/series/scriptureRefs.js';
+import {
+    bibleVersionLine, formatVerseRanges, passageIdsFor, passagesToScriptures, referenceFromScriptures, scriptureBodyBlock, splitReference,
+} from '../ui/src/series/scriptureRefs.js';
 import {
     ALL_WEEKDAYS, addEngagement, applySchedule, copyEngagementToDays, createDraft, detachEngagement, effectiveBlocks,
     migrateDraft, movePlanType, relinkEngagement, scheduleChangeImpact, setEngagementValue, toggleTypeWeekday,
@@ -24,13 +27,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const bible = loadBibleService(path.join(ROOT, 'src', 'data', 'niv.json'));
 
-/** Resolves every reference a draft needs with the real NIV data. */
+/** Resolves every reference a draft needs with the real NIV data, as the Bible API would (with `bible`). */
 function lookupFor(draft) {
     const singles = new Map();
     for (const ref of collectRefs(draft)) {
         for (const part of splitReference(ref)) {
             try {
-                singles.set(part, { ok: true, passage: bible.getPassage(part) });
+                singles.set(part, { ok: true, passage: { ...bible.getPassage(part), bible: TEST_BIBLE } });
             } catch (error) {
                 singles.set(part, { ok: false, error: error.message });
             }
@@ -137,6 +140,12 @@ describe('draft model and compile', () => {
         assert.equal(read.scriptures[0].chapter, '1');
         assert.equal(read.scriptures[0].title, 'Matthew 1:1-5');
         assert.deepEqual(Object.keys(read.scriptures[0].verses), ['1', '2', '3', '4', '5']);
+        // What an updated app needs to fetch the passage from API.Bible itself, in its own translation.
+        assert.deepEqual(read.scriptures[0].passage_ids, ['MAT.1.1-MAT.1.5']);
+        assert.deepEqual(Object.keys(read.scriptures[0]), ['book', 'chapter', 'title', 'verses', 'passage_ids']);
+        assert.equal(read.attribution, TEST_BIBLE.copyright);
+        // The translation of the stored text is recorded once, on the series.
+        assert.equal(json.bible_series.scripture_bible_id, 'test-niv');
 
         assert.match(first[1].body[0].paragraphs[0], /\(Matthew 1:1-5\)/);
         assert.match(first[1].body[1].questions[0], /^Scripture: Read Matthew 1:1-5\./);
@@ -331,7 +340,7 @@ describe('importing existing series', () => {
 
         const { json, issues } = compileDraft(draft, lookupFor(draft));
         assert.deepEqual(issues.filter((i) => i.level === 'error'), []);
-        assert.deepEqual(json.bible_series, original.bible_series);
+        assert.deepEqual(json.bible_series, { ...original.bible_series, scripture_bible_id: 'test-niv' });
         assert.equal(json.series_content.length, original.series_content.length);
 
         const strip = (entry) => ({
@@ -405,5 +414,97 @@ describe('update review diff', () => {
         assert.deepEqual(changed(diff[2].segments), ['the church']);
         assert.deepEqual(changed(diff[3].segments), ['our city']);
         assert.equal(diff[5].segments, undefined, 'a line with nothing to pair has no word highlights');
+    });
+});
+
+describe('stored scripture format (API.Bible)', () => {
+    test('passage IDs cover each run of consecutive verses', () => {
+        assert.deepEqual(passageIdsFor('ROM', 4, [1, 2, 3, 5]), ['ROM.4.1-ROM.4.3', 'ROM.4.5-ROM.4.5']);
+        assert.deepEqual(passageIdsFor('PSA', '119', [176, 175]), ['PSA.119.175-PSA.119.176']);
+        assert.deepEqual(passageIdsFor(null, 1, [1]), []);
+        assert.deepEqual(passageIdsFor('GEN', 1, []), []);
+    });
+
+    test('blocks keep the fields existing apps read, with the translation\'s copyright', () => {
+        const scriptures = [{ book: 'John', chapter: '3', title: 'John 3:16', verses: { 16: 'For God so loved' } }];
+        const bsb = { id: 'bsb-id', abbreviation: 'BSB', name: 'Berean Standard Bible', copyright: 'Public domain' };
+        assert.deepEqual(scriptureBodyBlock(scriptures, bsb), {
+            attribution: 'Public domain',
+            bible_version: 'Scripture quotations taken from Berean Standard Bible (BSB)',
+            body_type: 'scripture',
+            scriptures,
+        });
+        assert.deepEqual(scriptureBodyBlock(scriptures), { attribution: '', bible_version: '', body_type: 'scripture', scriptures });
+        assert.equal(bibleVersionLine(TEST_BIBLE), 'Scripture quotations taken from The Holy Bible, New International Version® NIV®');
+    });
+
+    test('the series records its translation only when scripture was resolved', () => {
+        const draft = createDraft({ title: 'No scripture', schedule: { start: '2026-02-02', end: '2026-02-02', weekdays } });
+        assert.equal('scripture_bible_id' in compileDraft(draft, lookupFor(draft)).json.bible_series, false);
+    });
+
+    test('drafts default to the server translation; imports keep the series\' one', () => {
+        assert.equal(createDraft({ title: 'x' }).meta.bible_id, null);
+        assert.equal(createDraft({ title: 'x', bibleId: 'bsb-id' }).meta.bible_id, 'bsb-id');
+        const json = {
+            bible_series: { title: 'T', scripture_bible_id: 'bsb-id' },
+            series_content: [{
+                title: 'Read', content_type: 'read', date: '2026-02-02',
+                body: [scriptureBodyBlock([{ book: 'John', chapter: '3', title: '', verses: { 16: 'x' } }], { id: 'bsb-id', name: 'B' })],
+            }],
+        };
+        assert.equal(importSeriesJson(json).draft.meta.bible_id, 'bsb-id');
+        delete json.bible_series.scripture_bible_id;
+        assert.equal(importSeriesJson(json).draft.meta.bible_id, null);
+    });
+});
+
+describe('scripture picker selection', () => {
+    test('keeps verses from every book and chapter visited', async () => {
+        const {
+            chapterSelection, countVerses, countsByBook, chapterLabel, removeChapter, selectionToScriptures, updateChapter,
+        } = await import('../ui/src/series/scriptureSelection.js');
+        let selection = [];
+        selection = updateChapter(selection, 'Ezra', 4, { 2: 'a', 3: 'b', 4: 'c', 5: 'd', 6: 'e' });
+        selection = updateChapter(selection, 'Genesis', 1, { 1: 'g1', 2: 'g2', 3: 'g3', 4: 'g4' });
+        assert.deepEqual(Object.keys(chapterSelection(selection, 'Ezra', '4')), ['2', '3', '4', '5', '6'], 'switching away keeps Ezra');
+        assert.equal(countVerses(selection), 9);
+        assert.deepEqual(countsByBook(selection), { Ezra: 5, Genesis: 4 });
+        assert.equal(chapterLabel(selection[0]), 'Ezra 4:2-6');
+
+        // Books stay in the order picked; a book's chapters are put in order.
+        selection = updateChapter(selection, 'Ezra', 1, { 1: 'x' });
+        const scriptures = selectionToScriptures(selection, 'Rebuilding');
+        assert.deepEqual(scriptures.map((s) => `${s.book} ${s.chapter}`), ['Ezra 1', 'Ezra 4', 'Genesis 1']);
+        assert.deepEqual(scriptures.map((s) => s.title), ['Rebuilding', '', '']);
+        assert.equal(referenceFromScriptures(scriptures), 'Ezra 1:1; 4:2-6; Genesis 1:1-4');
+
+        // Deselecting a chapter's last verse, or removing it, drops it.
+        selection = updateChapter(selection, 'Ezra', 1, { 1: null });
+        assert.equal(selection.length, 2);
+        selection = removeChapter(selection, 'Genesis', '1');
+        assert.deepEqual(selection.map(chapterLabel), ['Ezra 4:2-6']);
+        // Empty-text verses (verse bridges) still count as selected.
+        assert.deepEqual(Object.keys(chapterSelection(updateChapter([], 'Acts', 8, { 37: '' }), 'Acts', 8)), ['37']);
+    });
+
+    test('a multi-book selection resolves back to the same passages', async () => {
+        const { selectionFromScriptures, selectionToScriptures, updateChapter } = await import('../ui/src/series/scriptureSelection.js');
+        let selection = updateChapter([], 'Ezra', 4, { 2: '', 3: '', 4: '', 5: '', 6: '' });
+        selection = updateChapter(selection, 'Genesis', 1, { 1: '', 2: '', 4: '' });
+        const ref = referenceFromScriptures(selectionToScriptures(selection));
+        assert.equal(ref, 'Ezra 4:2-6; Genesis 1:1-2, 4');
+        const singles = new Map(splitReference(ref).map((part) => [part, { ok: true, passage: bible.getPassage(part) }]));
+        const resolved = createLookup(singles)(ref);
+        assert.equal(resolved.label, 'Ezra 4:2-6; Genesis 1:1-2, 4');
+
+        // Reopening the picker on that reference starts with the same selection.
+        const reopened = selectionFromScriptures(passagesToScriptures(resolved.passages).map(({ book, chapter, verses }) => ({ book, chapter, verses })));
+        assert.deepEqual(reopened.map((s) => [s.book, s.chapter, Object.keys(s.verses)]), [
+            ['Ezra', 4, ['2', '3', '4', '5', '6']],
+            ['Genesis', 1, ['1', '2', '4']],
+        ]);
+        assert.deepEqual(selectionFromScriptures({ book: 'John', chapter: '3', verses: { 16: 't' } }).map((s) => s.chapter), [3]);
+        assert.deepEqual(selectionFromScriptures(null), []);
     });
 });

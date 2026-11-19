@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CloudUpload, Loader2, AlertCircle, AlertTriangle, ChevronDown, Copy, RefreshCw } from 'lucide-react';
 import { compileDraft, collectRefs } from '../series/compile';
-import { ensureRefs, getLookup } from '../series/passageStore';
+import { bibleIdOf, ensureRefs, getLookup } from '../series/passageStore';
 import { applySeriesUpdate, getCurrentEnv, previewSeriesUpdate, publishDraft, publishSeries } from '../api/seriesBuilderApi';
 import { formatShort } from '../series/dates';
 import PublishStatus from './PublishStatus';
@@ -48,10 +48,10 @@ export default function PublishDialog({ draft, draftId, publishes, onClose, onGo
 
     useEffect(() => {
         getCurrentEnv().then((r) => setEnv(r.env)).catch(() => setEnv(null));
-        ensureRefs(collectRefs(draft)).finally(() => setResolving(false));
+        ensureRefs(collectRefs(draft), bibleIdOf(draft)).finally(() => setResolving(false));
     }, [draft]);
 
-    const compiled = useMemo(() => (resolving ? null : compileDraft(draft, getLookup())), [draft, resolving]);
+    const compiled = useMemo(() => (resolving ? null : compileDraft(draft, getLookup(bibleIdOf(draft)))), [draft, resolving]);
     const errors = compiled?.issues.filter((i) => i.level === 'error') ?? [];
     const warnings = compiled?.issues.filter((i) => i.level === 'warning') ?? [];
     const entries = compiled?.json.series_content.length ?? 0;

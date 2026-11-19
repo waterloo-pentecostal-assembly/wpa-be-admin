@@ -1,30 +1,33 @@
-// Book list + abbreviations for scripture typeahead, fetched once.
+// Book list + abbreviations for scripture typeahead, fetched once per translation.
 import { fetchBookAliases, fetchBookList } from '../api/seriesBuilderApi';
 import { fetchBibleChapters } from '../api/bibleApi';
 
-let booksPromise = null;
-const chapterCache = new Map();
+const booksPromises = new Map(); // bibleId -> Promise
+const chapterCache = new Map(); // `${bibleId}|${book}` -> Promise
 
 /** @returns {Promise<Array<{ name: string, chapterCount: number, aliases: string[] }>>} */
-export function loadBooks() {
-    booksPromise ??= Promise.all([fetchBookList(), fetchBookAliases().catch(() => ({ aliases: {} }))])
-        .then(([{ books }, { aliases }]) => books.map((b) => ({ ...b, aliases: aliases[b.name] ?? [] })))
-        .catch((error) => {
-            booksPromise = null;
-            throw error;
-        });
-    return booksPromise;
+export function loadBooks(bibleId = 'default') {
+    if (!booksPromises.has(bibleId)) {
+        booksPromises.set(bibleId, Promise.all([fetchBookList(bibleId), fetchBookAliases().catch(() => ({ aliases: {} }))])
+            .then(([{ books }, { aliases }]) => books.map((b) => ({ ...b, aliases: aliases[b.name] ?? [] })))
+            .catch((error) => {
+                booksPromises.delete(bibleId);
+                throw error;
+            }));
+    }
+    return booksPromises.get(bibleId);
 }
 
-/** @returns {Promise<Array<{ chapter: number, verseCount: number }>>} */
-export function loadChapters(book) {
-    if (!chapterCache.has(book)) {
-        chapterCache.set(book, fetchBibleChapters(book).then((d) => d.chapters).catch((error) => {
-            chapterCache.delete(book);
+/** @returns {Promise<Array<{ chapter: number, verseCount: number|null }>>} */
+export function loadChapters(book, bibleId = 'default') {
+    const key = `${bibleId}|${book}`;
+    if (!chapterCache.has(key)) {
+        chapterCache.set(key, fetchBibleChapters(book, bibleId).then((d) => d.chapters).catch((error) => {
+            chapterCache.delete(key);
             throw error;
         }));
     }
-    return chapterCache.get(book);
+    return chapterCache.get(key);
 }
 
 const norm = (s) => s.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();

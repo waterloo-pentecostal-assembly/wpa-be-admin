@@ -116,5 +116,9 @@ dist
 
 # Custom
 service-account*.json
-firebase-client-config.json
+firebase-client-config*.json
+# Old API.Bible key file: no longer used (the Bible proxy holds the keys); delete any copy
+api-bible.json
+# Backfill backups contain copyrighted scripture text
+backups/
 .DS_Store

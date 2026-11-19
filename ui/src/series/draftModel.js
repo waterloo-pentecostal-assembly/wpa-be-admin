@@ -3,7 +3,8 @@
 //
 // draft = {
 //   schemaVersion: 1,
-//   meta:      { title, sub_title, image_gs_location, is_active, is_visible },
+//   meta:      { title, sub_title, image_gs_location, is_active, is_visible, bible_id },
+//              bible_id: API.Bible translation for scripture; null = the server's default
 //   schedule:  see schedule.js,
 //   engagementPlan: [{ type, weekdays }]   // which engagements each weekday starts with, in order
 //   templates: { [typeId]: { title, blocks: Block[] } },
@@ -79,14 +80,15 @@ export function migrateDraft(draft) {
  * @param {Array<{ type: string, weekdays: number[] }>} [options.engagementPlan]
  *   e.g. [{ type: 'read', weekdays: [1,2,3,4,5] }, { type: 'devotional', weekdays: [1] }]
  */
-export function createDraft({ title = '', schedule, engagementPlan } = {}) {
+export function createDraft({ title = '', schedule, engagementPlan, bibleId = null } = {}) {
+    const bible_id = bibleId || null;
     const normalized = normalizeSchedule(schedule);
     const plan = engagementPlan ?? ['read', 'reflect', 'prayer'].map((type) => ({ type, weekdays: [...ALL_WEEKDAYS] }));
     const templates = {};
     for (const { type } of plan) templates[type] = createTemplate(type);
     return {
         schemaVersion: SCHEMA_VERSION,
-        meta: { title, sub_title: '', image_gs_location: '', is_active: false, is_visible: false },
+        meta: { title, sub_title: '', image_gs_location: '', is_active: false, is_visible: false, bible_id },
         schedule: normalized,
         engagementPlan: plan,
         templates,

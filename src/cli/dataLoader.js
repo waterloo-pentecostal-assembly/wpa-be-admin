@@ -24,7 +24,7 @@ export class DataLoaderCli {
 
         // Choose which collection to load 
         questions.push({
-            type: 'list',
+            type: 'select',
             name: 'dataCollection',
             message: 'Please choose which collection to load',
             choices: [dataCollectionOption1, dataCollectionOption2],
@@ -39,7 +39,7 @@ export class DataLoaderCli {
             const mediaOptions = fs.readdirSync(path.resolve(__dirname) + '/../data/media');
 
             questions.push({
-                type: 'list',
+                type: 'select',
                 name: 'mediaChoice',
                 message: 'Please choose data file',
                 choices: mediaOptions,
@@ -74,10 +74,10 @@ export class DataLoaderCli {
             const questions = [];
 
             // Get available bible series data
-            const mediaOptions = fs.readdirSync(path.resolve(__dirname) + '/../data/bible_series');
+            const mediaOptions = fs.readdirSync(path.resolve(__dirname) + '/../data/bible_series').filter((f) => f.endsWith('.json')).sort();
 
             questions.push({
-                type: 'list',
+                type: 'select',
                 name: 'mediaChoice',
                 message: 'Please choose data file',
                 choices: mediaOptions,

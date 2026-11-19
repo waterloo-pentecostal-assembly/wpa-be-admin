@@ -12,3 +12,12 @@ services:
         value: 3001
       - key: NODE_DEFAULT_VERSION
         value: 20.10.0
+      # Scripture comes from the Bible proxy, which holds the API.Bible keys
+      # (see README "Scripture"). The console has no API.Bible credentials.
+      - key: BIBLE_API_BASE_URL
+        value: https://wpa-be-bible-proxy.onrender.com/admin/v1
+      # Translation settings (API.Bible IDs, not secrets); set in the Render dashboard
+      - key: API_BIBLE_DEFAULT_BIBLE_ID
+        sync: false
+      - key: API_BIBLE_BIBLE_IDS
+        sync: false

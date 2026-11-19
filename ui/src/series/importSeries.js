@@ -242,6 +242,7 @@ export function importSeriesJson(json) {
                 image_gs_location: meta.image_gs_location ?? '',
                 is_active: !!meta.is_active,
                 is_visible: !!meta.is_visible,
+                bible_id: meta.scripture_bible_id || null,
             },
             schedule: inferSchedule(dates),
             engagementPlan,

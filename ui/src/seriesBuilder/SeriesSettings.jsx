@@ -1,9 +1,52 @@
-import React from 'react';
-import { CalendarRange, CloudUpload } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BookOpen, CalendarRange, CloudUpload } from 'lucide-react';
+import { fetchTranslations } from '../api/bibleApi';
 import { describeSchedule } from '../series/schedule';
 import { formatShort } from '../series/dates';
 import ImageUploader from './ImageUploader';
 import PublishStatus, { CopyId } from './PublishStatus';
+
+/**
+ * Bible translation for the series' scripture (API.Bible). Blank follows the
+ * server's default; picking one stores its ID on the draft so the series
+ * keeps it even if the default changes.
+ */
+function TranslationPicker({ value, onChange }) {
+    const [state, setState] = useState({ loading: true, error: null, default: null, bibles: [] });
+
+    useEffect(() => {
+        let ignore = false;
+        fetchTranslations()
+            .then((r) => !ignore && setState({ loading: false, error: null, default: r.default, bibles: r.bibles }))
+            .catch((error) => !ignore && setState({ loading: false, error: error.message, default: null, bibles: [] }));
+        return () => { ignore = true; };
+    }, []);
+
+    const label = (b) => `${b.abbreviation ? `${b.abbreviation} · ` : ''}${b.name}`;
+    const fallback = state.bibles.find((b) => b.id === state.default);
+    const unknown = value && !state.loading && !state.bibles.some((b) => b.id === value);
+
+    return (
+        <div>
+            <label className="label flex items-center gap-1.5"><BookOpen size={13} /> Bible translation</label>
+            <select
+                className="input"
+                value={value ?? ''}
+                disabled={state.loading}
+                onChange={(e) => onChange(e.target.value || null)}
+            >
+                <option value="">{state.loading ? 'Loading translations…' : `Default${fallback ? ` (${label(fallback)})` : ''}`}</option>
+                {state.bibles.map((b) => <option key={b.id} value={b.id}>{label(b)}</option>)}
+                {unknown && <option value={value}>{value} (not enabled)</option>}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+                {state.error
+                    ? <span className="text-red-600">Couldn’t load translations: {state.error}</span>
+                    : 'Scripture text and its copyright notice come from this translation. Changing it updates every passage in the series the next time it’s published or updated.'}
+            </p>
+        </div>
+    );
+}
 
 export default function SeriesSettings({ draft, update, env, publishes, onEditSchedule }) {
     const meta = draft.meta;
@@ -27,6 +70,7 @@ export default function SeriesSettings({ draft, update, env, publishes, onEditSc
                         <input className="input" value={meta.sub_title} onChange={(e) => setMeta({ sub_title: e.target.value }, 'meta:sub')} placeholder="Optional" />
                     </div>
                 </div>
+                <TranslationPicker value={meta.bible_id ?? null} onChange={(bible_id) => setMeta({ bible_id })} />
                 <div>
                     <label className="label">Cover image</label>
                     <ImageUploader

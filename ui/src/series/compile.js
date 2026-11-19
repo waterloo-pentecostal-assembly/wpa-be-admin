@@ -1,11 +1,12 @@
 // Compiles a draft into the final JSON consumed by the app and the Firebase
 // loader:
-//   { bible_series: { title, sub_title, image_gs_location, is_active, is_visible },
+//   { bible_series: { title, sub_title, image_gs_location, is_active, is_visible, scripture_bible_id? },
 //     series_content: [{ title, content_type, date, body: [...] }] }
 //
 // Scripture text comes from a `lookup(ref)` function returning
 //   { ok: true, label, passages } | { ok: false, error }
-// (see passageCache.js), so compiling itself is synchronous and pure.
+// (see passageStore.js), so compiling itself is synchronous and pure. Each
+// passage carries the translation it was resolved in (`passage.bible`).
 
 import { effectiveBlocks, effectiveTitle } from './draftModel.js';
 import { SCRIPTURE_TOKEN, typeLabel } from './engagementTypes.js';
@@ -118,7 +119,7 @@ export function compileEngagement(draft, day, engagement, lookup) {
                     break;
                 }
                 const title = block.source === 'reading' ? (day.reading?.title ?? '') : (block.title ?? '');
-                body.push(scriptureBodyBlock(passagesToScriptures(resolved.passages, title)));
+                body.push(scriptureBodyBlock(passagesToScriptures(resolved.passages, title), resolved.passages[0]?.bible ?? null));
                 break;
             }
             case 'image_input':
@@ -143,6 +144,19 @@ export function compileEngagement(draft, day, engagement, lookup) {
         },
         issues: unique,
     };
+}
+
+/**
+ * The API.Bible translation the draft's scripture was resolved in, or null
+ * when it has none resolved yet. Stored on the series as the admin-only
+ * `scripture_bible_id` (apps choose their own translation).
+ */
+function scriptureBibleId(draft, lookup) {
+    for (const ref of collectRefs(draft)) {
+        const id = lookup(ref)?.passages?.[0]?.bible?.id;
+        if (id) return id;
+    }
+    return null;
 }
 
 /**
@@ -179,6 +193,7 @@ export function compileDraft(draft, lookup) {
         if (needsReading) issues.push({ level: 'error', code: 'no-reading', message: 'No scripture for this day', dayId: day.id });
     }
 
+    const bibleId = scriptureBibleId(draft, lookup);
     return {
         json: {
             bible_series: {
@@ -187,6 +202,7 @@ export function compileDraft(draft, lookup) {
                 image_gs_location: meta.image_gs_location?.trim() ?? '',
                 is_active: !!meta.is_active,
                 is_visible: !!meta.is_visible,
+                ...(bibleId ? { scripture_bible_id: bibleId } : {}),
             },
             series_content: seriesContent,
         },

@@ -2,12 +2,14 @@ import express from 'express';
 import { DraftServiceError } from '../services/draftService.js';
 import { PublishError } from '../services/publishService.js';
 import { MAX_IMAGE_BYTES, StorageServiceError } from '../services/storageService.js';
+import { bibleAuthFor } from './bibleRoutes.js';
 
 /** Who made a change: the signed-in admin the API's auth check verified (never the request body). */
 const actor = (req) => req.admin?.uid ?? null;
 
 function sendError(res, error, fallbackMessage) {
     if (error instanceof DraftServiceError || error instanceof StorageServiceError || error instanceof PublishError) {
+        if (error.retryAfter !== null && error.retryAfter !== undefined) res.set('Retry-After', String(error.retryAfter));
         return res.status(error.status).json({ error: error.message, ...(error.details ?? {}) });
     }
     console.error(fallbackMessage, error);
@@ -67,13 +69,13 @@ export function createDraftRouter(getDrafts, publisher = null, getDraftsFor = ()
     // apply them (with the preview's planHash).
     router.post('/:id/update-preview', withService(async (service, req, res) => {
         if (!publisher) return res.status(503).json({ error: 'Publishing is not available' });
-        res.json(await publisher.previewUpdate(req.params.id, req.body?.json));
+        res.json(await publisher.previewUpdate(req.params.id, req.body?.json, { bibleAuth: bibleAuthFor(req) }));
     }));
 
     router.post('/:id/update', withService(async (service, req, res) => {
         if (!publisher) return res.status(503).json({ error: 'Publishing is not available' });
         const { json, planHash } = req.body ?? {};
-        res.json(await publisher.applyUpdate(req.params.id, json, planHash, { updatedBy: actor(req) }));
+        res.json(await publisher.applyUpdate(req.params.id, json, planHash, { updatedBy: actor(req), bibleAuth: bibleAuthFor(req) }));
     }));
 
     // Links a draft opened from a published series to that series.

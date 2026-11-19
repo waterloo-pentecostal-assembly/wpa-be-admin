@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 let app;
@@ -42,12 +42,21 @@ export const initFirebase = () => {
 /**
  * The signed-in user's Firebase ID token for API calls, or null if nobody is
  * signed in. Waits for Firebase to restore a saved sign-in after a page load,
- * and refreshes the token when it is about to expire.
+ * and refreshes the token when it is about to expire (or always, with
+ * `forceRefresh`, e.g. after the server rejected it).
  */
-export async function getIdToken() {
+export async function getIdToken(forceRefresh = false) {
     const { auth: authInstance } = await initFirebase();
     await authInstance.authStateReady();
-    return authInstance.currentUser ? authInstance.currentUser.getIdToken() : null;
+    return authInstance.currentUser ? authInstance.currentUser.getIdToken(forceRefresh) : null;
+}
+
+/**
+ * Signs out after the session was rejected even with a fresh token; the
+ * protected routes then send the user to the sign-in page.
+ */
+export async function endExpiredSession() {
+    if (auth?.currentUser) await signOut(auth);
 }
 
 export const getAuthInstance = () => auth;

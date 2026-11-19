@@ -13,50 +13,37 @@ export class DataManagerService {
         this.firestore = firestore;
     }
 
-    async updateYoutubeLinks() {
-        // get all bible series
-        const bibleSeriesQuerySnapshot = await this.firestore
-            .collection('bible_series')
-            .get();
-        const bibleSeriesDocs = bibleSeriesQuerySnapshot.docs;
-        for (let a = 0; a < bibleSeriesDocs.length; a++) {
-
-            // const bibleSeries = bibleSeriesDocs[a].data();
-            const seriesId = bibleSeriesDocs[a].id;
-            // if (seriesId !== 'MX6BPXbMHwWvjjGv1BH8') {
-            //     continue;
-            // }
-            const seriesContentSnapshot = await this.firestore
-                .collection('bible_series')
-                .doc(seriesId)
-                .collection('series_content')
-                .get();
-            const seriesContentDocs = seriesContentSnapshot.docs;
-            for (let b = 0; b < seriesContentDocs.length; b++) {
-                const contentData = seriesContentDocs[b].data();
-                const contentId = seriesContentDocs[b].id;
-                const body = contentData['body'];
-                for (let i = 0; i < body.length; i++) {
-                    const b = body[i];
-                    if (b['body_type'] === 'link') {
-                        const link = b['link'];
-                        if (link.includes('yout')) {
-                            const conv = this.convertToEmbedUrl(link);
-                            console.log(seriesId, contentId, link, conv);
-                            body[i]['link'] = conv;
-                            // console.log(body);
-                            await this.firestore
-                                .collection('bible_series')
-                                .doc(seriesId)
-                                .collection('series_content')
-                                .doc(contentId)
-                                .update({ body });
-                        }
-                    }
-                }
+    /**
+     * Rewrites YouTube links in every series' content to embed URLs
+     * (https://youtube.com/embed/<id>). Links that are already embed URLs or
+     * can't be parsed are left alone.
+     *
+     * @param {{ dryRun?: boolean, log?: (line: string) => void }} [options]
+     *   `dryRun`: report the changes without writing them.
+     * @returns {Promise<Array<{ seriesId: string, contentId: string, from: string, to: string }>>}
+     */
+    async updateYoutubeLinks({ dryRun = false, log = console.log } = {}) {
+        const changes = [];
+        const bibleSeriesQuerySnapshot = await this.firestore.collection('bible_series').get();
+        for (const seriesDoc of bibleSeriesQuerySnapshot.docs) {
+            const seriesId = seriesDoc.id;
+            const contentCollection = this.firestore.collection('bible_series').doc(seriesId).collection('series_content');
+            const seriesContentSnapshot = await contentCollection.get();
+            for (const contentDoc of seriesContentSnapshot.docs) {
+                let changed = false;
+                const body = (contentDoc.data().body ?? []).map((block) => {
+                    if (block?.body_type !== 'link' || typeof block.link !== 'string' || !block.link.includes('yout')) return block;
+                    const converted = this.convertToEmbedUrl(block.link);
+                    if (!converted || converted === block.link) return block;
+                    changes.push({ seriesId, contentId: contentDoc.id, from: block.link, to: converted });
+                    log(`${seriesId}/${contentDoc.id}: ${block.link} -> ${converted}`);
+                    changed = true;
+                    return { ...block, link: converted };
+                });
+                if (changed && !dryRun) await contentCollection.doc(contentDoc.id).update({ body });
             }
         }
-        console.log("DONE");
+        return changes;
     }
 
     convertToEmbedUrl(youtubeUrl) {

@@ -1,45 +1,97 @@
 // Client for the series builder endpoints in server.js
 // (src/routes/seriesBuilderRoutes.js and the Bible/series routes), and the
 // request helper every API client uses.
-import { getIdToken } from '../firebase';
+import { endExpiredSession, getIdToken } from '../firebase';
 
 export class ApiError extends Error {
-    constructor(message, status, body) {
+    /**
+     * @param {string} message
+     * @param {number} status
+     * @param {object|null} body
+     * @param {number|null} [retryAfter] - seconds from the response's Retry-After
+     */
+    constructor(message, status, body, retryAfter = null) {
         super(message);
         this.name = 'ApiError';
         this.status = status;
         this.body = body;
+        this.retryAfter = retryAfter;
+    }
+}
+
+// A rate limit this short is waited out and the request retried once; longer
+// ones are reported (with `retryAfter`) for the user to try again.
+const MAX_AUTO_RETRY_AFTER_S = 10;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Seconds from a Retry-After header (seconds or an HTTP date), or null. */
+export function parseRetryAfter(value) {
+    if (!value) return null;
+    const seconds = Number(value);
+    if (Number.isFinite(seconds)) return Math.max(0, Math.ceil(seconds));
+    const date = Date.parse(value);
+    return Number.isNaN(date) ? null : Math.max(0, Math.ceil((date - Date.now()) / 1000));
+}
+
+async function tokenFor(forceRefresh) {
+    try {
+        return await getIdToken(forceRefresh);
+    } catch {
+        // Firebase couldn't start; the server will say the call needs signing in.
+        return null;
     }
 }
 
 /**
  * Calls the API with the signed-in admin's ID token (the server requires it on
- * every route but the few loaded before signing in) and returns the parsed
- * body, throwing an ApiError with the server's message on failure.
+ * every route but the few loaded before signing in, and forwards it to the
+ * Bible proxy for scripture) and returns the parsed body, throwing an ApiError
+ * with the server's message on failure.
+ *
+ * - 401 (token missing, expired or revoked): gets a fresh token and retries
+ *   once; if that is rejected too, signs out so the user signs in again.
+ * - 429 (rate limit): waits out a short Retry-After and retries once.
+ * - 502/503 (scripture unavailable): the error says to try again later and
+ *   carries `retryAfter` when the server sent one.
  */
 export async function request(url, { method = 'GET', json, body, headers } = {}) {
-    let token = null;
-    try {
-        token = await getIdToken();
-    } catch {
-        // Firebase couldn't start; the server will say the call needs signing in.
+    const send = async (forceRefresh) => {
+        const token = await tokenFor(forceRefresh);
+        try {
+            return await fetch(url, {
+                method,
+                headers: {
+                    ...(json !== undefined && { 'Content-Type': 'application/json' }),
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                    ...headers,
+                },
+                body: json !== undefined ? JSON.stringify(json) : body,
+            });
+        } catch (error) {
+            throw new ApiError(`Network error: ${error.message}`, 0, null);
+        }
+    };
+
+    let res = await send(false);
+    if (res.status === 401) {
+        res = await send(true);
+        if (res.status === 401) await endExpiredSession().catch(() => {});
     }
-    let res;
-    try {
-        res = await fetch(url, {
-            method,
-            headers: {
-                ...(json !== undefined && { 'Content-Type': 'application/json' }),
-                ...(token && { Authorization: `Bearer ${token}` }),
-                ...headers,
-            },
-            body: json !== undefined ? JSON.stringify(json) : body,
-        });
-    } catch (error) {
-        throw new ApiError(`Network error: ${error.message}`, 0, null);
+    if (res.status === 429) {
+        const wait = parseRetryAfter(res.headers.get('Retry-After'));
+        if (wait !== null && wait <= MAX_AUTO_RETRY_AFTER_S) {
+            await sleep(wait * 1000);
+            res = await send(false);
+        }
     }
     const data = await res.json().catch(() => null);
-    if (!res.ok) throw new ApiError(data?.error || `Request failed (${res.status})`, res.status, data);
+    if (!res.ok) {
+        const retryAfter = parseRetryAfter(res.headers.get('Retry-After'));
+        let message = data?.error || `Request failed (${res.status})`;
+        if ((res.status === 502 || res.status === 503) && !data?.error) message = 'The service is temporarily unavailable; try again later.';
+        throw new ApiError(message, res.status, data, retryAfter);
+    }
     return data;
 }
 
@@ -75,9 +127,11 @@ export const listPublishedSeries = () => request('/api/published');
 export const getPublishedSeries = (seriesId) => request(`/api/published/${encodeURIComponent(seriesId)}`);
 
 // ---------- Bible ----------
-export const fetchBookList = () => request('/api/bible/niv/books');
-export const fetchBookAliases = () => request('/api/bible/niv/aliases');
-export const resolvePassages = (refs) => request('/api/bible/niv/passages', { method: 'POST', json: { refs } });
+// `bibleId` is an API.Bible translation ID or 'default' (see src/routes/bibleRoutes.js).
+const bibleBase = (bibleId) => `/api/bible/${encodeURIComponent(bibleId || 'default')}`;
+export const fetchBookList = (bibleId) => request(`${bibleBase(bibleId)}/books`);
+export const fetchBookAliases = () => request('/api/bible/aliases');
+export const resolvePassages = (refs, bibleId) => request(`${bibleBase(bibleId)}/passages`, { method: 'POST', json: { refs } });
 
 // ---------- Existing series files / AI ----------
 export const listRepoSeries = () => request('/api/series');

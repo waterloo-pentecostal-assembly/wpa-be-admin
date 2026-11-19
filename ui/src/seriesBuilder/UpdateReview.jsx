@@ -10,6 +10,7 @@ const SERIES_LABELS = {
     image_gs_location: 'Cover image',
     is_active: 'Active',
     is_visible: 'Visible',
+    scripture_bible_id: 'Translation',
 };
 
 function show(value) {

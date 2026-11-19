@@ -10,14 +10,11 @@ export class DevHelpersCli {
     }
 
     async run() {
-        this.canRunInEnv();
-        return this.promptForOptions();
-    }
-
-    canRunInEnv() {
-        if (!(this.allowedEnvs.includes(this.env))) {
-            throw new Error(`Cannot run in ${this.env}`);
+        if (!this.allowedEnvs.includes(this.env)) {
+            console.log(`Development Assist only runs in ${this.allowedEnvs.join(' or ')} (this is ${this.env}).`);
+            return;
         }
+        return this.promptForOptions();
     }
 
     async promptForOptions() {
@@ -25,7 +22,7 @@ export class DevHelpersCli {
 
         const option = await inquirer.prompt(
             {
-                type: 'list',
+                type: 'select',
                 name: 'option',
                 message: 'Choose option: ',
                 choices: [createVerifiedUserOption],

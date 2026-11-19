@@ -16,6 +16,8 @@
 // change and `applyUpdate` writes it. Records carry `kind` ('import' |
 // 'update'; none for a publish) and `updated_by`, the user ID of the admin who started it.
 
+import { ApiBibleError } from './apiBibleClient.js';
+
 export class PublishError extends Error {
     constructor(message, status, details = {}) {
         super(message);
@@ -161,23 +163,34 @@ export class PublishService {
         return seriesId;
     }
 
-    async #plan(published, seriesId, json) {
+    async #plan(published, seriesId, json, bibleAuth) {
         try {
-            return await published.plan(seriesId, json);
+            return await published.plan(seriesId, json, { bibleAuth });
         } catch (error) {
             if (error.code === 'not-found') {
                 throw new PublishError(`Series ${seriesId} no longer exists; it may have been deleted in Firebase`, 404, { seriesMissing: true });
+            }
+            // Scripture lookups for the comparison (the Bible proxy): keep
+            // their status, so an expired session is a 401 the console can
+            // refresh, and a rate limit keeps its Retry-After.
+            if (error instanceof ApiBibleError) {
+                const failed = new PublishError(`Could not load scripture to compare with the published series: ${error.message}`, error.status);
+                failed.retryAfter = error.retryAfter;
+                throw failed;
             }
             throw new PublishError(`Could not read the published series: ${error.message}`, 502);
         }
     }
 
-    /** What updating the draft's series to match `json` would change (nothing is written). */
-    async previewUpdate(draftId, json) {
+    /**
+     * What updating the draft's series to match `json` would change (nothing is written).
+     * `bibleAuth`: the admin whose ID token scripture lookups use (see PublishedSeriesService.plan).
+     */
+    async previewUpdate(draftId, json, { bibleAuth = null } = {}) {
         validateJson(json);
         const { drafts, published, env } = this.#services();
         const seriesId = await this.#target(drafts, draftId, env);
-        const { summary } = await this.#plan(published, seriesId, json);
+        const { summary } = await this.#plan(published, seriesId, json, bibleAuth);
         return { ...summary, seriesId, env };
     }
 
@@ -185,16 +198,16 @@ export class PublishService {
      * Updates the draft's series in place to match `json`. `planHash` (from
      * the preview) makes sure what is written is what the admin reviewed.
      *
-     * @param {{ updatedBy?: string }} [options]
+     * @param {{ updatedBy?: string, bibleAuth?: object }} [options]
      */
-    async applyUpdate(draftId, json, planHash, { updatedBy = null } = {}) {
+    async applyUpdate(draftId, json, planHash, { updatedBy = null, bibleAuth = null } = {}) {
         validateJson(json);
         const { drafts, published, env } = this.#services();
         const seriesId = await this.#target(drafts, draftId, env);
         const key = `${env}/${seriesId}`;
         this.updating.add(key);
         try {
-            const { writes, summary } = await this.#plan(published, seriesId, json);
+            const { writes, summary } = await this.#plan(published, seriesId, json, bibleAuth);
             if (planHash && summary.planHash !== planHash) {
                 throw new PublishError('The published series changed since the preview; review the changes again', 409);
             }

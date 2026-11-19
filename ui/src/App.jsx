@@ -6,6 +6,8 @@ import Stats from './Stats';
 import Login from './Login';
 import NotificationHubPage from './notifications/NotificationHubPage';
 import UserManagerPage from './users/UserManagerPage';
+import ScriptureProxyPage from './scriptureProxy/ScriptureProxyPage';
+import MaintenancePage from './maintenance/MaintenancePage';
 import EnvGate from './components/EnvGate';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
@@ -56,6 +58,22 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <UserManagerPage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/scripture-proxy"
+                                element={
+                                    <ProtectedRoute>
+                                        <ScriptureProxyPage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/maintenance"
+                                element={
+                                    <ProtectedRoute>
+                                        <MaintenancePage />
                                     </ProtectedRoute>
                                 }
                             />

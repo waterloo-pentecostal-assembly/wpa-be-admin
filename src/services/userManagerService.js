@@ -92,6 +92,10 @@ export class UserManagerService {
         return afterDateCount;
     }
 
+    /**
+     * Users with any completion, prayer request or testimony in [date_start, date_end).
+     * @returns {Promise<{ activeUsers: number, records: number }>}
+     */
     async getActiveUsersBetweenDates(date_start, date_end) {
         const completionsSnapshot = await this.firestore
             .collection('completions')
@@ -113,28 +117,13 @@ export class UserManagerService {
             .get();
         let count = 0;
         const users = new Set();
-        completionsSnapshot.forEach(doc => {
-            const data = doc.data();
-            const user_id = data.user_id;
-            count += 1;
-            console.log(user_id, count);
-            users.add(user_id);
-        });
-        prayerRequestSnapshot.forEach(doc => {
-            const data = doc.data();
-            const user_id = data.user_id;
-            count += 1;
-            console.log(user_id, count);
-            users.add(user_id);
-        });
-        testimoniesSnapshot.forEach(doc => {
-            const data = doc.data();
-            const user_id = data.user_id;
-            count += 1;
-            console.log(user_id, count);
-            users.add(user_id);
-        });
-        console.log('Total active users: ', users.size);
+        for (const snapshot of [completionsSnapshot, prayerRequestSnapshot, testimoniesSnapshot]) {
+            snapshot.forEach(doc => {
+                count += 1;
+                users.add(doc.data().user_id);
+            });
+        }
+        return { activeUsers: users.size, records: count };
     }
 
     async updateAllUserNotificationSettings() {

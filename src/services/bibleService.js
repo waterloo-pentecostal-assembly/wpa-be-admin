@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { BOOK_ABBREVIATIONS, bookIdFor } from './bibleCanon.js';
 
 /**
  * Error raised for expected Bible lookup failures. `status` is the HTTP
@@ -16,79 +17,6 @@ export class BibleServiceError extends Error {
 function sortedNumericKeys(obj) {
     return Object.keys(obj).sort((a, b) => Number(a) - Number(b));
 }
-
-// Common book abbreviations accepted in passage references (e.g. "Rom 4:1-6").
-// Ambiguous short forms are deliberately omitted or pinned to the most common
-// convention (e.g. "Phil" = Philippians, "Phlm" = Philemon; "Jud" = Jude,
-// "Judg"/"Jdg" = Judges).
-const BOOK_ABBREVIATIONS = {
-    Genesis: ['Gen', 'Ge', 'Gn'],
-    Exodus: ['Exod', 'Exo', 'Ex'],
-    Leviticus: ['Lev', 'Le', 'Lv'],
-    Numbers: ['Num', 'Nu', 'Nm'],
-    Deuteronomy: ['Deut', 'Dt', 'De'],
-    Joshua: ['Josh', 'Jos'],
-    Judges: ['Judg', 'Jdg', 'Jgs'],
-    Ruth: ['Rth', 'Ru'],
-    '1 Samuel': ['1 Sam', '1 Sa'],
-    '2 Samuel': ['2 Sam', '2 Sa'],
-    '1 Kings': ['1 Kgs', '1 Ki'],
-    '2 Kings': ['2 Kgs', '2 Ki'],
-    '1 Chronicles': ['1 Chron', '1 Chr', '1 Ch'],
-    '2 Chronicles': ['2 Chron', '2 Chr', '2 Ch'],
-    Ezra: ['Ezr'],
-    Nehemiah: ['Neh', 'Ne'],
-    Esther: ['Esth', 'Est'],
-    Job: ['Jb'],
-    Psalms: ['Psalm', 'Psa', 'Ps', 'Psm'],
-    Proverbs: ['Prov', 'Pro', 'Prv'],
-    Ecclesiastes: ['Eccl', 'Ecc', 'Ec'],
-    'Song of Solomon': ['Song of Songs', 'Song', 'Canticles', 'Cant', 'SOS'],
-    Isaiah: ['Isa', 'Is'],
-    Jeremiah: ['Jer', 'Je'],
-    Lamentations: ['Lam', 'La'],
-    Ezekiel: ['Ezek', 'Eze', 'Ezk'],
-    Daniel: ['Dan', 'Da'],
-    Hosea: ['Hos', 'Ho'],
-    Joel: ['Joe', 'Jl'],
-    Amos: ['Am'],
-    Obadiah: ['Obad', 'Ob'],
-    Jonah: ['Jon', 'Jnh'],
-    Micah: ['Mic', 'Mc'],
-    Nahum: ['Nah', 'Na'],
-    Habakkuk: ['Hab'],
-    Zephaniah: ['Zeph', 'Zep'],
-    Haggai: ['Hag', 'Hg'],
-    Zechariah: ['Zech', 'Zec'],
-    Malachi: ['Mal', 'Ml'],
-    Matthew: ['Matt', 'Mt'],
-    Mark: ['Mk', 'Mrk'],
-    Luke: ['Lk', 'Luk'],
-    John: ['Jn', 'Jhn'],
-    Acts: ['Act', 'Ac'],
-    Romans: ['Rom', 'Ro', 'Rm'],
-    '1 Corinthians': ['1 Cor', '1 Co'],
-    '2 Corinthians': ['2 Cor', '2 Co'],
-    Galatians: ['Gal', 'Ga'],
-    Ephesians: ['Eph', 'Ep'],
-    Philippians: ['Phil', 'Php'],
-    Colossians: ['Col'],
-    '1 Thessalonians': ['1 Thess', '1 Thes', '1 Th'],
-    '2 Thessalonians': ['2 Thess', '2 Thes', '2 Th'],
-    '1 Timothy': ['1 Tim', '1 Ti'],
-    '2 Timothy': ['2 Tim', '2 Ti'],
-    Titus: ['Tit'],
-    Philemon: ['Philem', 'Phlm', 'Phm'],
-    Hebrews: ['Heb', 'He'],
-    James: ['Jas', 'Jam'],
-    '1 Peter': ['1 Pet', '1 Pe', '1 Pt'],
-    '2 Peter': ['2 Pet', '2 Pe', '2 Pt'],
-    '1 John': ['1 Jn', '1 Jhn'],
-    '2 John': ['2 Jn', '2 Jhn'],
-    '3 John': ['3 Jn', '3 Jhn'],
-    Jude: ['Jud'],
-    Revelation: ['Rev', 'Re', 'Rv'],
-};
 
 function normalizeBookPhrase(phrase) {
     return phrase.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
@@ -127,13 +55,19 @@ function buildBookCandidates(bibleData) {
 }
 
 /**
- * Serves Bible lookups from parsed `niv.json` data shaped as
+ * Parses references and serves Bible lookups from in-memory data shaped as
  * `{ [book]: { [chapter]: { [verse]: text } } }`, with books in canonical
- * order and chapter/verse keys as numeric strings.
+ * order (names as in bibleCanon.js) and chapter/verse keys as numeric
+ * strings.
+ *
+ * The data can be a whole Bible (tests use niv.json) or, as
+ * ApiBibleService does, a skeleton listing every chapter with `null` verses
+ * where only the chapters a lookup needs are filled in while it runs (see
+ * `chaptersForReference`).
  */
 export class BibleService {
     /**
-     * @param {Object} bibleData - Parsed niv.json content
+     * @param {Object} bibleData - `{ [book]: { [chapter]: { [verse]: text } | null } }`
      * @param {{ version?: string }} [options]
      */
     constructor(bibleData, { version = 'NIV' } = {}) {
@@ -275,7 +209,7 @@ export class BibleService {
      *   chapters: number[], verses: Array<{ chapter: number, verse: number, text: string }> }}
      */
     getPassage(reference) {
-        const { book, segments } = this.#parsePassageReference(reference);
+        const { book, segments } = this.parseReference(reference);
         const byCoordinate = new Map();
         for (const segment of segments) {
             for (const coordinate of this.#expandSegment(book, segment)) {
@@ -290,6 +224,7 @@ export class BibleService {
             version: this.version,
             reference: this.#formatReference(book, coordinates),
             book,
+            bookId: bookIdFor(book),
             chapter: chapters.length === 1 ? chapters[0] : null,
             chapters,
             verses: coordinates.map(({ chapter, verse }) => ({
@@ -300,7 +235,29 @@ export class BibleService {
         };
     }
 
-    #parsePassageReference(reference) {
+    /**
+     * The canonical book and every chapter a reference touches, without
+     * reading any verse data: "Romans 4:23-5:2" -> { book: 'Romans', chapters: [4, 5] }.
+     * Throws BibleServiceError for malformed references and unknown books.
+     *
+     * @param {string} reference
+     * @returns {{ book: string, chapters: number[] }}
+     */
+    chaptersForReference(reference) {
+        const { book, segments } = this.parseReference(reference);
+        const chapters = new Set();
+        for (const { startChapter, endChapter } of segments) {
+            for (let chapter = startChapter; chapter <= endChapter; chapter++) chapters.add(chapter);
+        }
+        return { book, chapters: [...chapters].sort((a, b) => a - b) };
+    }
+
+    /**
+     * Splits a reference into its canonical book and chapter/verse segments
+     * ({ startChapter, startVerse, endChapter, endVerse }, null verses
+     * meaning whole-chapter bounds).
+     */
+    parseReference(reference) {
         if (typeof reference !== 'string' || reference.trim() === '') {
             throw new BibleServiceError('Reference is required', 400);
         }
@@ -446,8 +403,10 @@ export class BibleService {
     }
 
     // Expands one parsed segment to its verse coordinates, validating that
-    // every chapter and verse it touches exists. Out-of-range references are
-    // errors (404), never silently clamped to the chapter end.
+    // every chapter it touches and the verses it starts and ends on exist.
+    // Out-of-range references are errors (404), never silently clamped to
+    // the chapter end. Verses a translation omits inside the range (e.g.
+    // Matthew 17:21 in many modern translations) are skipped.
     #expandSegment(book, segment) {
         const {
             startChapter, startVerse: givenStartVerse,
@@ -483,8 +442,7 @@ export class BibleService {
             const from = chapter === startChapter ? startVerse : this.#firstVerse(book, chapter);
             const to = chapter === endChapter ? endVerse : this.#lastVerse(book, chapter);
             for (let verse = from; verse <= to; verse++) {
-                requireVerse(verses, chapter, verse);
-                coordinates.push({ chapter, verse });
+                if (verses[String(verse)] !== undefined) coordinates.push({ chapter, verse });
             }
         }
         return coordinates;

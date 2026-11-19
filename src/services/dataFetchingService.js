@@ -111,8 +111,7 @@ export class DataFetchingService {
             const user_id = data.user_id;
             uniqueUsers.add(user_id)
         });
-        console.log(uniqueUsers.size);
-        // return result;
+        return uniqueUsers.size;
     }
 
 
