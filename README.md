@@ -89,6 +89,8 @@ changing anything, and in prod you have to type `prod`.
   `[writes]`); delete prayer requests dated before a date, with any subcollections (shows the count, then
   `[deletes]`); fill empty Psalms verses in a
   local series file from `src/data/psalms.json`.
+  Also: shorten forum thread titles over 150 characters (dry run first, then `[writes]`; see *Fixing long
+  thread titles*) and restore such a fix from its backup.
 - **Development assist (dev only):** create a verified test user.
 
 `npm run backfill:scripture` and `npm run check:bible-proxy` still work for scripting; they run the same
@@ -106,6 +108,30 @@ like `firebase login` does, to `~/.config/wpa-be-admin/admin-session-<project>.j
 you, outside the repo), and later runs use it without asking. You're asked again only after you sign out
 (**Scripture → Sign out of the Bible proxy**, or delete that file), change your password, or the token is
 revoked (`auth.revokeRefreshTokens(uid)`). Set `BIBLE_ADMIN_REMEMBER=0` to never save it.
+
+### Fixing long thread titles
+
+Threads created before the app limited title length can have titles too long to lay out. The fix
+(`src/services/threadTitleFix.js`) finds threads at `forums/{seriesId}/threads/{threadId}` whose `title` is
+over 150 characters (UTF-16 code units, like Dart's `String.length`) and, for each, in one batch:
+
+- cuts `title` to at most 150 characters ending in `...` (never splitting an emoji or accented letter);
+- adds the full original title as a comment by the thread's author, with the thread's `created_at` (so it
+  is the first comment) and the same fields as other comments (`liked_by` empty, of the type the forum's
+  comments use);
+- increments `comment_count`. `updated_at` is left alone.
+
+```sh
+npm run fix:thread-titles -- --env prod                       # dry run: lists the threads
+npm run fix:thread-titles -- --env prod --series <id> --apply # one series' forum
+npm run fix:thread-titles -- --env prod --apply               # every forum (asks first)
+npm run fix:thread-titles -- --env prod --restore backups/thread-titles-prod-<time>.json
+```
+
+`--apply` first saves the original titles and the new comments' IDs to `backups/`; `--restore` puts the
+titles back and deletes those comments (skipping threads whose title changed since). Also in the CLI:
+**Maintenance**. The comments are new documents, so anything that runs when a comment is created (such
+as a Cloud Function sending notifications) runs for them too.
 
 # Series Builder (web UI)
 

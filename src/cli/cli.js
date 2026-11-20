@@ -52,6 +52,7 @@ const adminCli = new AdminCli({
     'Maintenance': new MaintenanceCli({
         dataManagerService: new DataManagerService(firestore),
         dataDeletingService: new DataDeletingService(firestore),
+        firestore,
         env,
     }),
     'Development assist (dev only)': new DevHelpersCli(userManagerService, env),

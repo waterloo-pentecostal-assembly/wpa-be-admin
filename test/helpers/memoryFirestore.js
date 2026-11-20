@@ -56,6 +56,10 @@ export function memoryFirestore() {
         });
         return {
             ...query(),
+            // Like Firestore, includes documents that only exist as parents of subcollections.
+            listDocuments: async () => [...new Set([...store.keys()]
+                .filter((k) => k.startsWith(`${path}/`))
+                .map((k) => k.slice(path.length + 1).split('/')[0]))].map((id) => docRef(`${path}/${id}`)),
             doc: (id) => docRef(`${path}/${id ?? `auto${String(++counter).padStart(4, '0')}`}`),
             add: async (data) => {
                 const ref = docRef(`${path}/auto${String(++counter).padStart(4, '0')}`);

@@ -17,7 +17,8 @@
     "server:watch": "node --watch server.js",
     "start:dev": "concurrently \"npm run server:watch\" \"npm run dev\"",
     "backfill:scripture": "node scripts/backfill-scripture.js",
-    "check:bible-proxy": "node scripts/check-bible-proxy.js"
+    "check:bible-proxy": "node scripts/check-bible-proxy.js",
+    "fix:thread-titles": "node scripts/fix-thread-titles.js"
   },
   "author": "Joshua Ramsamooj",
   "license": "ISC",
