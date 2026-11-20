@@ -135,14 +135,15 @@ describe('draft model and compile', () => {
         assert.deepEqual(Object.keys(first[0]), ['title', 'content_type', 'date', 'body']);
 
         const read = first[0].body.find((b) => b.body_type === 'scripture');
-        assert.deepEqual(Object.keys(read), ['attribution', 'bible_version', 'body_type', 'scriptures']);
+        assert.deepEqual(Object.keys(read), ['attribution', 'bible_version', 'body_type', 'passage_ids', 'scriptures']);
         assert.equal(read.scriptures[0].book, 'Matthew');
         assert.equal(read.scriptures[0].chapter, '1');
         assert.equal(read.scriptures[0].title, 'Matthew 1:1-5');
         assert.deepEqual(Object.keys(read.scriptures[0].verses), ['1', '2', '3', '4', '5']);
-        // What an updated app needs to fetch the passage from API.Bible itself, in its own translation.
-        assert.deepEqual(read.scriptures[0].passage_ids, ['MAT.1.1-MAT.1.5']);
-        assert.deepEqual(Object.keys(read.scriptures[0]), ['book', 'chapter', 'title', 'verses', 'passage_ids']);
+        // What an updated app needs to fetch the passage through the Bible proxy, in its own translation:
+        // at the block's root, so `scriptures` keeps exactly the shape existing apps read.
+        assert.deepEqual(read.passage_ids, ['MAT.1.1-MAT.1.5']);
+        assert.deepEqual(Object.keys(read.scriptures[0]), ['book', 'chapter', 'title', 'verses']);
         assert.equal(read.attribution, TEST_BIBLE.copyright);
         // The translation of the stored text is recorded once, on the series.
         assert.equal(json.bible_series.scripture_bible_id, 'test-niv');
@@ -345,14 +346,18 @@ describe('importing existing series', () => {
 
         const strip = (entry) => ({
             ...entry,
-            body: entry.body.map((b) => (b.body_type === 'scripture'
-                ? { ...b, scriptures: b.scriptures.map((s) => ({ book: s.book, chapter: s.chapter, verses: Object.keys(s.verses) })) }
-                : b)),
+            body: entry.body.map((b) => {
+                if (b.body_type !== 'scripture') return b;
+                const { passage_ids: _ids, ...rest } = b; // added on compile; the original predates them
+                return { ...rest, scriptures: b.scriptures.map((s) => ({ book: s.book, chapter: s.chapter, verses: Object.keys(s.verses) })) };
+            }),
         });
         const sortKey = (e) => `${e.date}|${e.content_type}`;
         const expected = [...original.series_content].sort((a, b) => sortKey(a).localeCompare(sortKey(b))).map(strip);
         const actual = [...json.series_content].sort((a, b) => sortKey(a).localeCompare(sortKey(b))).map(strip);
         assert.deepEqual(actual, expected);
+        const scriptureBlocks = json.series_content.flatMap((e) => e.body).filter((b) => b.body_type === 'scripture');
+        assert.ok(scriptureBlocks.length && scriptureBlocks.every((b) => b.passage_ids?.length), 'every compiled scripture block has root passage_ids');
     });
 
     test('import detects engagements that only happen on some weekdays', () => {
@@ -423,6 +428,16 @@ describe('stored scripture format (API.Bible)', () => {
         assert.deepEqual(passageIdsFor('PSA', '119', [176, 175]), ['PSA.119.175-PSA.119.176']);
         assert.deepEqual(passageIdsFor(null, 1, [1]), []);
         assert.deepEqual(passageIdsFor('GEN', 1, []), []);
+    });
+
+    test('blocks list every entry\'s passage IDs, in order, at the root and keep entries in the old shape', () => {
+        const block = scriptureBodyBlock([
+            { book: 'Romans', chapter: '4', title: 'Romans 4:1-3, 5; 5:1', verses: { 1: 'a', 2: 'b', 3: 'c', 5: 'e' }, passage_ids: ['ROM.4.1-ROM.4.3', 'ROM.4.5-ROM.4.5'] },
+            { book: 'Romans', chapter: '5', title: '', verses: { 1: 'f' }, passage_ids: ['ROM.5.1-ROM.5.1'] },
+        ]);
+        assert.deepEqual(block.passage_ids, ['ROM.4.1-ROM.4.3', 'ROM.4.5-ROM.4.5', 'ROM.5.1-ROM.5.1']);
+        assert.deepEqual(Object.keys(block), ['attribution', 'bible_version', 'body_type', 'passage_ids', 'scriptures']);
+        assert.ok(block.scriptures.every((s) => !('passage_ids' in s)));
     });
 
     test('blocks keep the fields existing apps read, with the translation\'s copyright', () => {

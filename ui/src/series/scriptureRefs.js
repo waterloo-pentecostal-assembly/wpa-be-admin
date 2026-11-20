@@ -4,21 +4,27 @@
 // or publishing.
 //
 // Stored scripture blocks keep the format existing app versions read
-// (`attribution`, `bible_version`, `scriptures[].verses` with the text in the
-// series' translation), and give each chapter entry the API.Bible passage
-// IDs an app can fetch in whatever translation it chooses (each starts with
-// the USFM book code, e.g. "ROM"):
+// (`attribution`, `bible_version`, `scriptures[]` with the verse text in the
+// series' translation), unchanged. Alongside it, at the root of the block,
+// `passage_ids` lists the API.Bible passage IDs of the whole block in order,
+// which an updated app fetches in whatever translation it chooses (each
+// starts with the USFM book code, e.g. "ROM"; one per run of consecutive
+// verses, so a chapter with gaps has several):
 //
 //   {
 //     body_type: 'scripture',
 //     attribution: '<translation copyright>',
 //     bible_version: 'Scripture quotations taken from <name> (<abbr>)',
-//     scriptures: [{
-//       book: 'Romans', chapter: '4', title: 'Romans 4:1-3, 5',
-//       verses: { '1': '...', '2': '...', '3': '...', '5': '...' },
-//       passage_ids: ['ROM.4.1-ROM.4.3', 'ROM.4.5-ROM.4.5'],
-//     }],
+//     passage_ids: ['ROM.4.1-ROM.4.3', 'ROM.4.5-ROM.4.5', 'ROM.5.1-ROM.5.2'],
+//     scriptures: [
+//       { book: 'Romans', chapter: '4', title: 'Romans 4:1-3, 5; 5:1-2',
+//         verses: { '1': '...', '2': '...', '3': '...', '5': '...' } },
+//       { book: 'Romans', chapter: '5', title: '', verses: { '1': '...', '2': '...' } },
+//     ],
 //   }
+//
+// While building, each chapter entry carries its own `passage_ids`;
+// scriptureBodyBlock moves them to the root.
 //
 // Passage IDs don't depend on the translation: an app fetches each with
 // GET /bibles/{its bible ID}/passages/{passage_id} through the Bible proxy (not
@@ -142,12 +148,21 @@ export function bibleVersionLine(bible) {
 /**
  * A stored scripture block. `bible` is the translation the verses came from
  * (`passage.bible` from the Bible API: { id, abbreviation, name, copyright }).
+ * The entries' `passage_ids` are moved, in order, to the block's root
+ * `passage_ids` (left out when there are none), so `scriptures` stays in the
+ * format existing app versions read.
  */
 export function scriptureBodyBlock(scriptures, bible = null) {
+    const passageIds = scriptures.flatMap((s) => s.passage_ids ?? []);
     return {
         attribution: bible?.copyright ?? '',
         bible_version: bibleVersionLine(bible),
         body_type: 'scripture',
-        scriptures,
+        ...(passageIds.length ? { passage_ids: passageIds } : {}),
+        scriptures: scriptures.map((entry) => {
+            const copy = { ...entry };
+            delete copy.passage_ids;
+            return copy;
+        }),
     };
 }

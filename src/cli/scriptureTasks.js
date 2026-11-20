@@ -98,13 +98,21 @@ export async function runScriptureBackfill({
 
     const series = await backfill.listSeries(seriesIds?.length ? seriesIds : undefined);
     for (const s of series.filter((x) => x.missing)) console.warn(`  Series ${s.id} not found; skipped`);
-    const current = series.filter((s) => !s.missing && backfill.isCurrent(s));
-    for (const s of current) console.log(`  ${s.title || '(untitled)'} [${s.id}] is already in ${translation.abbreviation}; skipped (force to redo)`);
-    const found = series.filter((s) => !s.missing && !backfill.isCurrent(s));
-
-    // Read everything first so the cost is known before any fetch.
-    const contents = new Map();
-    for (const s of found) contents.set(s.id, await backfill.readContent(s.id));
+    // Read everything first (Firestore only) so what's left to do, and the
+    // cost, is known before any fetch.
+    const allContents = new Map();
+    for (const s of series.filter((x) => !x.missing)) allContents.set(s.id, await backfill.readContent(s.id));
+    const found = [];
+    for (const s of series.filter((x) => !x.missing)) {
+        const label = `  ${s.title || '(untitled)'} [${s.id}]`;
+        if (backfill.isCurrent(s, allContents.get(s.id))) {
+            console.log(`${label} is already in ${translation.abbreviation}; skipped (force to redo)`);
+            continue;
+        }
+        if (!force && backfill.isCurrent(s)) console.log(`${label} is in ${translation.abbreviation} but has blocks in the old layout; updating`);
+        found.push(s);
+    }
+    const contents = new Map(found.map((s) => [s.id, allContents.get(s.id)]));
     const chapters = chaptersUsed([...contents.values()].flat());
     console.log(`${found.length} series, ${[...contents.values()].reduce((n, c) => n + c.length, 0)} entries, up to ${chapters.size} chapters to fetch from the Bible proxy`);
     if (Number.isFinite(maxCalls) && chapters.size > maxCalls) {

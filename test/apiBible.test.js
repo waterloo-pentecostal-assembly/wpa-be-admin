@@ -2,7 +2,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ApiBibleClient, ApiBibleError, parseRateLimit, parseRetryAfter, versesFromContent, plainText } from '../src/services/apiBibleClient.js';
 import { createApiBibleService, loadBibleConfig } from '../src/config/apiBible.js';
-import { ScriptureBackfill, chaptersUsed, restoreBodies, rewriteScriptureBlock } from '../src/services/scriptureBackfill.js';
+import { ScriptureBackfill, chaptersUsed, needsLayoutUpdate, restoreBodies, rewriteScriptureBlock } from '../src/services/scriptureBackfill.js';
 import { createRecompiler } from '../src/services/seriesBaseline.js';
 import { PublishedSeriesService } from '../src/services/publishedSeries.js';
 import { DataLoaderService } from '../src/services/dataLoaderService.js';
@@ -489,7 +489,7 @@ describe('updating a series across translations', () => {
         const { series: storedSeries, content: stored } = await published.read(seriesId);
         assert.equal(storedSeries.scripture_bible_id, 'alt');
         assert.equal(stored[0].body[0].scriptures[0].verses['1'], 'ALT Romans 1:1');
-        assert.deepEqual(stored[0].body[0].scriptures[0].passage_ids, ['ROM.1.1-ROM.1.2']);
+        assert.deepEqual(stored[0].body[0].passage_ids, ['ROM.1.1-ROM.1.2']);
         assert.equal('bible' in stored[0].body[0], false, 'blocks carry no translation; apps choose their own');
         assert.equal(stored[1].body[1].paragraphs[0], 'Think.');
 
@@ -526,6 +526,15 @@ describe('scripture backfill', () => {
         return { firestore, bible, client };
     }
 
+    test('passage IDs an earlier run put on each entry move to the block\'s root', async () => {
+        const { bible } = await setup();
+        const earlier = block('Romans', '8', { 28: 'old' });
+        earlier.scriptures[0].passage_ids = ['ROM.8.28-ROM.8.28'];
+        const { block: rewritten } = await rewriteScriptureBlock(earlier, bible, 'alt');
+        assert.deepEqual(rewritten.passage_ids, ['ROM.8.28-ROM.8.28']);
+        assert.deepEqual(Object.keys(rewritten.scriptures[0]), ['book', 'chapter', 'title', 'verses']);
+    });
+
     test('rewrites verse text in the translation and adds what the app needs to fetch it', async () => {
         const { bible } = await setup();
         const { block: rewritten, warnings, error } = await rewriteScriptureBlock(block('Psalm', '23', { 1: 'old', 3: 'old' }, 'The Shepherd'), bible, 'alt');
@@ -535,12 +544,12 @@ describe('scripture backfill', () => {
             attribution: 'Alt copyright',
             bible_version: 'Scripture quotations taken from Alternate Version (ALT)',
             body_type: 'scripture',
+            passage_ids: ['PSA.23.1-PSA.23.1', 'PSA.23.3-PSA.23.3'],
             scriptures: [{
                 book: 'Psalm', // stored names and titles are kept for existing apps
                 chapter: '23',
                 title: 'The Shepherd',
                 verses: { 1: 'ALT Psalms 23:1', 3: 'ALT Psalms 23:3' },
-                passage_ids: ['PSA.23.1-PSA.23.1', 'PSA.23.3-PSA.23.3'],
             }],
         });
     });
@@ -566,9 +575,9 @@ describe('scripture backfill', () => {
         assert.equal(plan.errors.length, 1);
         assert.match(plan.errors[0], /s1\/e3 .*Jude 1 is not in this translation; left unchanged/);
         assert.equal(plan.markSeries, false, 'not recorded while a block is still in another translation');
-        const e2 = plan.updates.find((u) => u.id === 'e2').after[0].scriptures[0];
-        assert.deepEqual(Object.keys(e2.verses), ['20', '22']);
-        assert.deepEqual(e2.passage_ids, ['MAT.17.20-MAT.17.20', 'MAT.17.22-MAT.17.22']);
+        const e2Block = plan.updates.find((u) => u.id === 'e2').after[0];
+        assert.deepEqual(Object.keys(e2Block.scriptures[0].verses), ['20', '22']);
+        assert.deepEqual(e2Block.passage_ids, ['MAT.17.20-MAT.17.20', 'MAT.17.22-MAT.17.22']);
         // Non-scripture blocks are kept as they are.
         assert.deepEqual(plan.updates[0].after[1], { body_type: 'text', paragraphs: ['Hi'] });
 
@@ -610,6 +619,34 @@ describe('scripture backfill', () => {
         await assert.rejects(restoreBodies(firestore, [{ path: 'users/u1', body: [] }]), /Unexpected document path/);
     });
 
+    test('a series recorded in the translation but with blocks in the old layout is redone, not skipped', async () => {
+        const { firestore, bible, client } = await setup();
+        const backfill = new ScriptureBackfill(firestore, bible, { bibleId: 'alt' });
+        await firestore.collection('bible_series').doc('s2').update({ scripture_bible_id: 'alt' });
+        // What an earlier run wrote: passage IDs on the entry, none on the block.
+        const stored = firestore.store.get('bible_series/s2/series_content/e5');
+        stored.body[0].scriptures[0].passage_ids = ['ROM.8.28-ROM.8.28'];
+        const s2 = (await backfill.listSeries(['s2']))[0];
+        const content = await backfill.readContent('s2');
+        assert.equal(needsLayoutUpdate(content), true);
+        assert.equal(backfill.isCurrent(s2), true, 'without content, only the recorded translation is checked');
+        assert.equal(backfill.isCurrent(s2, content), false);
+
+        const plan = await backfill.planSeries(s2, content);
+        assert.equal(plan.skipped, false);
+        assert.equal(plan.markSeries, false, 'already recorded');
+        const [after] = plan.updates[0].after;
+        assert.deepEqual(after.passage_ids, ['ROM.8.28-ROM.8.28']);
+        assert.ok(!('passage_ids' in after.scriptures[0]));
+
+        await backfill.apply([plan]);
+        const updated = await backfill.readContent('s2');
+        assert.equal(needsLayoutUpdate(updated), false);
+        const calls = client.chapterRequests.length;
+        assert.equal((await backfill.planSeries(s2)).skipped, true, 'skipped once in the new layout');
+        assert.equal(client.chapterRequests.length, calls);
+    });
+
     test('the default translation is used when none is given', async () => {
         const { firestore, bible } = await setup();
         const backfill = new ScriptureBackfill(firestore, bible);
@@ -617,6 +654,6 @@ describe('scripture backfill', () => {
         const plan = await backfill.planSeries({ id: 's2' });
         const [after] = plan.updates[0].after;
         assert.equal(after.attribution, TEST_BIBLE.copyright);
-        assert.deepEqual(after.scriptures[0].passage_ids, ['ROM.8.28-ROM.8.28']);
+        assert.deepEqual(after.passage_ids, ['ROM.8.28-ROM.8.28']);
     });
 });

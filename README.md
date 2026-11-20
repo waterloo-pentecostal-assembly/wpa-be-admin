@@ -415,26 +415,29 @@ builder resolves references through `/api/bible/:bibleId/...` (`default` for the
 
 ## Stored format
 
-Scripture blocks keep everything existing app versions read. Each chapter entry also gets the API.Bible
-IDs an app needs to fetch the passage itself (`ui/src/series/scriptureRefs.js`):
+Scripture blocks keep everything existing app versions read, with `scriptures` in exactly its old shape.
+Next to it, at the root of the block, `passage_ids` lists the API.Bible passage IDs of the whole block in
+order: what an updated app fetches instead of reading `verses` (`ui/src/series/scriptureRefs.js`). There
+is one ID per run of consecutive verses, so a chapter with gaps contributes several:
 
 ```json
 {
   "body_type": "scripture",
   "attribution": "<translation copyright from API.Bible>",
   "bible_version": "Scripture quotations taken from Berean Standard Bible (BSB)",
-  "scriptures": [{
-    "book": "Romans", "chapter": "4", "title": "Romans 4:1-3, 5",
-    "verses": { "1": "...", "2": "...", "3": "...", "5": "..." },
-    "passage_ids": ["ROM.4.1-ROM.4.3", "ROM.4.5-ROM.4.5"]
-  }]
+  "passage_ids": ["ROM.4.1-ROM.4.3", "ROM.4.5-ROM.4.5", "ROM.5.1-ROM.5.2"],
+  "scriptures": [
+    { "book": "Romans", "chapter": "4", "title": "Romans 4:1-3, 5; 5:1-2",
+      "verses": { "1": "...", "2": "...", "3": "...", "5": "..." } },
+    { "book": "Romans", "chapter": "5", "title": "", "verses": { "1": "...", "2": "..." } }
+  ]
 }
 ```
 
 Passage IDs don't depend on the translation: the app chooses one (app default or the user's setting) and
 fetches `/bibles/{bible ID}/passages/{passage_id}` through the Bible proxy, never from API.Bible with a
 key shipped in the app. If the app has web functionality, it should also report the response's
-`meta.fumsToken`. Entries without `passage_ids` are older content; fall back to `verses`.
+`meta.fumsToken`. Blocks without `passage_ids` are older content; fall back to `scriptures[].verses`.
 
 The `bible_series` document's `scripture_bible_id` records which translation the stored text is in. It is
 admin-only: the series builder uses it when a published series is opened, and the backfill uses it.
@@ -443,7 +446,9 @@ Apps shouldn't use it.
 ## Backfilling existing series
 
 `scripts/backfill-scripture.js` rewrites scripture already in Firebase: verse text, `attribution` and
-`bible_version` in the chosen translation, plus `passage_ids`. Book names, chapters,
+`bible_version` in the chosen translation, plus the block's `passage_ids` (IDs an earlier run put on each
+`scriptures` entry are moved there: a series recorded in the translation is still redone while any of its
+blocks is in that old layout, without needing `--force`). Book names, chapters,
 verse numbers and titles stay as they are. Content entries only have `body` written, so content IDs,
 completions and snippets are untouched. Once every scripture block in a series is converted, the
 series' `scripture_bible_id` is set. Verses the translation lacks (e.g. Matthew 17:21 in many modern

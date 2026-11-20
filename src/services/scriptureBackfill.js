@@ -4,8 +4,9 @@
 // Each `body_type: 'scripture'` block in bible_series/{id}/series_content
 // keeps its shape, book names, chapters, verse numbers and titles; the verse
 // text, `attribution` and `bible_version` are replaced with the translation's,
-// and each chapter entry gets the `passage_ids` an updated app fetches from
-// API.Bible (see ui/src/series/scriptureRefs.js). Only `body` is
+// and the block gets the root `passage_ids` an updated app fetches through the
+// Bible proxy (see ui/src/series/scriptureRefs.js; IDs an earlier run put on
+// each chapter entry are moved there). Only `body` is
 // written on content entries, so document IDs (and the user completions that
 // reference them) and the series snippet are untouched.
 //
@@ -35,6 +36,18 @@ const chapterKey = (book, chapter) => `${String(book ?? '').trim().toLowerCase()
 
 function isScriptureBlock(block) {
     return block?.body_type === 'scripture' && Array.isArray(block.scriptures);
+}
+
+/**
+ * Whether any scripture block in these entries is in an older layout: no
+ * root `passage_ids`, or fields an earlier version put on each entry
+ * (`passage_ids`, `book_id`). Such series are redone even when they are
+ * recorded as being in the translation.
+ */
+export function needsLayoutUpdate(entries) {
+    return entries.some((entry) => Array.isArray(entry.body) && entry.body.some((block) => isScriptureBlock(block)
+        && block.scriptures.length
+        && (!Array.isArray(block.passage_ids) || block.scriptures.some((s) => 'passage_ids' in s || 'book_id' in s))));
 }
 
 /** Every (book, chapter) the stored scripture in these entries uses, for estimating API calls. */
@@ -81,8 +94,10 @@ export async function rewriteScriptureBlock(block, bible, bibleId) {
         if (!Object.keys(verses).length) return { block, warnings, error: `${label} has none of its verses in this translation` };
 
         const numbers = Object.keys(verses).map(Number);
-        // `book_id` was stored by an earlier version; the passage IDs carry the book.
-        const { book_id: _bookId, ...entry } = s;
+        // `book_id` was stored by an earlier version (the passage IDs carry the
+        // book), and so were per-entry `passage_ids`: scriptureBodyBlock puts
+        // the new ones at the block's root.
+        const { book_id: _bookId, passage_ids: _oldIds, ...entry } = s;
         scriptures.push({
             ...entry,
             verses,
@@ -129,11 +144,13 @@ export class ScriptureBackfill {
     }
 
     /**
-     * Whether a series is already recorded as being in this translation (and
-     * so is skipped unless forced).
+     * Whether a series is done (and so is skipped unless forced): recorded as
+     * being in this translation and, when its content is given, with every
+     * scripture block in the current layout (see needsLayoutUpdate).
      */
-    isCurrent(series) {
-        return !this.force && series?.scripture_bible_id === this.bibleId;
+    isCurrent(series, content = null) {
+        if (this.force || series?.scripture_bible_id !== this.bibleId) return false;
+        return !(content && needsLayoutUpdate(content));
     }
 
     /**
@@ -157,11 +174,11 @@ export class ScriptureBackfill {
             warnings: [],
             errors: [],
         };
-        if (this.isCurrent(series)) {
+        const entries = content ?? await this.readContent(seriesId);
+        if (this.isCurrent(series, entries)) {
             result.skipped = true;
             return result;
         }
-        const entries = content ?? await this.readContent(seriesId);
         result.entries = entries.length;
         for (const entry of entries) {
             if (!Array.isArray(entry.body)) continue;
