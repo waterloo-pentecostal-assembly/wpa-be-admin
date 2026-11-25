@@ -2,7 +2,7 @@ import express from 'express';
 import { DraftServiceError } from '../services/draftService.js';
 import { PublishError } from '../services/publishService.js';
 import { SeriesCopyError } from '../services/seriesCopy.js';
-import { MAX_IMAGE_BYTES, StorageServiceError } from '../services/storageService.js';
+import { MAX_AUDIO_BYTES, MAX_IMAGE_BYTES, StorageServiceError } from '../services/storageService.js';
 import { bibleAuthFor } from './bibleRoutes.js';
 
 /** Who made a change: the signed-in admin the API's auth check verified (never the request body). */
@@ -180,13 +180,14 @@ export function createPublishedRouter(getPublished, copier = null) {
 }
 
 /**
- * Cover image upload/preview. Mount at `/api/storage`.
+ * Cover image upload/preview and audio uploads. Mount at `/api/storage`.
  *
  * @param {() => { service: import('../services/storageService.js').StorageService|null, env: string }} getStorage
  */
 export function createStorageRouter(getStorage) {
     const router = express.Router();
     const rawImage = express.raw({ type: 'image/*', limit: MAX_IMAGE_BYTES + 1024 });
+    const rawAudio = express.raw({ type: 'audio/*', limit: MAX_AUDIO_BYTES + 1024 });
 
     router.post('/series-image', rawImage, async (req, res) => {
         const { service, env } = getStorage();
@@ -201,6 +202,23 @@ export function createStorageRouter(getStorage) {
             res.status(201).json({ ...result, env });
         } catch (error) {
             sendError(res, error, 'Image upload failed');
+        }
+    });
+
+    // An audio block's file: uploaded to audio_files/ in the selected
+    // environment's bucket; returns its download URL (`url`) for audio_file_url.
+    router.post('/audio', rawAudio, async (req, res) => {
+        const { service, env } = getStorage();
+        if (!service) return res.status(503).json({ error: 'Firebase Storage is not available' });
+        try {
+            const result = await service.uploadAudio({
+                filename: req.query.filename,
+                contentType: req.get('content-type'),
+                buffer: Buffer.isBuffer(req.body) ? req.body : null,
+            });
+            res.status(201).json({ ...result, env });
+        } catch (error) {
+            sendError(res, error, 'Audio upload failed');
         }
     });
 

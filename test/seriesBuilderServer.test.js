@@ -372,6 +372,54 @@ describe('storage', () => {
         );
     });
 
+    test('audio goes to audio_files/ with a download token URL, never overwriting', async () => {
+        const existing = new Set(['audio_files/psalm_23.mp3']);
+        const saved = [];
+        const bucket = {
+            name: 'wpa-be-app-dev.appspot.com',
+            file: (p) => ({
+                exists: async () => [existing.has(p)],
+                save: async (buffer, opts) => { saved.push({ p, opts, size: buffer.length }); existing.add(p); },
+            }),
+        };
+        const service = new StorageService(bucket);
+        const result = await service.uploadAudio({ filename: '../Psalm 23.MP3', contentType: 'audio/mpeg', buffer: Buffer.from([1, 2, 3]) });
+        assert.equal(result.path, 'audio_files/psalm_23_2.mp3');
+        const token = saved[0].opts.metadata.metadata.firebaseStorageDownloadTokens;
+        assert.match(token, /^[0-9a-f-]{36}$/);
+        assert.equal(result.url, `https://firebasestorage.googleapis.com/v0/b/wpa-be-app-dev.appspot.com/o/audio_files%2Fpsalm_23_2.mp3?alt=media&token=${token}`);
+        assert.equal(saved[0].opts.contentType, 'audio/mpeg');
+        assert.equal(result.gsUri, 'gs://wpa-be-app-dev.appspot.com/audio_files/psalm_23_2.mp3');
+
+        const m4a = await service.uploadAudio({ filename: 'Sermon.m4a', contentType: 'audio/x-m4a', buffer: Buffer.from([1]) });
+        assert.deepEqual([m4a.path, m4a.contentType], ['audio_files/sermon.m4a', 'audio/mp4']);
+        await assert.rejects(service.uploadAudio({ filename: 'a.ogg', contentType: 'audio/ogg', buffer: Buffer.from([1]) }), { status: 415 });
+        await assert.rejects(service.uploadAudio({ filename: 'a.mp3', contentType: 'audio/mpeg', buffer: Buffer.alloc(0) }), { status: 400 });
+    });
+
+    test('audio upload route passes the raw body through', async () => {
+        let received = null;
+        const fakeService = {
+            uploadAudio: async (args) => {
+                received = args;
+                return { url: 'https://example/audio', path: 'audio_files/a.mp3' };
+            },
+        };
+        const app = express();
+        app.use('/api/storage', createStorageRouter(() => ({ service: fakeService, env: 'dev' })));
+        const { server, base } = await listen(app);
+        try {
+            const res = await fetch(`${base}/api/storage/audio?filename=a.mp3`, {
+                method: 'POST', headers: { 'Content-Type': 'audio/mpeg' }, body: Buffer.from([73, 68, 51]),
+            });
+            assert.equal(res.status, 201);
+            assert.deepEqual(await res.json(), { url: 'https://example/audio', path: 'audio_files/a.mp3', env: 'dev' });
+            assert.deepEqual([received.filename, received.contentType, [...received.buffer]], ['a.mp3', 'audio/mpeg', [73, 68, 51]]);
+        } finally {
+            server.close();
+        }
+    });
+
     test('upload route passes the raw image body through', async () => {
         let received = null;
         const fakeService = {

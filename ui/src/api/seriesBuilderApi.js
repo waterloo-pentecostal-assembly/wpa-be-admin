@@ -160,6 +160,14 @@ export function uploadSeriesImage(file, seriesTitle) {
         headers: { 'Content-Type': file.type },
     });
 }
+/**
+ * Uploads an audio block's file to audio_files/ in the selected environment's
+ * bucket. { url (download URL, for audio_file_url), gsUri, path, bucket, contentType, size, env }
+ */
+export function uploadAudioFile(file, contentType = file.type) {
+    const params = new URLSearchParams({ filename: file.name });
+    return request(`/api/storage/audio?${params}`, { method: 'POST', body: file, headers: { 'Content-Type': contentType } });
+}
 export const getImagePreviewUrl = (gs) => request(`/api/storage/preview?gs=${encodeURIComponent(gs)}`);
 export const fetchLinkInfo = (url) => request(`/api/oembed?url=${encodeURIComponent(url)}`);
 

@@ -57,6 +57,13 @@ function BodyBlock({ block }) {
                     <Camera size={16} /> Upload a photo
                 </div>
             );
+        case 'audio':
+            return (
+                <div className="space-y-1.5">
+                    {block.title && <h5 className="font-semibold text-gray-900">{block.title}</h5>}
+                    <audio controls preload="none" src={block.audio_file_url} className="w-full" />
+                </div>
+            );
         default:
             return null;
     }

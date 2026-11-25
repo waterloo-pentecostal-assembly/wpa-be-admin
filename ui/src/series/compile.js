@@ -125,6 +125,17 @@ export function compileEngagement(draft, day, engagement, lookup) {
             case 'image_input':
                 body.push({ body_type: 'image_input' });
                 break;
+            case 'audio': {
+                const url = block.url?.trim();
+                const title = substitute(block.title?.trim() ?? '');
+                if (!url) {
+                    issues.push({ level: 'warning', message: `${name}: audio file not uploaded` });
+                    break;
+                }
+                if (!title) issues.push({ level: 'error', message: `${name}: audio needs a title` });
+                body.push({ title, audio_file_url: url, body_type: 'audio' });
+                break;
+            }
             default:
                 break;
         }

@@ -1,8 +1,8 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Trash2, Plus, Image as ImageIcon, CalendarDays, Heading, Loader2, X } from 'lucide-react';
+import { AlertCircle, ArrowDown, ArrowUp, Trash2, Plus, Image as ImageIcon, CalendarDays, Heading, Loader2, Music, RefreshCw, X } from 'lucide-react';
 import { SCRIPTURE_TOKEN } from '../series/engagementTypes';
 import { BLOCK_KINDS, newBlock } from '../series/blocks';
-import { fetchLinkInfo } from '../api/seriesBuilderApi';
+import { fetchLinkInfo, uploadAudioFile } from '../api/seriesBuilderApi';
 import ScriptureInput from './ScriptureInput';
 import { AutoTextarea } from './ui';
 
@@ -193,6 +193,89 @@ function LinkFields({ block, onChange, coalesceKey }) {
     );
 }
 
+// Audio the apps can play. Some browsers report no type for .m4a/.aac, so the extension decides then.
+const AUDIO_ACCEPT = '.mp3,.m4a,.aac,.wav,audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,audio/wav,audio/x-wav';
+const AUDIO_TYPE_BY_EXT = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', wav: 'audio/wav' };
+const MAX_AUDIO_MB = 200;
+
+function audioType(file) {
+    const byExt = AUDIO_TYPE_BY_EXT[file.name.split('.').pop()?.toLowerCase()];
+    return file.type && file.type.startsWith('audio/') ? file.type : byExt ?? null;
+}
+
+/**
+ * An audio block: a title and a file, uploaded to audio_files/ in the
+ * environment's Storage bucket. The block keeps the file's download URL
+ * (published as audio_file_url).
+ */
+function AudioFields({ block, onChange, coalesceKey, placeholder }) {
+    const inputRef = useRef(null);
+    const [uploading, setUploading] = useState(null); // file name while uploading
+    const [error, setError] = useState(null);
+    const [dragging, setDragging] = useState(false);
+
+    const upload = async (file) => {
+        if (!file) return;
+        const type = audioType(file);
+        if (!type) return setError('Choose an MP3, M4A, AAC or WAV file.');
+        if (file.size > MAX_AUDIO_MB * 1024 * 1024) return setError(`Audio files must be ${MAX_AUDIO_MB} MB or smaller.`);
+        setError(null);
+        setUploading(file.name);
+        try {
+            const result = await uploadAudioFile(file, type);
+            onChange({ url: result.url, filename: file.name });
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setUploading(null);
+        }
+    };
+
+    return (
+        <div className="space-y-2">
+            <input
+                className="input font-semibold"
+                placeholder={placeholder ?? 'Title (required)'}
+                value={block.title ?? ''}
+                onChange={(e) => onChange({ title: e.target.value }, `${coalesceKey}:title`)}
+            />
+            <div
+                role="button"
+                tabIndex={0}
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => { e.preventDefault(); setDragging(false); upload(e.dataTransfer.files?.[0]); }}
+                onClick={() => !uploading && inputRef.current?.click()}
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !uploading && (e.preventDefault(), inputRef.current?.click())}
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed px-3 py-2.5 text-sm transition-colors ${dragging ? 'border-brand bg-brand-50' : 'border-gray-300 bg-gray-50 hover:border-brand-300'}`}
+            >
+                {uploading ? <Loader2 size={18} className="shrink-0 animate-spin text-brand" /> : <Music size={18} className="shrink-0 text-gray-400" />}
+                <span className="min-w-0 flex-1 truncate text-gray-600">
+                    {uploading ? `Uploading ${uploading}…`
+                        : block.url ? (block.filename || 'Audio file uploaded')
+                            : 'Drop an audio file or click to choose (MP3, M4A, AAC or WAV)'}
+                </span>
+                {block.url && !uploading && (
+                    <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand"><RefreshCw size={12} /> Replace</span>
+                )}
+            </div>
+            <input ref={inputRef} type="file" accept={AUDIO_ACCEPT} className="hidden" onChange={(e) => {
+                upload(e.target.files?.[0]);
+                e.target.value = '';
+            }} />
+            {error && <p className="flex items-center gap-1.5 text-sm text-red-600"><AlertCircle size={14} /> {error}</p>}
+            {block.url && !uploading && (
+                <div className="flex items-center gap-2">
+                    <audio controls preload="none" src={block.url} className="h-9 min-w-0 flex-1" />
+                    <button type="button" className="icon-btn p-1 hover:bg-red-50 hover:text-red-600" title="Remove the file from this block (it stays in Storage)" onClick={() => onChange({ url: '', filename: '' })}>
+                        <X size={14} />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
 /**
  * Edits the content of one block. `onChange(patch, coalesceKey)`.
  * `readingLabel`: the day's scripture label (string), '' when the day has
@@ -260,6 +343,8 @@ export function BlockContentEditor({ block, onChange, readingLabel, placeholder,
                     <ImageIcon size={15} /> Readers can upload a photo here.
                 </p>
             );
+        case 'audio':
+            return <AudioFields block={block} onChange={onChange} coalesceKey={coalesceKey} placeholder={placeholder} />;
         default:
             return null;
     }

@@ -22,6 +22,7 @@
 //       | { id, kind: 'link', text, url, perDay? }
 //       | { id, kind: 'scripture', source: 'reading' | 'passage', ref?, title?, perDay? }
 //       | { id, kind: 'image_input' }
+//       | { id, kind: 'audio', title, url, filename?, perDay? }   url: the uploaded file's download URL
 
 import { TYPE_BY_ID } from './engagementTypes.js';
 import { generateDates, normalizeSchedule } from './schedule.js';

@@ -75,6 +75,9 @@ function bodyToBlocks(body, reading, labels) {
             case 'image_input':
                 blocks.push({ kind: 'image_input' });
                 break;
+            case 'audio':
+                blocks.push({ kind: 'audio', title: tokenize(b.title ?? '', labels), url: b.audio_file_url ?? '' });
+                break;
             default:
                 break;
         }
@@ -92,6 +95,8 @@ function blockValue(block) {
             return { text: block.text, ...(block.title ? { title: block.title } : {}) };
         case 'link':
             return { text: block.text, url: block.url };
+        case 'audio':
+            return { title: block.title, url: block.url };
         case 'scripture':
             return block.source === 'passage' ? { ref: block.ref, ...(block.title ? { title: block.title } : {}) } : {};
         default:
@@ -132,7 +137,7 @@ function detectTemplate(items) {
         if (common.count >= majority) {
             return { ...shape, ...JSON.parse(common.key), id: newId('b') };
         }
-        const empty = block.kind === 'link' ? { text: '', url: '' } : block.kind === 'scripture' ? { ref: '' } : { text: '' };
+        const empty = { link: { text: '', url: '' }, audio: { title: '', url: '' }, scripture: { ref: '' } }[block.kind] ?? { text: '' };
         return { ...shape, ...empty, perDay: true, id: newId('b') };
     });
 

@@ -17,7 +17,8 @@ import {
     updateDay, weekdayToggleImpact,
 } from '../ui/src/series/draftModel.js';
 import { weekdayOf } from '../ui/src/series/dates.js';
-import { collectRefs, compileDraft, createLookup } from '../ui/src/series/compile.js';
+import { collectRefs, compileDraft, compileEngagement, createLookup } from '../ui/src/series/compile.js';
+import { BLOCK_KINDS, newBlock } from '../ui/src/series/blocks.js';
 import { importSeriesJson } from '../ui/src/series/importSeries.js';
 import { extractReference } from '../ui/src/series/planParsing.js';
 import { STALE_AFTER_MS, publishState } from '../ui/src/series/publishes.js';
@@ -378,6 +379,58 @@ describe('importing existing series', () => {
         assert.ok(memorize.linked);
         const verse = effectiveBlocks(draft, memorize).find((b) => b.kind === 'scripture');
         assert.equal(verse.ref, 'Romans 1:16');
+    });
+});
+
+describe('audio blocks', () => {
+    const URL_1 = 'https://firebasestorage.googleapis.com/v0/b/wpa-be-app-dev.appspot.com/o/audio_files%2Fday_1.mp3?alt=media&token=t1';
+    const URL_2 = 'https://firebasestorage.googleapis.com/v0/b/wpa-be-app-dev.appspot.com/o/audio_files%2Fday_2.mp3?alt=media&token=t2';
+    const draftWith = () => createDraft({
+        title: 'Psalms', schedule: { start: '2026-02-02', end: '2026-02-04', weekdays, excluded: [], extra: [] },
+        engagementPlan: [{ type: 'reflect', weekdays: [...ALL_WEEKDAYS] }],
+    });
+    const custom = (blocks) => ({ id: 'e1', type: 'reflect', linked: false, title: 'Listen', blocks });
+
+    test('can be added and compile to { title, audio_file_url, body_type: audio }', () => {
+        assert.ok(BLOCK_KINDS.some((k) => k.kind === 'audio'));
+        assert.deepEqual({ ...newBlock('audio'), id: undefined }, { id: undefined, kind: 'audio', title: '', url: '', filename: '' });
+        const draft = draftWith();
+        const day = draft.days[0];
+        const { entry, issues } = compileEngagement(draft, day, custom([{ id: 'b1', kind: 'audio', title: ' Psalm 23, read aloud ', url: URL_1, filename: 'day 1.mp3' }]), () => null);
+        assert.deepEqual(entry.body, [{ title: 'Psalm 23, read aloud', audio_file_url: URL_1, body_type: 'audio' }]);
+        assert.deepEqual(issues, []);
+    });
+
+    test('a title is required and a block without a file is left out', () => {
+        const draft = draftWith();
+        const day = draft.days[0];
+        const untitled = compileEngagement(draft, day, custom([{ id: 'b1', kind: 'audio', title: '', url: URL_1 }]), () => null);
+        assert.ok(untitled.issues.some((i) => i.level === 'error' && /audio needs a title/.test(i.message)));
+        const noFile = compileEngagement(draft, day, custom([{ id: 'b1', kind: 'audio', title: 'Listen', url: '' }]), () => null);
+        assert.equal(noFile.entry.body.length, 0);
+        assert.ok(noFile.issues.some((i) => i.level === 'warning' && /audio file not uploaded/.test(i.message)));
+    });
+
+    test('a published series with audio imports as a per-day audio template and compiles back the same', () => {
+        const entry = (date, title, url) => ({
+            title: 'Listen', content_type: 'reflect', date,
+            body: [{ paragraphs: ['Take a few minutes to listen.'], body_type: 'text' }, { title, audio_file_url: url, body_type: 'audio' }],
+        });
+        const original = {
+            bible_series: { title: 'Psalms', sub_title: '', image_gs_location: '', is_active: false, is_visible: false },
+            series_content: [entry('2026-02-02', 'Psalm 1', URL_1), entry('2026-02-03', 'Psalm 2', URL_2), entry('2026-02-04', 'Psalm 3', URL_1)],
+        };
+        const { draft } = importSeriesJson(original);
+        const audio = draft.templates.reflect.blocks.find((b) => b.kind === 'audio');
+        assert.equal(audio.perDay, true);
+        const { json } = compileDraft(draft, lookupFor(draft));
+        assert.deepEqual(json.series_content, original.series_content);
+    });
+
+    test('show in the update review', () => {
+        assert.deepEqual(entryLines({ title: 'Listen', body: [{ title: 'Psalm 1', audio_file_url: URL_1, body_type: 'audio' }] }), [
+            'Title: Listen', '— Audio: Psalm 1', URL_1,
+        ]);
     });
 });
 

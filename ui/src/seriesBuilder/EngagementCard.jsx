@@ -78,6 +78,13 @@ function TemplateBlockPreview({ block, readingLabel }) {
             return <p className="text-sm text-brand underline truncate">{block.text || block.url}</p>;
         case 'image_input':
             return <p className="text-sm text-gray-400">📷 Photo upload</p>;
+        case 'audio':
+            return (
+                <p className="truncate text-sm">
+                    🎧 {block.title || <span className="text-amber-700">Untitled audio</span>}
+                    {!block.url && <span className="text-amber-700"> · no file yet</span>}
+                </p>
+            );
         default:
             return null;
     }

@@ -41,6 +41,8 @@ function blockLines(block) {
             ];
         case 'image_input':
             return ['— Image input', ...otherKeys(block, ['body_type'])];
+        case 'audio':
+            return [heading('Audio'), value(block.audio_file_url ?? ''), ...otherKeys(block, ['body_type', 'title', 'audio_file_url'])];
         default:
             return [`— ${block.body_type ?? 'Block'}`, ...otherKeys(block, ['body_type'])];
     }

@@ -181,6 +181,14 @@ npm run backfill:search-tokens -- --env prod --collection challenge_groups   # o
   the server's environment applies to every open tab.
 - **Cover images** upload to the selected environment's bucket (`<project_id>.appspot.com`, or
   `FIREBASE_STORAGE_BUCKET` / `FIREBASE_STORAGE_BUCKET_DEV`) under `bible_series/<series-slug>/`.
+- **Audio blocks** (next to Text, Questions, Scripture, Link and Photo upload) have a title (required)
+  and an audio file (MP3, M4A, AAC or WAV, up to 200 MB). The file uploads to `audio_files/` in the
+  same bucket (never overwriting; `POST /api/storage/audio`), and the block publishes as
+  `{ "body_type": "audio", "title": "…", "audio_file_url": "https://firebasestorage.googleapis.com/…" }`.
+  The URL is a Firebase Storage download-token URL: it doesn't expire and plays without signing in, so
+  the app can stream it directly. Audio blocks can be *per day* in templates. Removing a file from a
+  block doesn't delete it from Storage. Copying a series or draft to dev keeps the audio URLs as they
+  are, which still play since they don't depend on the project.
 - **Publishing** fills in verse text from API.Bible (through the Bible proxy) in the series' translation (see *Scripture* below), checks for problems, and publishes to the selected
   environment on the server (`POST /api/drafts/:id/publish`). A draft is linked to at most one
   series: its `series_id` is set on the draft document as soon as the `bible_series` document
