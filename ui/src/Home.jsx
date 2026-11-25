@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, BarChart3, Bell, Users, Database, Wrench, ArrowRight } from 'lucide-react';
+import { BookOpen, BarChart3, Bell, Users, Database, Wrench, Sparkles, ArrowRight } from 'lucide-react';
 import Header from './components/Header';
 
 const TOOLS = [
@@ -9,6 +9,12 @@ const TOOLS = [
         icon: BookOpen,
         title: 'Bible Series Content Manager',
         description: 'Create and manage daily engagement content for bible series.',
+    },
+    {
+        to: '/featured',
+        icon: Sparkles,
+        title: 'Featured Content',
+        description: 'Schedule what the app\'s home screen features: verses with a note and pastor\'s encouragements, up to 5 at a time.',
     },
     {
         to: '/stats',

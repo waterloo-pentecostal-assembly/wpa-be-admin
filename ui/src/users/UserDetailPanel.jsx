@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     AlertTriangle, Ban, Bell, Check, CircleCheck, Clock, Copy, KeyRound, Link2, Loader2, LogOut, MailCheck, MailX, Pencil,
-    ShieldCheck, ShieldOff, Smartphone, Trash2, UserCheck, UserPlus, UserX, X, Flag,
+    Church, ShieldCheck, ShieldOff, Smartphone, Trash2, UserCheck, UserPlus, UserX, X, Flag,
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import * as api from '../api/usersApi';
@@ -277,6 +277,18 @@ export default function UserDetailPanel({ uid, env, onClose, onChanged, onDelete
         });
     };
 
+    const togglePastor = () => {
+        const tag = !user.isPastor;
+        const go = () => run('pastor', () => api.setPastor(uid, tag), tag ? 'Tagged as a pastor.' : 'No longer tagged as a pastor.').catch(ignoreError);
+        if (tag) return go();
+        confirm({
+            title: `Remove the pastor tag from ${user.name || user.email}?`,
+            message: `They can no longer be picked as the author of featured content in ${env}. Featured content already credited to them keeps their name.`,
+            confirmText: 'Remove pastor tag',
+            onConfirm: go,
+        });
+    };
+
     const revoke = () => confirm({
         title: 'Sign out everywhere?',
         message: 'Their sessions on every device end within the hour and they have to sign in again. Use this after a password change or a lost phone.',
@@ -322,7 +334,7 @@ export default function UserDetailPanel({ uid, env, onClose, onChanged, onDelete
                 : null;
     const profileExtras = user.profile
         ? Object.entries(user.profile).filter(([key]) => !isHiddenField(key)
-            && !['email', 'first_name', 'last_name', 'is_admin', 'is_verified', 'reports', ...user.photoFields].includes(key))
+            && !['email', 'first_name', 'last_name', 'is_admin', 'is_pastor', 'is_verified', 'reports', ...user.photoFields].includes(key))
         : [];
 
     return (
@@ -429,6 +441,14 @@ export default function UserDetailPanel({ uid, env, onClose, onChanged, onDelete
                     onClick={toggleAdmin}
                 />
                 <ActionButton
+                    icon={Church}
+                    label={user.isPastor ? 'Remove pastor tag' : 'Tag as pastor'}
+                    busy={busy === 'pastor'}
+                    disabled={!user.hasProfile}
+                    title={user.hasProfile ? 'Pastors can be picked as the author of featured content (profile is_pastor)' : 'Create a profile first'}
+                    onClick={togglePastor}
+                />
+                <ActionButton
                     icon={user.disabled ? CircleCheck : Ban}
                     label={user.disabled ? 'Reactivate' : 'Deactivate'}
                     tone={user.disabled ? 'btn-primary' : 'btn-secondary text-red-700'}
@@ -476,6 +496,7 @@ export default function UserDetailPanel({ uid, env, onClose, onChanged, onDelete
                             {user.emailMismatch && <span className="block text-xs text-amber-700">Differs from the sign-in email; edit the profile to fix</span>}
                         </Field>
                         <Field label="Admin"><YesNo value={user.isAdmin} /></Field>
+                        <Field label="Pastor"><YesNo value={user.isPastor} /></Field>
                         <Field label="Approved"><YesNo value={user.isVerified} /></Field>
                         <Field label="Reports">{user.reports}</Field>
                         {profileExtras.map(([key, value]) => (

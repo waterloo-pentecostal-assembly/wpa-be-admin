@@ -125,6 +125,20 @@ export const linkDraftToSeries = (id, seriesId) =>
 // ---------- Published series (selected environment) ----------
 export const listPublishedSeries = () => request('/api/published');
 export const getPublishedSeries = (seriesId) => request(`/api/published/${encodeURIComponent(seriesId)}`);
+/**
+ * Copies a published series from prod (the selected environment) to dev, for testing; it's copied inactive.
+ * 409 (with the dev copy's `title` and `is_active`) if it's already in dev, unless `replace`.
+ */
+export const copySeriesToEnv = (seriesId, env, replace = false) =>
+    request(`/api/published/${encodeURIComponent(seriesId)}/copy-to`, { method: 'POST', json: { env, replace } });
+/** A series' { is_active, is_visible }. */
+export const getSeriesFlags = (seriesId) => request(`/api/published/${encodeURIComponent(seriesId)}/flags`);
+/**
+ * Sets is_active and/or is_visible on a series; resolves to the flags afterwards.
+ * Making a series active starts the app's automation (other series made inactive, notifications sent).
+ */
+export const setSeriesFlags = (seriesId, flags) =>
+    request(`/api/published/${encodeURIComponent(seriesId)}/flags`, { method: 'PATCH', json: flags });
 
 // ---------- Bible ----------
 // `bibleId` is an API.Bible translation ID or 'default' (see src/routes/bibleRoutes.js).

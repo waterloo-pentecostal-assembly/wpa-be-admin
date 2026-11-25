@@ -9,7 +9,7 @@
 //   - repeating a request is served from the proxy's cache (X-Cache MISS, then HIT)
 //   - /admin/routes and /admin/stats, for reference
 //
-//   node scripts/check-bible-proxy.js [--bible <id>] [--email <admin>] [--non-admin <email>] [--routes]
+//   npm run check:bible-proxy -- [--bible <id>] [--email <admin>] [--non-admin <email>] [--routes]
 //
 // You sign in with your console email and password (asked; the email can come
 // from --email or BIBLE_ADMIN_EMAIL). Settings as for the server

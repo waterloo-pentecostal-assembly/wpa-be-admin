@@ -6,7 +6,9 @@ import admin from 'firebase-admin';
 //
 // Document fields are snake_case like the rest of the database:
 //   { title, day_count, start_date, end_date, data, rev, created_at, updated_at,
-//     deleted, deleted_at?, series_id, publishes: [record], source?: { env, draft_id } }
+//     deleted, series_id, publishes: [record], source?: { env, draft_id } }
+// (`deleted` is always false now that deleting removes the document; drafts
+// soft-deleted before that are removed by purgeDeleted.)
 // Documents written before that used camelCase; they are read through
 // `normalize` and rewritten in the new shape whenever they are written.
 export const DRAFTS_COLLECTION = 'admin_series_drafts';
@@ -241,9 +243,24 @@ export class DraftService {
         }));
     }
 
-    // Soft delete so an accidental delete can be recovered from the console.
+    /** Deletes the draft document. (The series it may be linked to is not touched.) */
     async remove(id) {
-        await this.#write(id, () => ({ deleted: true, deleted_at: this.now() }), { allowDeleted: true });
+        const ref = this.collection.doc(id);
+        if (!(await ref.get()).exists) throw this.#notFound();
+        await ref.delete();
+    }
+
+    /**
+     * Deletes drafts left behind by the old soft delete (`deleted: true`).
+     * They were already gone from the builder; this removes the documents.
+     * Safe to run repeatedly.
+     *
+     * @returns {Promise<number>} documents deleted
+     */
+    async purgeDeleted() {
+        const leftovers = (await this.#scan(['deleted'])).filter((d) => d.deleted);
+        for (const { id } of leftovers) await this.collection.doc(id).delete();
+        return leftovers.length;
     }
 
     /**

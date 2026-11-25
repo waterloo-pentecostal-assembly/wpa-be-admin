@@ -13,10 +13,10 @@
 // --apply, the current bodies of every entry about to change are first saved
 // to a backup file, which --restore puts back.
 //
-//   node scripts/backfill-scripture.js --env dev
-//   node scripts/backfill-scripture.js --env dev --series <id> --series <id> --apply
-//   node scripts/backfill-scripture.js --env prod --bible <bibleId> --apply
-//   node scripts/backfill-scripture.js --env prod --restore backups/scripture-prod-....json
+//   npm run backfill:scripture -- --env dev
+//   npm run backfill:scripture -- --env dev --series <id> --series <id> --apply
+//   npm run backfill:scripture -- --env prod --bible <bibleId> --apply
+//   npm run backfill:scripture -- --env prod --restore backups/scripture-prod-....json
 //
 // Options:
 //   --env prod|dev|local_dev  Firebase project (local_dev = Firestore emulator on localhost:8081)

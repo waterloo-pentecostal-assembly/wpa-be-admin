@@ -18,7 +18,8 @@
     "start:dev": "concurrently \"npm run server:watch\" \"npm run dev\"",
     "backfill:scripture": "node scripts/backfill-scripture.js",
     "check:bible-proxy": "node scripts/check-bible-proxy.js",
-    "fix:thread-titles": "node scripts/fix-thread-titles.js"
+    "fix:thread-titles": "node scripts/fix-thread-titles.js",
+    "backfill:search-tokens": "node scripts/backfill-search-tokens.js"
   },
   "author": "Joshua Ramsamooj",
   "license": "ISC",

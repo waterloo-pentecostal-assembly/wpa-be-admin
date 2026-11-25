@@ -20,7 +20,9 @@
 // proxy ever answers 429, every request through this client pauses until its
 // Retry-After. Chapter text is fetched with `content-type=json`
 // and split into verses using the `verseId` attribute API.Bible puts on every
-// text node (see versesFromContent).
+// text node (see versesFromContent). Section headings are fetched too
+// (include-titles=true) and returned separately for display in the verse
+// picker (see headingsFromContent); they are never part of verse text.
 //
 // Only query parameters the proxy allowlists are sent (chapters: content-type
 // and include-*; books: include-chapters); anything else is a 400.
@@ -131,9 +133,21 @@ export function plainText(value) {
 }
 
 // Paragraph styles that are not verse text (headings, references, labels).
-// Titles are also excluded with include-titles=false; this is a second guard.
-const NON_VERSE_PARA = /^(s\d*|ms\d*|mr|r|sr|sp|cl|mt\d*|imt\d*|is\d*|ip|iot|io\d*|rem|h\d*|toc\d*)$/;
+const NON_VERSE_PARA = /^(s\d*|ms\d*|mr|r|sr|sp|cl|mt\d*|imt\d*|is\d*|ip|iot|io\d*|rem|h\d*|toc\d*|qa)$/;
 const NON_VERSE_CHAR = new Set(['f', 'fe', 'x', 'fr', 'ft', 'fq', 'fqa', 'xo', 'xt']);
+// Headings shown above verses in the picker: section headings, speakers,
+// acrostic letters, and Psalm titles (`d`).
+const HEADING_PARA = /^(s\d*|ms\d*|sp|qa|d)$/;
+
+const containsVerse = (node) => Array.isArray(node)
+    ? node.some(containsVerse)
+    : !!node && typeof node === 'object' && (node.name === 'verse' || containsVerse(node.items ?? []));
+
+// A title paragraph (`d`) with no verse in it: only sent with include-titles=true,
+// so it is left out of verse text (e.g. the "For the director of music" line
+// after Habakkuk 3:19). A `d` that holds a verse (translations that number a
+// Psalm's title as verse 1) is verse text.
+const isTitleOnly = (node) => node.attrs?.style === 'd' && !containsVerse(node.items ?? []);
 
 /**
  * Splits API.Bible JSON content (content-type=json) into verse text keyed by
@@ -182,7 +196,7 @@ export function versesFromContent(content) {
             return; // the marker's own text is the verse number
         }
         if (node.name === 'note' || (node.name === 'char' && NON_VERSE_CHAR.has(style))) return;
-        if (node.name === 'para' && NON_VERSE_PARA.test(style)) return;
+        if (node.name === 'para' && (NON_VERSE_PARA.test(style) || isTitleOnly(node))) return;
         if (node.name === 'chapter') return;
         // Paragraph/line breaks separate words that have no space between them.
         if (node.name === 'para') add(current, ' ');
@@ -196,6 +210,54 @@ export function versesFromContent(content) {
         verses[verse] = parts.join('').replace(/\s+/g, ' ').replace(/\s+([,.;:!?’”)])/g, '$1').trim();
     }
     return verses;
+}
+
+/**
+ * The headings in API.Bible JSON content (fetched with include-titles=true),
+ * each with the verse it comes before: [{ verse: '1', text: 'The Beginning' }].
+ * Footnotes are left out. For display only: they are not verse text.
+ *
+ * @param {Array<object>} content
+ * @returns {Array<{ verse: string, text: string }>}
+ */
+export function headingsFromContent(content) {
+    const headings = [];
+    let pending = [];
+    let seenVerse = false;
+    const textOf = (node) => {
+        if (!node || typeof node !== 'object') return '';
+        if (Array.isArray(node)) return node.map(textOf).join('');
+        if (node.type === 'text') return node.text ?? '';
+        if (node.name === 'note' || (node.name === 'char' && NON_VERSE_CHAR.has(node.attrs?.style ?? ''))) return '';
+        return textOf(node.items ?? []);
+    };
+    const visit = (node) => {
+        if (!node || typeof node !== 'object') return;
+        if (Array.isArray(node)) {
+            node.forEach(visit);
+            return;
+        }
+        if (node.name === 'verse') {
+            const first = Number.parseInt(String(node.attrs?.number ?? ''), 10);
+            if (Number.isInteger(first)) {
+                seenVerse = true;
+                for (const text of pending) headings.push({ verse: String(first), text });
+                pending = [];
+            }
+            return;
+        }
+        if (node.name === 'note') return;
+        const style = node.attrs?.style ?? '';
+        const psalmTitle = style === 'd' && !seenVerse && !containsVerse(node.items ?? []);
+        if (node.name === 'para' && HEADING_PARA.test(style) && (style !== 'd' || psalmTitle)) {
+            const text = textOf(node.items ?? []).replace(/\s+/g, ' ').trim();
+            if (text) pending.push(text);
+            return;
+        }
+        visit(node.items);
+    };
+    visit(content);
+    return headings;
 }
 
 export class ApiBibleClient {
@@ -535,8 +597,9 @@ export class ApiBibleClient {
     }
 
     /**
-     * One chapter's verse text. `chapterId` is "<BOOK>.<n>", e.g. "ROM.4".
-     * @returns {Promise<{ id: string, reference: string, copyright: string, verses: Record<string, string> }>}
+     * One chapter's verse text, and its headings for display. `chapterId` is "<BOOK>.<n>", e.g. "ROM.4".
+     * @returns {Promise<{ id: string, reference: string, copyright: string, verses: Record<string, string>,
+     *   headings: Array<{ verse: string, text: string }> }>}
      */
     getChapter(bibleId, chapterId) {
         return this.#cached(`chapter|${bibleId}|${chapterId}`, async () => {
@@ -545,7 +608,7 @@ export class ApiBibleClient {
                 {
                     'content-type': 'json',
                     'include-notes': false,
-                    'include-titles': false,
+                    'include-titles': true, // headings for the picker; never verse text
                     'include-chapter-numbers': false,
                     'include-verse-numbers': true,
                     'include-verse-spans': false,
@@ -553,11 +616,13 @@ export class ApiBibleClient {
             );
             const data = body?.data ?? {};
             this.#reportView(body?.meta?.fumsToken);
+            const content = Array.isArray(data.content) ? data.content : [];
             return {
                 id: data.id ?? chapterId,
                 reference: data.reference ?? '',
                 copyright: plainText(data.copyright),
-                verses: versesFromContent(Array.isArray(data.content) ? data.content : []),
+                verses: versesFromContent(content),
+                headings: headingsFromContent(content),
             };
         }, this.shared.chapters);
     }

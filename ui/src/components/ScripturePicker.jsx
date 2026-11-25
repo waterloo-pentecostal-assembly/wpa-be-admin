@@ -12,15 +12,14 @@ import {
  * selected. `onSelect` receives output-format scriptures
  * ([{ book, chapter, title, verses }], see selectionToScriptures);
  * `initialSelection` takes the same shape (or a single object).
+ * Section headings from the translation are shown between verses for
+ * orientation; they can't be selected and aren't part of the result.
  */
 const ScripturePicker = ({ onSelect, onCancel, initialSelection, bibleId = 'default' }) => {
     const [selection, setSelection] = useState(() => selectionFromScriptures(initialSelection));
     // The chapter being viewed; starts on the first selected one.
     const [viewBook, setViewBook] = useState(() => selection[0]?.book ?? null);
     const [viewChapter, setViewChapter] = useState(() => selection[0]?.chapter ?? null);
-    const [title, setTitle] = useState(
-        () => (Array.isArray(initialSelection) ? initialSelection[0]?.title : initialSelection?.title) || '',
-    );
     const [lastClickedVerse, setLastClickedVerse] = useState(null);
 
     // Bible data loaded on demand from the Bible API (API.Bible, in the
@@ -32,13 +31,19 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection, bibleId = 'defa
     const [books, setBooks] = useState([]); // [{ name, chapterCount }]
     const [loadingBooks, setLoadingBooks] = useState(true);
     const [chaptersData, setChaptersData] = useState(null); // { book, chapters: [{ chapter, verseCount }] }
-    const [versesData, setVersesData] = useState(null); // { book, chapter, verses: [{ verse, text }] }
+    const [versesData, setVersesData] = useState(null); // { book, chapter, verses: [{ verse, text }], headings: [{ verse, text }] }
     const [loadError, setLoadError] = useState(null);
 
     const chapters = chaptersData?.book === viewBook ? chaptersData.chapters : [];
     const loadingChapters = !!viewBook && chaptersData?.book !== viewBook;
     const versesLoaded = versesData?.book === viewBook && versesData?.chapter === viewChapter;
     const chapterVerses = versesLoaded ? versesData.verses : [];
+    // Headings by the verse they come before (display only).
+    const headingsBefore = new Map();
+    for (const { verse, text } of versesLoaded ? versesData.headings : []) {
+        if (!headingsBefore.has(String(verse))) headingsBefore.set(String(verse), []);
+        headingsBefore.get(String(verse)).push(text);
+    }
     const loadingVerses = !!viewBook && viewChapter != null && !versesLoaded;
 
     const viewedSelection = viewBook && viewChapter != null ? chapterSelection(selection, viewBook, viewChapter) : {};
@@ -82,11 +87,11 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection, bibleId = 'defa
         let ignore = false;
         fetchBibleVerses(viewBook, viewChapter, bibleId)
             .then((data) => {
-                if (!ignore) setVersesData({ book: viewBook, chapter: viewChapter, verses: data.verses });
+                if (!ignore) setVersesData({ book: viewBook, chapter: viewChapter, verses: data.verses, headings: data.headings ?? [] });
             })
             .catch((err) => {
                 if (!ignore) {
-                    setVersesData({ book: viewBook, chapter: viewChapter, verses: [] });
+                    setVersesData({ book: viewBook, chapter: viewChapter, verses: [], headings: [] });
                     setLoadError(err.message);
                 }
             });
@@ -137,7 +142,7 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection, bibleId = 'defa
 
     const handleConfirm = () => {
         if (selectedCount === 0) return;
-        onSelect(selectionToScriptures(selection, title));
+        onSelect(selectionToScriptures(selection));
     };
 
     // Chapters of the viewed book that have selected verses.
@@ -152,15 +157,7 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection, bibleId = 'defa
                         <h3 className="text-lg font-bold text-ink whitespace-nowrap">Select Scripture</h3>
                     </div>
 
-                    <input
-                        type="text"
-                        placeholder="Title (Optional, e.g. 'The Parable of the Sower')"
-                        className="input flex-1"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-
-                    <div className="flex gap-2 shrink-0">
+                    <div className="flex gap-2 shrink-0 ml-auto">
                         <button onClick={onCancel} className="btn btn-ghost">Cancel</button>
                         <button
                             onClick={handleConfirm}
@@ -280,16 +277,20 @@ const ScripturePicker = ({ onSelect, onCancel, initialSelection, bibleId = 'defa
                         ) : viewBook && viewChapter != null ? (
                             <div className="grid grid-cols-1 gap-1">
                                 {chapterVerses.map(({ verse, text }) => (
-                                    <div
-                                        key={verse}
-                                        onClick={(e) => handleVerseClick(verse, text, e)}
-                                        className={`p-2 rounded-lg border cursor-pointer text-sm flex gap-3 select-none transition-colors ${isSelected(verse) ? 'bg-brand-50 border-brand-200' : 'border-transparent hover:bg-gray-50 hover:border-gray-200'}`}
-                                    >
-                                        <div className={`w-6 h-6 shrink-0 flex items-center justify-center rounded-full border ${isSelected(verse) ? 'bg-brand border-brand text-white' : 'border-gray-300 text-gray-400'}`}>
-                                            {isSelected(verse) ? <Check size={14} /> : <span className="text-xs tabular-nums">{verse}</span>}
+                                    <React.Fragment key={verse}>
+                                        {headingsBefore.get(String(verse))?.map((heading, i) => (
+                                            <h5 key={`h${i}`} className="px-2 pt-3 pb-0.5 text-sm font-semibold text-gray-500 select-none">{heading}</h5>
+                                        ))}
+                                        <div
+                                            onClick={(e) => handleVerseClick(verse, text, e)}
+                                            className={`p-2 rounded-lg border cursor-pointer text-sm flex gap-3 select-none transition-colors ${isSelected(verse) ? 'bg-brand-50 border-brand-200' : 'border-transparent hover:bg-gray-50 hover:border-gray-200'}`}
+                                        >
+                                            <div className={`w-6 h-6 shrink-0 flex items-center justify-center rounded-full border ${isSelected(verse) ? 'bg-brand border-brand text-white' : 'border-gray-300 text-gray-400'}`}>
+                                                {isSelected(verse) ? <Check size={14} /> : <span className="text-xs tabular-nums">{verse}</span>}
+                                            </div>
+                                            <p className="text-gray-800 leading-relaxed">{text}</p>
                                         </div>
-                                        <p className="text-gray-800 leading-relaxed">{text}</p>
-                                    </div>
+                                    </React.Fragment>
                                 ))}
                             </div>
                         ) : (

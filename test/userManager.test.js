@@ -4,6 +4,7 @@ import express from 'express';
 import {
     ADMIN_TOPICS, UserAdminError, UserAdminService, createImageSigner, findPhoto, maskToken, queryDirectory, serializeFirestore, summarizeUser,
 } from '../src/services/userAdminService.js';
+import { searchQueryWords, searchTokens } from '../src/services/searchTokens.js';
 import { createRequireAdmin, createUserRouter } from '../src/routes/userRoutes.js';
 import { AuthEmailError, createAuthEmailSender } from '../src/services/authEmailService.js';
 
@@ -194,6 +195,37 @@ describe('user directory helpers', () => {
         assert.throws(() => queryDirectory(users, { filter: 'nope' }), UserAdminError);
     });
 
+    test('names are matched by word prefix with the stored search tokens, like the app', () => {
+        const profile = (first, last, tokens) => ({ first_name: first, last_name: last, ...(tokens ? { search_tokens: tokens } : {}) });
+        const user = (uid, p, email) => summarizeUser(uid, { email, providerData: [], metadata: {} }, p);
+        const ok = user('a', profile('Mary Ann', 'Smith-Jones', searchTokens('Mary Ann Smith-Jones')), 'mas@x.com');
+        const missing = user('b', profile('John', 'Major'), 'jm@x.com');
+        const stale = user('c', profile('Joanna', 'Lee', searchTokens('Jo Lee')), 'joanna@y.org');
+        const noProfile = summarizeUser('d', { email: 'zed@x.com', displayName: 'Zed Doe', providerData: [], metadata: {} }, null);
+        const users = [ok, missing, stale, noProfile];
+        const find = (q) => queryDirectory(users, { q, sort: 'email_asc' }).users.map((u) => u.uid).sort();
+
+        assert.deepEqual([ok.searchStatus, missing.searchStatus, stale.searchStatus, noProfile.searchStatus], ['ok', 'missing', 'stale', null]);
+        assert.deepEqual(find('jones mar'), ['a'], 'any order, word prefixes, hyphenated names split');
+        assert.deepEqual(find('ohn'), [], 'not the middle of a word');
+        assert.deepEqual(find('jo'), ['a', 'b', 'c'], 'Jones, John, Joanna');
+        assert.deepEqual(find('joann'), ['c'], 'current name found even though the stored tokens are out of date');
+        assert.deepEqual(find('major'), ['b'], 'found without stored tokens');
+        assert.deepEqual(find('zed d'), ['d'], 'display name for users without a profile; one-letter words ignored');
+        assert.deepEqual(find('y.org'), ['c'], 'emails still match anywhere');
+        assert.deepEqual(find('mary x.com'), ['a'], 'a name word and part of the email');
+        assert.deepEqual(find('mas@x.com'), ['a']);
+        assert.deepEqual(find('j'), ['a', 'b', 'c'], 'a single letter matches anywhere');
+        assert.deepEqual(find('a'.repeat(20)), [], 'long words are cut to 15 letters');
+        assert.deepEqual(queryDirectory(users, { filter: 'not_searchable' }).users.map((u) => u.uid).sort(), ['b', 'c']);
+    });
+
+    test('searchQueryWords splits like the app', () => {
+        assert.deepEqual(searchQueryWords('  Jones, MAR  a '), ['jones', 'mar']);
+        assert.deepEqual(searchQueryWords('Supercalifragilistic'), ['supercalifragil']);
+        assert.deepEqual(searchQueryWords('élan Élan'), ['élan']);
+    });
+
     test('findPhoto picks photo fields by name, preferring thumbnails for small sizes', () => {
         const both = findPhoto({
             profile_image_gs_location: 'gs://b/users/u1/full.jpg',
@@ -260,6 +292,8 @@ describe('UserAdminService', () => {
         assert.equal(result.counts.reported, 1);
         assert.equal(result.counts.disabled, 1);
         assert.deepEqual((await f.service.search({ q: 'mary' })).users.map((u) => u.uid), ['u1']);
+        assert.ok(result.users.every((u) => !('searchTokens' in u)), 'token lists stay on the server');
+        assert.ok(result.users.every((u) => 'searchStatus' in u));
     });
 
     test('directory is cached until refreshed', async () => {
@@ -363,6 +397,17 @@ describe('UserAdminService', () => {
         assert.equal(f.firestore.docs.get('users/u2').is_verified, true);
         assert.equal((await f.service.setApproved('u2', false)).isVerified, false);
         await assert.rejects(f.service.setApproved('u3', true), /no profile/);
+    });
+
+    test('tagging a pastor only touches the profile is_pastor', async () => {
+        const tagged = await f.service.setPastor('u2', true);
+        assert.equal(tagged.isPastor, true);
+        assert.equal(f.firestore.docs.get('users/u2').is_pastor, true);
+        const { users, counts } = await f.service.search({ filter: 'pastors' });
+        assert.deepEqual([users.map((u) => u.uid), counts.pastors], [['u2'], 1]);
+        assert.equal((await f.service.setPastor('u2', false)).isPastor, false);
+        assert.equal((await f.service.search({ filter: 'pastors' })).total, 0);
+        await assert.rejects(f.service.setPastor('u3', true), /no profile/);
     });
 
     test('granting and revoking admin syncs topics and protects the caller', async () => {

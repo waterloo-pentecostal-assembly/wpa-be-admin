@@ -20,6 +20,7 @@ function fakeFirestore() {
         get: async () => snapshot(id),
         set: async (data) => { docs.set(id, { ...data }); },
         update: async (patch) => { docs.set(id, { ...docs.get(id), ...patch }); },
+        delete: async () => { docs.delete(id); },
     });
     const all = async () => ({ docs: [...docs.keys()].map(snapshot) });
     // Like Firestore, ordering by a field leaves out documents without it.
@@ -93,14 +94,27 @@ describe('DraftService', () => {
         assert.deepEqual((await service.list()).map((d) => d.title), ['Newer', 'Older', 'Empty']);
     });
 
-    test('remove is a soft delete hidden from list and get', async () => {
+    test('remove deletes the draft document', async () => {
         const firestore = fakeFirestore();
         const service = new DraftService(firestore, { now });
         const { id } = await service.create(draftFixture());
+        const { id: keep } = await service.create(draftFixture('Keep'));
         await service.remove(id);
-        assert.deepEqual(await service.list(), []);
+        assert.equal(firestore.docs.has(id), false);
+        assert.deepEqual((await service.list()).map((d) => d.id), [keep]);
         await assert.rejects(service.get(id), { status: 404 });
-        assert.equal(firestore.docs.get(id).deleted, true);
+        await assert.rejects(service.remove(id), { status: 404 });
+    });
+
+    test('purgeDeleted removes drafts the old soft delete left behind', async () => {
+        const firestore = fakeFirestore();
+        const service = new DraftService(firestore, { now });
+        const { id } = await service.create(draftFixture());
+        const { id: old } = await service.create(draftFixture('Old'));
+        firestore.docs.set(old, { ...firestore.docs.get(old), deleted: true, deleted_at: { toMillis: () => 5 } });
+        assert.equal(await service.purgeDeleted(), 1);
+        assert.deepEqual([...firestore.docs.keys()], [id]);
+        assert.equal(await service.purgeDeleted(), 0);
     });
 
     test('rejects malformed and oversized drafts', async () => {

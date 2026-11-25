@@ -13,6 +13,7 @@
 // action touches both (email changes, deletion).
 import crypto from 'node:crypto';
 import { AuthEmailError } from './authEmailService.js';
+import { SEARCH_TOKENS_FIELD, sameTokens, searchQueryWords, searchTokens, userSearchText } from './searchTokens.js';
 
 /** FCM topics admins are subscribed to (see UserManagerService.subscribeAllAdminsToTopics). */
 export const ADMIN_TOPICS = [
@@ -25,7 +26,7 @@ export const ADMIN_TOPICS = [
 /** Collections holding a user's app activity, keyed by `user_id`. */
 export const ACTIVITY_COLLECTIONS = ['completions', 'prayer_requests', 'testimonies'];
 
-export const FILTERS = ['all', 'active', 'disabled', 'pending_approval', 'email_unverified', 'admins', 'reported', 'missing_profile', 'missing_account'];
+export const FILTERS = ['all', 'active', 'disabled', 'pending_approval', 'email_unverified', 'admins', 'pastors', 'reported', 'missing_profile', 'missing_account', 'not_searchable'];
 export const SORTS = ['created_desc', 'created_asc', 'last_sign_in_desc', 'name_asc', 'email_asc'];
 
 const MAX_PAGE_SIZE = 200;
@@ -173,6 +174,8 @@ export function summarizeUser(uid, record, profile) {
         // Profile is_verified: an admin has approved the user.
         isVerified: !!profile?.is_verified,
         isAdmin: profile?.is_admin === true,
+        // Pastors can be named as the author of featured content (see featuredContent.js).
+        isPastor: profile?.is_pastor === true,
         reports: Number(profile?.reports) || 0,
         createdAt: toIso(record?.metadata?.creationTime),
         lastSignInAt: toIso(record?.metadata?.lastSignInTime),
@@ -182,7 +185,24 @@ export function summarizeUser(uid, record, profile) {
         emailMismatch: !!(record?.email && profile?.email && record.email.toLowerCase() !== String(profile.email).toLowerCase()),
         // Storage locations; replaced by signed URLs (photoUrl) before they are sent.
         photo: findPhoto(profile, record),
+        ...searchInfo(profile, record),
     };
+}
+
+/**
+ * How the user is found by name. `searchStatus` says whether the profile's
+ * stored search_tokens (what the app's people search uses) are 'ok',
+ * 'missing' or 'stale' (not matching the name); null without a profile.
+ * `searchTokens` (kept server-side) is what the console matches names
+ * against: the stored tokens plus the ones for the current name, so a user
+ * whose tokens are missing or out of date can still be found here.
+ */
+function searchInfo(profile, record) {
+    const expected = profile ? searchTokens(userSearchText(profile)) : searchTokens(record?.displayName ?? '');
+    const stored = Array.isArray(profile?.[SEARCH_TOKENS_FIELD]) ? profile[SEARCH_TOKENS_FIELD] : null;
+    let searchStatus = null;
+    if (profile) searchStatus = !stored ? 'missing' : sameTokens(stored, expected) ? 'ok' : 'stale';
+    return { searchStatus, searchTokens: stored && searchStatus !== 'ok' ? [...new Set([...stored, ...expected])] : expected };
 }
 
 export function matchesFilter(user, filter) {
@@ -193,20 +213,34 @@ export function matchesFilter(user, filter) {
         case 'pending_approval': return user.hasProfile && !user.isVerified;
         case 'email_unverified': return user.hasAccount && !user.emailVerified;
         case 'admins': return user.isAdmin;
+        case 'pastors': return user.isPastor;
         case 'reported': return user.reports > 0;
         case 'missing_profile': return user.hasAccount && !user.hasProfile;
         case 'missing_account': return !user.hasAccount;
+        // The app's people search can't find these (or finds them by an old name).
+        case 'not_searchable': return user.hasProfile && user.searchStatus !== 'ok';
         default: return true;
     }
 }
 
-/** Every whitespace-separated term must appear in the user's email, name, uid or phone. */
+/**
+ * Whether a user matches a search. Names are matched like the app's people
+ * search: every query word (see searchQueryWords) must be one of the user's
+ * search tokens, i.e. the start of a word of their name ("jo" finds John,
+ * "ohn" doesn't). A word may instead appear anywhere in the email, uid or
+ * phone number, which aren't tokenized; so does the whole query (e.g. a full
+ * email address). A query with no word of two or more letters falls back to
+ * matching anywhere in the name too.
+ */
 export function matchesQuery(user, query) {
-    const terms = String(query ?? '').toLowerCase().split(/\s+/).filter(Boolean);
-    if (!terms.length) return true;
-    const haystack = [user.email, user.name, user.firstName, user.lastName, user.uid, user.phoneNumber]
-        .filter(Boolean).join(' ').toLowerCase();
-    return terms.every((term) => haystack.includes(term));
+    const raw = String(query ?? '').trim().toLowerCase();
+    if (!raw) return true;
+    const haystack = [user.email, user.uid, user.phoneNumber].filter(Boolean).join(' ').toLowerCase();
+    if (haystack.includes(raw)) return true;
+    const words = searchQueryWords(raw);
+    if (!words.length) return `${haystack} ${user.name ?? ''}`.toLowerCase().includes(raw);
+    const tokens = new Set(user.searchTokens ?? searchTokens(user.name ?? ''));
+    return words.every((word) => tokens.has(word) || haystack.includes(word));
 }
 
 const byString = (key) => (a, b) => (a[key] || '￿').localeCompare(b[key] || '￿', undefined, { sensitivity: 'base' });
@@ -327,7 +361,9 @@ export class UserAdminService {
     }
 
     /** Swaps a summary's photo locations for URLs: photoUrl (thumbnail) and photoFullUrl. */
-    async withPhotoUrls({ photo, ...user }) {
+    async withPhotoUrls({ photo, ...summary }) {
+        const user = { ...summary };
+        delete user.searchTokens; // used for matching only; not sent to the browser
         const [photoUrl, photoFullUrl] = await Promise.all([
             this.signImage(photo?.thumbnail),
             photo?.full === photo?.thumbnail ? null : this.signImage(photo?.full),
@@ -575,6 +611,14 @@ export class UserAdminService {
         // Disabled admins stay unsubscribed until they are reactivated.
         const topics = await this.syncAdminTopics(uid, !!isAdmin && !record?.disabled);
         return { user: await this.getUser(uid), topics };
+    }
+
+    /** Tags (or untags) the user as a pastor: the profile's is_pastor. Pastors can author featured content. */
+    async setPastor(uid, isPastor) {
+        const { profile } = await this.requireUser(uid);
+        if (!profile) throw new UserAdminError('This user has no profile; create one first', 409);
+        await this.users().doc(uid).update({ is_pastor: !!isPastor });
+        return this.getUser(uid);
     }
 
     async clearReports(uid) {

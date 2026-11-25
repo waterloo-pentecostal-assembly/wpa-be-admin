@@ -133,6 +133,28 @@ titles back and deletes those comments (skipping threads whose title changed sin
 **Maintenance**. The comments are new documents, so anything that runs when a comment is created (such
 as a Cloud Function sending notifications) runs for them too.
 
+### Backfilling search tokens
+
+The app's people search and "Find a group" query precomputed prefix tokens
+(`search_tokens array-contains <word>`) on `users` and `challenge_groups`. The app never writes them;
+backend triggers in wpa-be-firebase keep them up to date (`specs/search-tokens-functions.md`).
+`npm run backfill:search-tokens` fills them on documents that existed before those triggers, using the
+same tokenizer as the app (`src/services/searchTokens.js`: every 2- to 15-character prefix of each word
+in `first_name last_name`, or a group's `name description`).
+
+```sh
+npm run backfill:search-tokens -- --env dev --dry-run                        # report only
+npm run backfill:search-tokens -- --env dev
+npm run backfill:search-tokens -- --env prod --collection challenge_groups   # one collection (asks first)
+```
+
+- Writes only `search_tokens`, with `update` (a deleted document is never recreated), and only where the
+  tokens differ, so a second run reports `updated 0`. A document changed between being read and written
+  is skipped and left to the trigger.
+- Run it after the triggers are deployed, once per environment; each write fires them (and
+  `updatePrayerRequestUserSnippet` on users) once.
+- Prints `scanned`, `updated`, `unchanged` and `failed` per collection; exits non-zero if any write failed.
+
 # Series Builder (web UI)
 
 `/bible-series` in the admin console builds a Bible series and publishes it in the
@@ -146,8 +168,13 @@ as a Cloud Function sending notifications) runs for them too.
   copies an engagement or a day's scripture to all days, every Monday, the rest of the week, etc.
 - **Autosave:** drafts are saved to the `admin_series_drafts` Firestore collection of the selected
   environment (prod drafts in the prod project, dev drafts in the dev project) and mirrored in the
-  browser. The env switcher changes which drafts are listed; **Copy to prod/dev** on a draft card
-  puts a copy in the other environment (copying the same draft again offers to replace that copy).
+  browser. The env switcher changes which drafts are listed; in prod, **Copy to dev** on a draft card
+  puts a copy in dev for testing, after a confirmation (copying the same draft again offers to replace
+  that copy). Its cover image is copied into the dev bucket at the same path and the copy's
+  `image_gs_location` points there; the copy is made inactive. Nothing can be copied into prod.
+- **Copy a series to dev:** in prod, **Open published** lists the series in the app with a **Copy to dev**
+  button. After a confirmation it copies the series, its entries (same IDs) and its cover image to dev,
+  always inactive; no user data is copied. If the series is already in dev it asks before replacing it.
   Without any Firebase credentials, drafts are kept in the browser only.
 - **URL:** the environment, open draft and selected day are in the URL
   (`?env=dev&draft=…&view=day:…`). A link for the other environment asks before switching, since
@@ -197,7 +224,7 @@ account and their Firestore `users/{uid}` profile (with `devices` and `notificat
 in the selected environment.
 
 - **Search and filters:** search by name, email, uid or phone (every word must match); filter by
-  active, deactivated, unverified, admins, reported, *No profile* (an Auth account with no profile)
+  active, deactivated, unverified, admins, pastors, reported, *No profile* (an Auth account with no profile)
   and *No account* (a profile left behind after its account was deleted). The server merges
   `auth.listUsers` with the `users` collection and keeps the result for a minute (**Refresh**
   reloads it). Search, filter, sort, page and the open user are in the URL (`?user=<uid>`).
@@ -221,7 +248,8 @@ in the selected environment.
   `is_verified`, which means an admin accepted the user), mark email verified / unverified (Auth
   `emailVerified`, which means the user clicked the link in their verification email; the two are
   shown and filtered separately), sign out everywhere (revokes refresh tokens), deactivate/reactivate (disables
-  the Auth account; deactivating also signs the user out), grant/remove admin (`is_admin`), edit
+  the Auth account; deactivating also signs the user out), grant/remove admin (`is_admin`), tag/untag as a
+  pastor (`is_pastor`; pastors are who featured content can be credited to), edit
   name and email (an email change updates both records and marks the email unverified, but keeps
   approval), clear
   reports, create a missing profile, create a user, and delete. Deleting removes the Auth account
@@ -343,6 +371,42 @@ together with anything stored under them (subcollections). Entries without a `da
 - API (admins only): `GET /api/maintenance/old-content?before=YYYY-MM-DD` and
   `POST /api/maintenance/old-content/delete` `{ before, kinds: ['prayer_requests', 'testimonies'], env }`
   (`src/routes/maintenanceRoutes.js`, `src/services/dataDeletingService.js`).
+
+# Featured Content (web UI)
+
+`/featured` in the admin console schedules what the app's home screen features, in the selected
+environment. Each item has a type and the days it shows. Items can overlap, but **at most 5 show at
+any moment**: saving one that would make a sixth on any day is refused, naming the busy day and the
+items on it. The form shows how many others already overlap the chosen days.
+
+| Type | `type` | Fields |
+| --- | --- | --- |
+| Verse with note | `verse` | passage (required), `note` (optional, up to 1,000 characters) |
+| Pastor's encouragement | `pastors_encouragement` | pastor (required), `title` (optional), `body` (required, up to 2,000), passage (optional) |
+
+A passage is typed ("Philippians 4:6-7") or browsed for, and looked up through the Bible proxy to get
+its passage ID and a preview. It must be one continuous passage. Titles are up to 120 characters. Text is plain; line breaks are kept. An item's type can't be changed once saved.
+
+- **Authors are pastors:** the author is picked from the users tagged as pastors in User Manager
+  (profile `is_pastor: true`, with a name). Only their uid is stored, as `author_uid`; the name is
+  never copied, so a name change needs no update. The console and the app read the name (and photo)
+  from `users/{author_uid}`. An item keeps its author if they're untagged later, and can still be
+  edited, but untagged users can't be picked for new items.
+- Dates are whole days in Toronto time, both included.
+- Documents are in the `featured_content` collection (auto IDs), with `type`, the type's fields above
+  (all strings, `''` when empty; a passage is `passage_id`, API.Bible e.g. `PHP.4.6-PHP.4.7`, plus
+  `reference`), `start_date` (first day, 00:00 Toronto), `end_date` (last day, 23:59:59.999 Toronto)
+  and `created_at` / `created_by` / `updated_at` / `updated_by`.
+- API (admins only): `GET /api/featured` (`{ env, maxConcurrent, types, authors, items }`), `POST
+  /api/featured`, `PUT` / `DELETE /api/featured/:id`; writes carry the `env` the page shows
+  (`src/routes/featuredRoutes.js`, `src/services/featuredContent.js`).
+
+**For the app:** what's featured now is every document with `start_date <= now <= end_date` (at most
+5). For example, query `where('end_date', '>=', now)` and keep the ones whose `start_date <= now`; skip
+types the app doesn't know. The app chooses the order (e.g. by `start_date`). It needs Firestore rules
+that let signed-in users read `featured_content`, and it fetches passage text by `passage_id` through
+the Bible proxy in the reader's translation. The rules belong to the app's Firebase project, not this
+repo.
 
 # Scripture (Bible proxy)
 

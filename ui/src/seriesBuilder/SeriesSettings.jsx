@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { BookOpen, CalendarRange, CloudUpload } from 'lucide-react';
 import { fetchTranslations } from '../api/bibleApi';
+import { getSeriesFlags } from '../api/seriesBuilderApi';
 import { describeSchedule } from '../series/schedule';
 import { formatShort } from '../series/dates';
 import ImageUploader from './ImageUploader';
 import PublishStatus, { CopyId } from './PublishStatus';
+import { SeriesFlagSwitches } from './SeriesFlags';
+import useSeriesFlags from './useSeriesFlags';
 
 /**
  * Bible translation for the series' scripture (API.Bible). Blank follows the
@@ -48,6 +51,42 @@ function TranslationPicker({ value, onChange }) {
     );
 }
 
+/**
+ * The published series' Active / Visible flags, read from and set on the
+ * series in the app (updating the series from the draft doesn't touch them).
+ */
+function LiveFlags({ seriesId, title }) {
+    const [state, setState] = useState({ loading: true, error: null, flags: null });
+    const load = useCallback(() => getSeriesFlags(seriesId)
+        .then((f) => setState({ loading: false, error: null, flags: { is_active: f.is_active, is_visible: f.is_visible } }))
+        .catch((e) => setState({ loading: false, error: e.message, flags: null })), [seriesId]);
+    useEffect(() => { load(); }, [load]);
+    const [note, setNote] = useState(null);
+    const flags = useSeriesFlags({
+        onChanged: useCallback((id, next, { flag, value }) => {
+            setState((s) => ({ ...s, flags: next }));
+            setNote(flag === 'is_active' && value ? 'Now active. Firebase is making the other series inactive and sending the notifications.' : null);
+        }, []),
+    });
+
+    return (
+        <div>
+            <label className="label">In the app</label>
+            {state.loading && <p className="text-sm text-gray-400">Loading…</p>}
+            {state.error && <p className="text-sm text-red-600">Couldn’t read the series’ flags: {state.error}</p>}
+            {state.flags && (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <SeriesFlagSwitches series={{ id: seriesId, title, ...state.flags }} flags={flags} />
+                    <span className="text-xs text-gray-400">Changes apply to the app straight away (not through Update).</span>
+                </div>
+            )}
+            {flags.error && <p className="mt-1 text-sm text-red-600">{flags.error}</p>}
+            {note && <p className="mt-1 text-sm text-emerald-700">{note}</p>}
+            {flags.dialog}
+        </div>
+    );
+}
+
 export default function SeriesSettings({ draft, update, env, publishes, onEditSchedule }) {
     const meta = draft.meta;
     const setMeta = (patch, coalesce) => update((d) => ({ ...d, meta: { ...d.meta, ...patch } }), { coalesce });
@@ -80,15 +119,25 @@ export default function SeriesSettings({ draft, update, env, publishes, onEditSc
                         onChange={(gs, coalesce) => setMeta({ image_gs_location: gs }, coalesce)}
                     />
                 </div>
-                <div className="flex flex-wrap gap-3">
-                    {[['is_active', 'Active', 'The current series in the app'], ['is_visible', 'Visible', 'Shown in the app’s series list']].map(([key, label, hint]) => (
-                        <label key={key} className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 hover:border-gray-300" title={hint}>
-                            <input type="checkbox" className="checkbox" checked={!!meta[key]} onChange={(e) => setMeta({ [key]: e.target.checked })} />
-                            <span className="text-sm font-semibold text-gray-700">{label}</span>
-                            <span className="text-xs text-gray-400">{hint}</span>
-                        </label>
-                    ))}
-                </div>
+                {publishes.seriesId && !publishes.local ? (
+                    <LiveFlags seriesId={publishes.seriesId} title={meta.title} />
+                ) : (
+                    <div>
+                        <div className="flex flex-wrap gap-3">
+                            {[['is_active', 'Active', 'The current series in the app'], ['is_visible', 'Visible', 'Shown in the app’s series list']].map(([key, label, hint]) => (
+                                <label key={key} className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 hover:border-gray-300" title={hint}>
+                                    <input type="checkbox" className="checkbox" checked={!!meta[key]} onChange={(e) => setMeta({ [key]: e.target.checked })} />
+                                    <span className="text-sm font-semibold text-gray-700">{label}</span>
+                                    <span className="text-xs text-gray-400">{hint}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500">
+                            Set when the series is first published; after that, change them here or in the series list.
+                            {meta.is_active && <span className="text-amber-700"> Publishing an active series makes every other series inactive and sends notifications to all users.</span>}
+                        </p>
+                    </div>
+                )}
             </div>
 
             <div className="card mt-5 flex items-center gap-4 p-5">

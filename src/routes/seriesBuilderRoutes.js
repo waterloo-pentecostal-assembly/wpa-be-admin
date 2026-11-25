@@ -1,6 +1,7 @@
 import express from 'express';
 import { DraftServiceError } from '../services/draftService.js';
 import { PublishError } from '../services/publishService.js';
+import { SeriesCopyError } from '../services/seriesCopy.js';
 import { MAX_IMAGE_BYTES, StorageServiceError } from '../services/storageService.js';
 import { bibleAuthFor } from './bibleRoutes.js';
 
@@ -8,7 +9,7 @@ import { bibleAuthFor } from './bibleRoutes.js';
 const actor = (req) => req.admin?.uid ?? null;
 
 function sendError(res, error, fallbackMessage) {
-    if (error instanceof DraftServiceError || error instanceof StorageServiceError || error instanceof PublishError) {
+    if (error instanceof DraftServiceError || error instanceof StorageServiceError || error instanceof PublishError || error instanceof SeriesCopyError) {
         if (error.retryAfter !== null && error.retryAfter !== undefined) res.set('Retry-After', String(error.retryAfter));
         return res.status(error.status).json({ error: error.message, ...(error.details ?? {}) });
     }
@@ -25,8 +26,10 @@ function sendError(res, error, fallbackMessage) {
  * @param {import('../services/publishService.js').PublishService} [publisher]
  * @param {(env: string) => import('../services/draftService.js').DraftService|null} [getDraftsFor]
  *   Another environment's drafts, for copying a draft across.
+ * @param {{ copyImage?: import('../services/seriesCopy.js').SeriesCopyService['copyImage'] }} [options]
+ *   `copyImage` moves a copied draft's cover image into the target environment's bucket.
  */
-export function createDraftRouter(getDrafts, publisher = null, getDraftsFor = () => null) {
+export function createDraftRouter(getDrafts, publisher = null, getDraftsFor = () => null, { copyImage = null } = {}) {
     const router = express.Router();
 
     const withService = (handler) => async (req, res) => {
@@ -84,17 +87,25 @@ export function createDraftRouter(getDrafts, publisher = null, getDraftsFor = ()
         res.status(201).json(await publisher.link(req.params.id, req.body?.seriesId, { updatedBy: actor(req) }));
     }));
 
-    // Copies a draft to the other environment's drafts (see DraftService.copyIn).
+    // Copies a prod draft to the dev drafts, for testing (see DraftService.copyIn).
+    // Nothing is ever copied into prod.
     router.post('/:id/copy-to', withService(async (service, req, res) => {
         const { env: from } = getDrafts();
         const { env: to, replace } = req.body ?? {};
-        if (to !== 'prod' && to !== 'dev') return res.status(400).json({ error: 'env must be "prod" or "dev"' });
-        if (to === from) return res.status(400).json({ error: `This draft is already in ${to}` });
+        if (from !== 'prod' || to !== 'dev') return res.status(400).json({ error: 'Drafts can only be copied from prod to dev' });
         const target = getDraftsFor(to);
         if (!target) return res.status(503).json({ error: `Draft storage for ${to} is not available (no ${to} credentials)` });
         const { draft } = await service.get(req.params.id);
-        const result = await target.copyIn(draft, { env: from, draft_id: req.params.id }, { replace: !!replace });
-        res.status(result.replaced ? 200 : 201).json({ ...result, env: to });
+        // The dev app can't load images from the prod bucket: the cover image
+        // is copied into dev's bucket and the copy points at it. The copy is
+        // never active, so publishing it in dev doesn't start the automation.
+        const image = copyImage && draft.meta?.image_gs_location
+            ? await copyImage(draft.meta.image_gs_location, from, to)
+            : null;
+        const copy = { ...draft, meta: { ...draft.meta, is_active: false, ...(image ? { image_gs_location: image.gs } : {}) } };
+        const result = await target.copyIn(copy, { env: from, draft_id: req.params.id }, { replace: !!replace });
+        if (image?.warning) console.warn(`Draft ${req.params.id} copied to ${to}: ${image.warning}`);
+        res.status(result.replaced ? 200 : 201).json({ ...result, env: to, image });
     }));
 
     router.delete('/:id', withService(async (service, req, res) => {
@@ -110,8 +121,9 @@ export function createDraftRouter(getDrafts, publisher = null, getDraftsFor = ()
  * builder. Mount at `/api/published`.
  *
  * @param {() => { service: import('../services/publishedSeries.js').PublishedSeriesService|null, env: string }} getPublished
+ * @param {import('../services/seriesCopy.js').SeriesCopyService} [copier]  copies a prod series to dev
  */
-export function createPublishedRouter(getPublished) {
+export function createPublishedRouter(getPublished, copier = null) {
     const router = express.Router();
 
     const withService = (handler) => async (req, res) => {
@@ -120,11 +132,43 @@ export function createPublishedRouter(getPublished) {
         try {
             return await handler(service, env, req, res);
         } catch (error) {
+            if (error.status === 400 || error.status === 404) return res.status(error.status).json({ error: error.message });
             return sendError(res, error, 'Could not read published series');
         }
     };
 
     router.get('/', withService(async (service, env, req, res) => res.json({ env, series: await service.list() })));
+
+    // is_active / is_visible, read and set on their own (see PublishedSeriesService.setFlags).
+    router.get('/:id/flags', withService(async (service, env, req, res) => {
+        const flags = await service.getFlags(req.params.id);
+        if (!flags) return res.status(404).json({ error: 'Series not found' });
+        res.json({ env, seriesId: req.params.id, ...flags });
+    }));
+
+    router.patch('/:id/flags', withService(async (service, env, req, res) => {
+        const { is_active, is_visible } = req.body ?? {};
+        const flags = Object.fromEntries(Object.entries({ is_active, is_visible }).filter(([, v]) => v !== undefined));
+        const result = await service.setFlags(req.params.id, flags);
+        console.log(`Series ${req.params.id} in ${env}: ${Object.entries(flags).map(([k, v]) => `${k}=${v}`).join(', ')} (by ${actor(req) ?? 'unknown'})`);
+        res.json({ env, seriesId: req.params.id, ...result });
+    }));
+
+    // Copies a series from the selected environment (prod) to dev, for testing.
+    // 409 (with the dev copy's title and is_active) if it's already there, unless `replace`.
+    router.post('/:id/copy-to', async (req, res) => {
+        if (!copier) return res.status(503).json({ error: 'Copying series is not available' });
+        const { env: from } = getPublished();
+        const { env: to, replace } = req.body ?? {};
+        if (from !== 'prod' || to !== 'dev') return res.status(400).json({ error: 'Series can only be copied from prod to dev' });
+        try {
+            const result = await copier.copy(req.params.id, { from, to, replace: !!replace });
+            console.log(`Copied series ${req.params.id} (${result.entries} entries) from ${from} to ${to}${result.replaced ? ', replacing the copy there' : ''} (by ${actor(req) ?? 'unknown'})`);
+            res.status(result.replaced ? 200 : 201).json(result);
+        } catch (error) {
+            sendError(res, error, 'Could not copy the series');
+        }
+    });
 
     router.get('/:id', withService(async (service, env, req, res) => {
         const json = await service.export(req.params.id);

@@ -296,6 +296,18 @@ describe('PublishService updates', () => {
         return { bible_series: series, series_content: c };
     };
 
+    test('deleting a linked draft removes it, so opening the series again leaves one draft', async () => {
+        const { firestore, seriesId, drafts, draftId, publisher } = await setup();
+        await publisher.link(draftId, seriesId);
+        await drafts.remove(draftId);
+        const { id: reopened } = await drafts.create({ meta: { title: 'Matthew' }, days: [] });
+        await publisher.link(reopened, seriesId);
+        const draftDocs = [...firestore.store.keys()].filter((k) => k.startsWith('admin_series_drafts/'));
+        assert.deepEqual(draftDocs, [`admin_series_drafts/${reopened}`]);
+        assert.equal(await drafts.findLinked(seriesId), reopened);
+        assert.ok(firestore.store.has(`bible_series/${seriesId}`), 'the published series is not deleted');
+    });
+
     test('links a draft to one series, and a series to one draft', async () => {
         const { seriesId, drafts, draftId, publisher } = await setup();
         await assert.rejects(publisher.previewUpdate(draftId, edited()), (e) => e.status === 404 && /hasn't been published/.test(e.message));
@@ -403,14 +415,16 @@ describe('published series routes', () => {
             const duplicate = await post(`/api/drafts/${otherId}/link`, { seriesId });
             assert.equal(duplicate.status, 409);
             assert.equal((await duplicate.json()).draftId, draftId);
-            const json = { bible_series: { ...series, is_active: true }, series_content: content() };
+            // The flags are set on their own, so the draft's is_active is ignored.
+            const json = { bible_series: { ...series, sub_title: 'Kingdom', is_active: true }, series_content: content() };
             const preview = await (await post(`/api/drafts/${draftId}/update-preview`, { json })).json();
-            assert.deepEqual(preview.series, [{ field: 'is_active', from: false, to: true }]);
+            assert.deepEqual(preview.series, [{ field: 'sub_title', from: '', to: 'Kingdom' }]);
             // Who made the change is the verified admin, whatever the body claims.
             const applied = await post(`/api/drafts/${draftId}/update`, { json, planHash: preview.planHash, updatedBy: 'someone-else' });
             assert.equal(applied.status, 200);
             assert.equal((await applied.json()).record.updated_by, 'uid-admin-1');
-            assert.equal(firestore.store.get(`bible_series/${seriesId}`).is_active, true);
+            assert.equal(firestore.store.get(`bible_series/${seriesId}`).sub_title, 'Kingdom');
+            assert.equal(firestore.store.get(`bible_series/${seriesId}`).is_active, false);
             assert.equal((await post(`/api/drafts/${otherId}/update`, { json })).status, 404, 'not published');
         } finally {
             server.close();
@@ -440,7 +454,7 @@ describe('updates look up scripture as the requesting admin', () => {
         });
         return { server, post, draftId };
     }
-    const json = () => ({ bible_series: { ...series, is_active: true }, series_content: content() });
+    const json = () => ({ bible_series: { ...series, sub_title: 'Kingdom' }, series_content: content() });
 
     test('preview and apply forward the admin\'s ID token to the Bible proxy', async () => {
         const bible = createTestBible();
@@ -477,7 +491,7 @@ describe('updates look up scripture as the requesting admin', () => {
 });
 
 describe('drafts per environment', () => {
-    test('a draft is copied to the other environment once, then replaced on request', async () => {
+    test('a prod draft is copied to dev once, then replaced on request; nothing is copied to prod', async () => {
         const now = () => { const t = Date.now(); return { toMillis: () => t }; };
         const stores = {
             prod: new DraftService(memoryFirestore(), { now, env: 'prod' }),
@@ -485,40 +499,103 @@ describe('drafts per environment', () => {
         };
         const app = express();
         app.use(express.json());
-        app.use('/api/drafts', createDraftRouter(() => ({ service: stores.dev, projectId: 'wpa-be-app-dev', env: 'dev' }), null, (env) => stores[env]));
+        let env = 'prod';
+        app.use('/api/drafts', createDraftRouter(() => ({ service: stores[env], projectId: `p-${env}`, env }), null, (e) => stores[e]));
         const server = await new Promise((resolve) => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
         const base = `http://127.0.0.1:${server.address().port}`;
         const copy = (id, body) => fetch(`${base}/api/drafts/${id}/copy-to`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         try {
-            const { id } = await stores.dev.create({ meta: { title: 'Psalms' }, days: [{ date: '2026-07-06' }] });
-            await stores.dev.setSeriesId(id, 'DEV1');
-            await stores.dev.addPublish(id, { status: 'done' });
+            const { id } = await stores.prod.create({ meta: { title: 'Psalms' }, days: [{ date: '2026-07-06' }] });
+            await stores.prod.setSeriesId(id, 'PROD1');
+            await stores.prod.addPublish(id, { status: 'done' });
 
-            assert.deepEqual((await stores.prod.list()).length, 0, 'drafts are not shared');
-            const first = await copy(id, { env: 'prod' });
+            assert.deepEqual((await stores.dev.list()).length, 0, 'drafts are not shared');
+            const first = await copy(id, { env: 'dev' });
             assert.equal(first.status, 201);
-            const { id: prodId } = await first.json();
-            const [listed] = await stores.prod.list();
-            assert.equal(listed.id, prodId);
+            const { id: devId } = await first.json();
+            const [listed] = await stores.dev.list();
+            assert.equal(listed.id, devId);
             assert.equal(listed.seriesId, null, 'the linked series stays with the source environment');
-            assert.deepEqual((await stores.prod.getPublishes(prodId)).publishes, []);
-            assert.equal((await stores.prod.get(prodId)).draft.meta.title, 'Psalms');
+            assert.deepEqual((await stores.dev.getPublishes(devId)).publishes, []);
+            assert.equal((await stores.dev.get(devId)).draft.meta.title, 'Psalms');
 
-            await stores.dev.save(id, { meta: { title: 'Psalms 2026' }, days: [] }, 1);
-            const again = await copy(id, { env: 'prod' });
+            await stores.prod.save(id, { meta: { title: 'Psalms 2026' }, days: [] }, 1);
+            const again = await copy(id, { env: 'dev' });
             assert.equal(again.status, 409);
-            assert.equal((await again.json()).draftId, prodId);
-            const replaced = await copy(id, { env: 'prod', replace: true });
+            assert.equal((await again.json()).draftId, devId);
+            const replaced = await copy(id, { env: 'dev', replace: true });
             assert.equal(replaced.status, 200);
-            assert.equal((await stores.prod.get(prodId)).draft.meta.title, 'Psalms 2026');
-            assert.equal((await stores.prod.list()).length, 1);
+            assert.equal((await stores.dev.get(devId)).draft.meta.title, 'Psalms 2026');
+            assert.equal((await stores.dev.list()).length, 1);
 
-            assert.equal((await copy(id, { env: 'dev' })).status, 400);
+            assert.equal((await copy(id, { env: 'prod' })).status, 400, 'not to itself');
+            // From dev, nothing can be copied to prod.
+            env = 'dev';
+            assert.equal((await copy(devId, { env: 'prod' })).status, 400);
+            assert.equal((await copy(devId, { env: 'prod', replace: true })).status, 400);
+            assert.equal((await stores.prod.list()).length, 1, 'prod drafts unchanged');
             const missing = await fetch(`${base}/api/drafts/not-in-dev`);
             assert.equal(missing.status, 404);
             assert.match((await missing.json()).error, /not found in dev/);
         } finally {
             server.close();
         }
+    });
+});
+
+describe('series flags (is_active / is_visible)', () => {
+    async function start() {
+        const firestore = memoryFirestore();
+        const seriesId = await publishFixture(firestore);
+        const published = new PublishedSeriesService(firestore);
+        const app = express();
+        app.use(express.json());
+        app.use((req, res, next) => { req.admin = { uid: 'uid-admin-1' }; next(); });
+        app.use('/api/published', createPublishedRouter(() => ({ service: published, env: 'dev' })));
+        const server = await new Promise((resolve) => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
+        const base = `http://127.0.0.1:${server.address().port}`;
+        const patch = (id, json) => fetch(`${base}/api/published/${id}/flags`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(json),
+        });
+        return { firestore, seriesId, server, base, patch };
+    }
+
+    test('reads and sets only the flags given', async () => {
+        const { firestore, seriesId, server, base, patch } = await start();
+        try {
+            assert.deepEqual(await (await fetch(`${base}/api/published/${seriesId}/flags`)).json(), { env: 'dev', seriesId, is_active: false, is_visible: true });
+            const before = { ...firestore.store.get(`bible_series/${seriesId}`) };
+            const res = await patch(seriesId, { is_active: true });
+            assert.equal(res.status, 200);
+            assert.deepEqual(await res.json(), { env: 'dev', seriesId, is_active: true, is_visible: true });
+            assert.deepEqual(firestore.store.get(`bible_series/${seriesId}`), { ...before, is_active: true });
+            assert.deepEqual(await (await patch(seriesId, { is_visible: false })).json(), { env: 'dev', seriesId, is_active: true, is_visible: false });
+        } finally {
+            server.close();
+        }
+    });
+
+    test('rejects bad input and missing series without writing', async () => {
+        const { firestore, seriesId, server, base, patch } = await start();
+        try {
+            const before = { ...firestore.store.get(`bible_series/${seriesId}`) };
+            assert.equal((await patch(seriesId, {})).status, 400);
+            assert.equal((await patch(seriesId, { is_active: 'yes' })).status, 400);
+            assert.equal((await patch(seriesId, { is_active: true, title: 'X' })).status, 200, 'other fields are ignored');
+            assert.equal(firestore.store.get(`bible_series/${seriesId}`).title, before.title);
+            assert.equal((await patch('nope', { is_active: true })).status, 404);
+            assert.equal(firestore.store.has('bible_series/nope'), false);
+            assert.equal((await fetch(`${base}/api/published/nope/flags`)).status, 404);
+        } finally {
+            server.close();
+        }
+    });
+
+    test('updating a series from its draft leaves the flags alone', () => {
+        const current = { series: { ...series, is_active: true }, content: [] };
+        const { summary, writes } = planSeriesUpdate(current, { bible_series: { ...series, is_active: false, is_visible: false }, series_content: [] }, { newId: () => 'x' });
+        assert.deepEqual(summary.series, []);
+        assert.equal(writes.series?.is_active, undefined);
+        assert.equal(writes.series?.is_visible, undefined);
     });
 });

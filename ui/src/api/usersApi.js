@@ -39,6 +39,8 @@ export const setEmailVerified = (uid, verified) => post(userUrl(uid, '/email-ver
 export const setApproved = (uid, approved) => post(userUrl(uid, '/approved'), { approved });
 /** { user, topics } */
 export const setAdmin = (uid, isAdmin) => post(userUrl(uid, '/admin'), { isAdmin });
+/** Sets the profile's is_pastor (pastors can author featured content). { user } */
+export const setPastor = (uid, isPastor) => post(userUrl(uid, '/pastor'), { isPastor });
 export const clearReports = (uid) => post(userUrl(uid, '/clear-reports'));
 /** `confirm` is the user's email (or uid if they have none). */
 /** Deletes the account and profile; with deleteData, also everything they posted. */

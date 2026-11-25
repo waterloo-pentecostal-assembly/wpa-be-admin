@@ -22,6 +22,12 @@ const SERIES_FIELDS = ['title', 'sub_title', 'image_gs_location', 'is_active', '
 // Left out of builder JSON when empty, so series without it look as before.
 const OPTIONAL_FIELDS = new Set(['scripture_bible_id']);
 const BOOLEAN_FIELDS = new Set(['is_active', 'is_visible']);
+// Set on their own (setFlags), never by updating a series from its draft: a
+// draft's copy goes stale once the flags are toggled, and making a series
+// active starts the app's automation (the other series are made inactive and
+// notifications go out to every user).
+export const SERIES_FLAGS = ['is_active', 'is_visible'];
+const UPDATE_FIELDS = SERIES_FIELDS.filter((f) => !SERIES_FLAGS.includes(f));
 const CONTENT_FIELDS = ['date', 'content_type', 'title', 'body'];
 // Firestore allows 500 writes per batch.
 const BATCH_SIZE = 450;
@@ -255,7 +261,7 @@ export function planSeriesUpdate(current, json, { newId, completions = new Map()
 
     const seriesPatch = {};
     const target = seriesJson(json.bible_series);
-    for (const field of SERIES_FIELDS) {
+    for (const field of UPDATE_FIELDS) {
         const from = seriesValue(field, current.series[field]);
         if (from !== target[field] && (!baseline || baseline.series[field] !== target[field])) {
             seriesPatch[field] = target[field];
@@ -281,6 +287,12 @@ export function planSeriesUpdate(current, json, { newId, completions = new Map()
         },
         summary,
     };
+}
+
+function flagError(message, status) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
 }
 
 export class PublishedSeriesService {
@@ -319,6 +331,40 @@ export class PublishedSeriesService {
                 };
             })
             .sort((a, b) => b.startDate.localeCompare(a.startDate) || a.title.localeCompare(b.title));
+    }
+
+    /** A series' flags ({ is_active, is_visible }), or null if it doesn't exist. */
+    async getFlags(seriesId) {
+        const doc = await this.#series(seriesId).get();
+        if (!doc.exists) return null;
+        const data = doc.data();
+        return Object.fromEntries(SERIES_FLAGS.map((f) => [f, !!data[f]]));
+    }
+
+    /**
+     * Sets `is_active` and/or `is_visible` on a series (only the ones given).
+     * Making a series active starts the app's automation in Firebase, which
+     * makes every other series inactive and sends notifications.
+     * @returns {Promise<{ is_active: boolean, is_visible: boolean }>} the flags afterwards
+     */
+    async setFlags(seriesId, flags) {
+        const patch = {};
+        for (const [field, value] of Object.entries(flags ?? {})) {
+            if (!SERIES_FLAGS.includes(field)) throw flagError(`Unknown flag "${field}" (allowed: ${SERIES_FLAGS.join(', ')})`, 400);
+            if (typeof value !== 'boolean') throw flagError(`${field} must be true or false`, 400);
+            patch[field] = value;
+        }
+        if (!Object.keys(patch).length) throw flagError(`Give ${SERIES_FLAGS.join(' and/or ')}`, 400);
+        const ref = this.#series(seriesId);
+        // update() fails on a missing document, so a deleted series isn't recreated.
+        if (!(await ref.get()).exists) throw flagError(`Series ${seriesId} was not found`, 404);
+        try {
+            await ref.update(patch);
+        } catch (error) {
+            if (error.code === 5) throw flagError(`Series ${seriesId} was not found`, 404);
+            throw error;
+        }
+        return this.getFlags(seriesId);
     }
 
     /**

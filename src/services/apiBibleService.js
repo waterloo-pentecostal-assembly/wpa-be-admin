@@ -144,7 +144,7 @@ export class ApiBibleService {
         const loaded = await Promise.all(wanted.map((n) => this.client.getChapter(id, `${bookId}.${n}`)));
         try {
             wanted.forEach((n, i) => { chapters[String(n)] = loaded[i].verses; });
-            return fn(engine, { bible, copyright: loaded.find((c) => c.copyright)?.copyright || bible.copyright });
+            return fn(engine, { bible, copyright: loaded.find((c) => c.copyright)?.copyright || bible.copyright, loaded });
         } finally {
             for (const n of wanted) chapters[String(n)] = null;
         }
@@ -180,7 +180,7 @@ export class ApiBibleService {
         };
     }
 
-    /** One chapter's verses (one API call unless cached). */
+    /** One chapter's verses, plus its headings for display (one API call unless cached). */
     async getVerses(bibleId, book, chapter) {
         const id = this.resolveBibleId(bibleId);
         const { engine } = await this.#engineFor(id);
@@ -190,7 +190,10 @@ export class ApiBibleService {
         if (!Number.isInteger(chapterNumber) || chapterNumber <= 0 || !/^\s*\d+\s*$/.test(String(chapter))) {
             throw new BibleServiceError('Chapter must be a positive integer', 400);
         }
-        return this.#withChapters(id, name, [chapterNumber], (e) => e.getVerses(name, chapterNumber));
+        return this.#withChapters(id, name, [chapterNumber], (e, { loaded }) => ({
+            ...e.getVerses(name, chapterNumber),
+            headings: loaded[0]?.headings ?? [],
+        }));
     }
 
     /**

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Upload, CalendarRange, Trash2, CloudOff, Loader2, CheckCircle2, HardDrive, BookOpen, ArrowRightLeft, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Plus, Upload, CalendarRange, Trash2, CloudOff, Loader2, CheckCircle2, HardDrive, BookOpen, ArrowRightLeft, Search, Radio } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
-import { copyDraftToEnv, getDraftsStatus, getPublishedSeries, linkDraftToSeries, listDrafts } from '../api/seriesBuilderApi';
+import { copyDraftToEnv, getDraftsStatus, getPublishedSeries, linkDraftToSeries, listDrafts, listPublishedSeries } from '../api/seriesBuilderApi';
 import { createDraft } from '../series/draftModel';
 import { importSeriesJson } from '../series/importSeries';
 import { listLocalOnly } from '../series/localDrafts';
@@ -10,6 +10,8 @@ import { deleteDraft, storeNewDraft } from './draftActions';
 import ImportDialog from './ImportDialog';
 import NewSeriesWizard from './NewSeriesWizard';
 import OpenPublishedDialog from './OpenPublishedDialog';
+import { FlagBadges, SeriesFlagSwitches } from './SeriesFlags';
+import useSeriesFlags from './useSeriesFlags';
 
 function timeAgo(ms) {
     if (!ms) return '';
@@ -34,15 +36,30 @@ async function loadLibrary() {
     return { status, error, drafts: [...remote, ...listLocalOnly()] };
 }
 
+// The series in the app, with their Active / Visible flags: { env, series, error }.
+async function loadPublished() {
+    try {
+        return { ...(await listPublishedSeries()), error: null };
+    } catch (e) {
+        return { env: null, series: [], error: e.message };
+    }
+}
+
+// After a series is made active, Firebase makes the others inactive; reload to show it.
+const RELOAD_AFTER_ACTIVATE_MS = [3000, 10000];
+
 export default function DraftLibrary({ onOpen }) {
     const [status, setStatus] = useState(null); // { available, projectId }
     const [drafts, setDrafts] = useState(null);
     const [error, setError] = useState(null);
-    const [modal, setModal] = useState(null); // 'new' | 'import' | 'published' | { delete: draft } | { replaceCopy }
+    const [modal, setModal] = useState(null); // 'new' | 'import' | 'published' | { delete: draft } | { confirmCopy: draft } | { replaceCopy }
     const [importNote, setImportNote] = useState(null);
     const [copyNote, setCopyNote] = useState(null);
     const [fetchNote, setFetchNote] = useState(null); // { added, failed: string[] }
     const [query, setQuery] = useState('');
+
+    const [published, setPublished] = useState(null); // { env, series, error }
+    const [flagNote, setFlagNote] = useState(null);
 
     const [reloadKey, setReloadKey] = useState(0);
     const refresh = () => setReloadKey((k) => k + 1);
@@ -54,9 +71,28 @@ export default function DraftLibrary({ onOpen }) {
             setStatus(result.status);
             setError(result.error);
             setDrafts(result.drafts);
+            if (result.status.available) loadPublished().then((p) => !ignore && setPublished(p));
         });
         return () => { ignore = true; };
     }, [reloadKey]);
+
+    const timers = useRef([]);
+    useEffect(() => () => timers.current.forEach(clearTimeout), []);
+    const reloadPublished = useCallback(() => loadPublished().then(setPublished), []);
+
+    const activeSeries = published?.series.filter((s) => s.is_active) ?? [];
+    const onFlagsChanged = useCallback((seriesId, flags, { flag, value }) => {
+        setPublished((p) => p && { ...p, series: p.series.map((s) => (s.id === seriesId ? { ...s, ...flags } : s)) });
+        if (flag === 'is_active' && value) {
+            setFlagNote('The series is now active. Firebase is making the other series inactive and sending the notifications.');
+            timers.current.forEach(clearTimeout);
+            timers.current = RELOAD_AFTER_ACTIVATE_MS.map((ms) => setTimeout(reloadPublished, ms));
+        } else {
+            setFlagNote(null);
+        }
+    }, [reloadPublished]);
+    const flags = useSeriesFlags({ activeSeries, onChanged: onFlagsChanged });
+    const publishedById = new Map((published?.series ?? []).map((s) => [s.id, s]));
 
     const create = async (draft) => {
         const id = await storeNewDraft(draft, status?.available);
@@ -70,15 +106,16 @@ export default function DraftLibrary({ onOpen }) {
         await create(draft);
     };
 
-    const otherEnv = status?.env === 'prod' ? 'dev' : status?.env === 'dev' ? 'prod' : null;
-
-    // Drafts belong to one environment; this puts a copy in the other one.
+    // Drafts belong to one environment. From prod, a draft can be copied to
+    // dev for testing (after a confirmation); nothing is copied into prod.
+    const otherEnv = status?.env === 'prod' ? 'dev' : null;
     const copyToOther = async (d, replace = false) => {
         setError(null);
         setCopyNote(null);
         try {
             const result = await copyDraftToEnv(d.id, otherEnv, replace);
-            setCopyNote(`“${d.title || 'Untitled series'}” ${result.replaced ? 'replaced the earlier copy' : 'was copied'} in ${otherEnv}. Switch to ${otherEnv} to open it.`);
+            const imageNote = result.image?.warning ? ` ${result.image.warning}.` : result.image?.copied ? ' Its cover image was copied to the dev bucket.' : '';
+            setCopyNote(`“${d.title || 'Untitled series'}” ${result.replaced ? 'replaced the earlier copy' : 'was copied'} in ${otherEnv}.${imageNote} Switch to ${otherEnv} to open it.`);
         } catch (e) {
             if (e.status === 409 && e.body?.draftId) setModal({ replaceCopy: d, existingTitle: e.body.title });
             else setError(`Could not copy to ${otherEnv}: ${e.message}`);
@@ -164,6 +201,43 @@ export default function DraftLibrary({ onOpen }) {
                     </div>
                 )}
                 {error && <div className="alert alert-error mb-4">{error}</div>}
+                {published && (
+                    <div className="card mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
+                        <Radio size={16} className={activeSeries.length ? 'text-emerald-600' : 'text-gray-400'} />
+                        {published.error ? (
+                            <span className="text-sm text-red-600">Couldn’t load the published series: {published.error}</span>
+                        ) : activeSeries.length ? (
+                            activeSeries.map((s) => (
+                                <span key={s.id} className="flex min-w-0 items-center gap-2 text-sm">
+                                    <span className="text-gray-500">Active in the app:</span>
+                                    <button
+                                        className="truncate font-semibold text-ink hover:underline disabled:no-underline"
+                                        disabled={!linkedDrafts.has(s.id)}
+                                        title={linkedDrafts.has(s.id) ? 'Open its draft' : 'Not imported yet (Open published)'}
+                                        onClick={() => onOpen(linkedDrafts.get(s.id))}
+                                    >
+                                        {s.title || 'Untitled series'}
+                                    </button>
+                                    {s.startDate && <span className="text-xs text-gray-400">{formatShort(s.startDate)} – {formatShort(s.endDate)}</span>}
+                                    <FlagBadges series={{ ...s, is_active: false }} />
+                                </span>
+                            ))
+                        ) : (
+                            <span className="text-sm text-gray-500">No series is active in the app.</span>
+                        )}
+                        {activeSeries.length > 1 && <span className="text-xs text-amber-700">More than one series is active.</span>}
+                        <span className="ml-auto text-xs text-gray-400">
+                            {published.series.filter((s) => s.is_visible).length} of {published.series.length} series visible
+                        </span>
+                    </div>
+                )}
+                {flags.error && <div className="alert alert-error mb-4">{flags.error}</div>}
+                {flagNote && (
+                    <div className="alert alert-success mb-4">
+                        <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+                        <span>{flagNote}</span>
+                    </div>
+                )}
                 {copyNote && (
                     <div className="alert alert-success mb-4">
                         <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
@@ -219,7 +293,7 @@ export default function DraftLibrary({ onOpen }) {
                                                     title={`Copy to ${otherEnv}`}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        copyToOther(d);
+                                                        setModal({ confirmCopy: d });
                                                     }}
                                                 >
                                                     <ArrowRightLeft size={15} />
@@ -247,6 +321,12 @@ export default function DraftLibrary({ onOpen }) {
                                             ? <span className="ml-auto rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">Published</span>
                                             : <span className="ml-auto rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-600">Draft</span>)}
                                     </div>
+                                    {publishedById.has(d.seriesId) && (
+                                        <div className="mt-3 flex items-center gap-2 border-t border-gray-100 pt-2.5">
+                                            <SeriesFlagSwitches series={publishedById.get(d.seriesId)} flags={flags} />
+                                            <span className="ml-auto flex gap-1"><FlagBadges series={publishedById.get(d.seriesId)} /></span>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -255,7 +335,7 @@ export default function DraftLibrary({ onOpen }) {
                 {status?.available && (
                     <p className="mt-6 text-xs text-gray-400">
                         {status.env ? `${status.env[0].toUpperCase()}${status.env.slice(1)} drafts` : 'Drafts'} are stored in Firestore ({status.projectId}), separately from published series.
-                        {otherEnv && ` Switch environment to see ${otherEnv} drafts.`}
+                        {(status.env === 'prod' || status.env === 'dev') && ` Switch environment to see ${status.env === 'prod' ? 'dev' : 'prod'} drafts.`}
                     </p>
                 )}
             </div>
@@ -267,10 +347,26 @@ export default function DraftLibrary({ onOpen }) {
             {modal === 'published' && (
                 <OpenPublishedDialog
                     linkedDrafts={linkedDrafts}
+                    published={published}
+                    flags={flags}
                     onClose={() => setModal(null)}
                     onOpen={openPublished}
                     onOpenDraft={onOpen}
                     onFetchAll={fetchPublished}
+                />
+            )}
+            {flags.dialog}
+            {modal?.confirmCopy && (
+                <ConfirmModal
+                    title={`Copy “${modal.confirmCopy.title || 'Untitled series'}” to dev?`}
+                    message="A copy of this prod draft is added to the dev drafts for testing, with its cover image copied into the dev bucket. The copy is inactive and isn’t linked to any series; the prod draft and the series in the app aren’t changed."
+                    confirmText="Copy to dev"
+                    onCancel={() => setModal(null)}
+                    onConfirm={() => {
+                        const target = modal.confirmCopy;
+                        setModal(null);
+                        copyToOther(target);
+                    }}
                 />
             )}
             {modal?.replaceCopy && (
@@ -290,7 +386,7 @@ export default function DraftLibrary({ onOpen }) {
             {modal?.delete && (
                 <ConfirmModal
                     title="Delete draft?"
-                    message={`“${modal.delete.title || 'Untitled series'}” will be removed from the builder. Published series are not affected.`}
+                    message={`“${modal.delete.title || 'Untitled series'}” will be permanently deleted from the ${status?.env ?? ''} drafts. ${modal.delete.seriesId ? 'The published series in the app isn’t affected; Open published can make a new draft of it.' : 'Published series aren’t affected.'}`}
                     confirmText="Delete"
                     isDangerous
                     onCancel={() => setModal(null)}

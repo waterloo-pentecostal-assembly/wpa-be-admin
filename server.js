@@ -21,6 +21,7 @@ import { DraftService } from './src/services/draftService.js';
 import { StorageService } from './src/services/storageService.js';
 import { PublishService } from './src/services/publishService.js';
 import { PublishedSeriesService } from './src/services/publishedSeries.js';
+import { SeriesCopyService } from './src/services/seriesCopy.js';
 import { createRecompiler } from './src/services/seriesBaseline.js';
 import { createDraftRouter, createOembedRouter, createPublishedRouter, createStorageRouter } from './src/routes/seriesBuilderRoutes.js';
 import { createUserRouter } from './src/routes/userRoutes.js';
@@ -28,6 +29,8 @@ import { createRequireAdmin, protectApi } from './src/routes/apiAuth.js';
 import { createNotificationRouter } from './src/routes/notificationRoutes.js';
 import { createMaintenanceRouter } from './src/routes/maintenanceRoutes.js';
 import { DataDeletingService } from './src/services/dataDeletingService.js';
+import { FeaturedContentService } from './src/services/featuredContent.js';
+import { createFeaturedRouter } from './src/routes/featuredRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,13 +50,14 @@ let notificationHubService = null;
 let dataDeletingService = null;
 let storageService = null;
 let publishedSeriesService = null;
+let featuredContentService = null;
 let currentEnv = 'prod'; // 'prod' or 'dev'
 
 // Series builder drafts are kept per environment, in that environment's own
 // Firestore: the env switcher changes which drafts are listed, and a draft is
-// moved across with "Copy to prod/dev". Each env has its own named Firebase
+// copied from prod to dev with "Copy to dev" (never into prod). Each env has its own named Firebase
 // app so draft storage survives the default app being recreated on a switch.
-const draftStores = {}; // env -> { service: DraftService, projectId, app }
+const draftStores = {}; // env -> { service: DraftService, projectId, app, bucket }
 
 // Cover images go to the project's default bucket (<project>.appspot.com,
 // matching existing image_gs_location values) unless overridden.
@@ -69,13 +73,17 @@ function initializeDraftStorage() {
         try {
             const app = admin.initializeApp({ credential: admin.credential.cert(serviceAccount) }, `series-drafts-${env}`);
             const service = new DraftService(app.firestore(), { env });
-            draftStores[env] = { service, projectId: serviceAccount.project_id, app };
+            draftStores[env] = { service, projectId: serviceAccount.project_id, app, bucket: storageBucketFor(env, serviceAccount) };
             console.log(`Series builder ${env} drafts stored in ${serviceAccount.project_id}`);
             // Drafts written before the snake_case keys are rewritten once; they
             // are readable either way, so this runs in the background.
             service.migrateKeys()
                 .then((count) => count && console.log(`Migrated ${count} ${env} drafts to snake_case keys`))
-                .catch((error) => console.error(`Could not migrate ${env} draft keys:`, error));
+                .catch((error) => console.error(`Could not migrate ${env} draft keys:`, error))
+                // Deleting a draft used to only mark it deleted; remove those leftovers.
+                .then(() => service.purgeDeleted())
+                .then((count) => count && console.log(`Removed ${count} ${env} drafts that had been deleted in the builder`))
+                .catch((error) => console.error(`Could not remove deleted ${env} drafts:`, error));
         } catch (error) {
             console.error(`Failed to initialize ${env} draft storage:`, error);
         }
@@ -95,6 +103,7 @@ async function initializeFirebase(env = 'prod') {
             userAdminService = null;
             notificationHubService = null;
             dataDeletingService = null;
+            featuredContentService = null;
         }
 
         const serviceAccount = loadServiceAccount(env);
@@ -129,6 +138,10 @@ async function initializeFirebase(env = 'prod') {
             });
             storageService = new StorageService(admin.storage().bucket());
             dataDeletingService = new DataDeletingService(db);
+            featuredContentService = new FeaturedContentService(db, {
+                serverTimestamp: () => admin.firestore.FieldValue.serverTimestamp(),
+                timestamp: (millis) => admin.firestore.Timestamp.fromMillis(millis),
+            });
             currentEnv = env;
             currentProjectId = serviceAccount.project_id;
             return true;
@@ -253,6 +266,13 @@ app.use('/api/bible', createBibleRouter(bibleService));
 // The Bible proxy's admin endpoints (stats, whoami, routes, cache purge).
 app.use('/api/bible-proxy', createBibleProxyAdminRouter(bibleService));
 
+// Copying a series or draft from prod to dev (for testing) reads and writes
+// through the per-env apps, whichever environment is selected.
+const seriesCopier = new SeriesCopyService({
+    getFirestore: (env) => draftStores[env]?.app.firestore() ?? null,
+    getBucket: (env) => (draftStores[env] ? draftStores[env].app.storage().bucket(draftStores[env].bucket) : null),
+});
+
 // Series builder: drafts (autosave), publishing/updating series, cover
 // image upload, song link titles
 const publishService = new PublishService({
@@ -265,8 +285,9 @@ app.use('/api/drafts', createDraftRouter(
     () => ({ service: draftStores[currentEnv]?.service ?? null, projectId: draftStores[currentEnv]?.projectId ?? null, env: currentEnv }),
     publishService,
     (env) => draftStores[env]?.service ?? null,
+    { copyImage: (gs, from, to) => seriesCopier.copyImage(gs, from, to) },
 ));
-app.use('/api/published', createPublishedRouter(() => ({ service: publishedSeriesService, env: currentEnv })));
+app.use('/api/published', createPublishedRouter(() => ({ service: publishedSeriesService, env: currentEnv }), seriesCopier));
 app.use('/api/storage', createStorageRouter(() => ({ service: storageService, env: currentEnv })));
 app.use('/api/oembed', createOembedRouter());
 
@@ -282,6 +303,9 @@ app.use('/api/notifications', requireAdmin, createNotificationRouter(() => ({ se
 // Maintenance: delete old prayer requests and testimonies in the selected
 // environment. Admins only, like /api/users.
 app.use('/api/maintenance', requireAdmin, createMaintenanceRouter(() => ({ service: dataDeletingService, env: currentEnv })));
+
+// Featured content on the app's home screen: verses and pastor's encouragements.
+app.use('/api/featured', requireAdmin, createFeaturedRouter(() => ({ service: featuredContentService, env: currentEnv })));
 
 // List Series
 app.get('/api/series', (req, res) => {

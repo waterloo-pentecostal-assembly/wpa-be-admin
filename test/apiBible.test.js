@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ApiBibleClient, ApiBibleError, parseRateLimit, parseRetryAfter, versesFromContent, plainText } from '../src/services/apiBibleClient.js';
+import { ApiBibleClient, ApiBibleError, headingsFromContent, parseRateLimit, parseRetryAfter, versesFromContent, plainText } from '../src/services/apiBibleClient.js';
 import { createApiBibleService, loadBibleConfig } from '../src/config/apiBible.js';
 import { ScriptureBackfill, chaptersUsed, needsLayoutUpdate, restoreBodies, rewriteScriptureBlock } from '../src/services/scriptureBackfill.js';
 import { createRecompiler } from '../src/services/seriesBaseline.js';
@@ -72,6 +72,42 @@ describe('API.Bible content', () => {
         assert.deepEqual(versesFromContent([]), {});
     });
 
+    test('headings are listed with the verse they come before and never become verse text', () => {
+        const v = (n) => ({ name: 'verse', type: 'tag', attrs: { number: n, style: 'v', sid: `PSA.3.${n}` }, items: [{ text: n, type: 'text' }] });
+        const t = (text, n) => ({ text, type: 'text', ...(n ? { attrs: { verseId: `PSA.3.${n}` } } : {}) });
+        const para = (style, items) => ({ name: 'para', type: 'tag', attrs: { style }, items });
+        const content = [
+            para('d', [t('A psalm of David. When he fled from his son Absalom.')]),
+            para('s1', [t('The Lord Sustains'), { name: 'note', type: 'tag', attrs: { style: 'f' }, items: [t('a footnote')] }]),
+            para('q1', [v('1'), t('Lord, how many are my foes!', 1)]),
+            para('q2', [t('How many rise up against me!', 1)]),
+            para('ms1', [t('Book II')]),
+            para('s2', [t('Second heading')]),
+            para('q1', [v('2'), t('Many are saying of me,', 2)]),
+            para('qa', [t('Aleph')]),
+            para('q1', [v('3-4'), t('Bridged.', '3-4')]),
+            para('d', [t('For the director of music.', 3)]), // after the last verse (Habakkuk 3:19): neither text nor a heading
+        ];
+        assert.deepEqual(headingsFromContent(content), [
+            { verse: '1', text: 'A psalm of David. When he fled from his son Absalom.' },
+            { verse: '1', text: 'The Lord Sustains' },
+            { verse: '2', text: 'Book II' },
+            { verse: '2', text: 'Second heading' },
+            { verse: '3', text: 'Aleph' },
+        ]);
+        assert.deepEqual(versesFromContent(content), {
+            1: 'Lord, how many are my foes! How many rise up against me!',
+            2: 'Many are saying of me,',
+            3: 'Bridged.',
+            4: '',
+        });
+        // A Psalm title holding verse 1 (some translations number it) is text, not a heading.
+        const numbered = [para('d', [v('1'), t('Of David.', 1)]), para('q1', [v('2'), t('The Lord is my shepherd', 2)])];
+        assert.deepEqual(headingsFromContent(numbered), []);
+        assert.equal(versesFromContent(numbered)['1'], 'Of David.');
+        assert.deepEqual(headingsFromContent(CONTENT), [{ verse: '1', text: 'The Creation' }], 'the Genesis fixture\'s heading (absent from its verse text above)');
+    });
+
     test('copyright markup becomes plain text', () => {
         assert.equal(plainText('<p>Copyright &copy; 2023 <b>Example</b>&nbsp;Society</p>'), 'Copyright © 2023 Example Society');
     });
@@ -84,7 +120,7 @@ const admin = (token = 'admin-token') => ({ getToken: async () => token, canRefr
 describe('ApiBibleClient (through the Bible proxy)', () => {
     const chapterBody = { data: { id: 'GEN.1', reference: 'Genesis 1', copyright: '<p>Public Domain</p>', content: CONTENT }, meta: { fumsToken: 'tok-1' } };
 
-    test('calls the proxy with the admin\'s ID token (no API key), asks for JSON without notes or titles, caches chapters and reports FUMS', async () => {
+    test('calls the proxy with the admin\'s ID token (no API key), asks for JSON with titles but no notes, caches chapters and reports FUMS', async () => {
         const stub = stubFetch({ [`${P}/bibles/b1/chapters/GEN.1`]: chapterBody });
         const client = new ApiBibleClient({ fetch: stub.fetch, auth: admin('id-token-1') });
         const [first, second] = await Promise.all([client.getChapter('b1', 'GEN.1'), client.getChapter('b1', 'GEN.1')]);
@@ -101,7 +137,7 @@ describe('ApiBibleClient (through the Bible proxy)', () => {
         assert.equal('api-key' in call.headers, false, 'no API.Bible key is sent');
         assert.equal(call.url.searchParams.get('content-type'), 'json');
         assert.equal(call.url.searchParams.get('include-notes'), 'false');
-        assert.equal(call.url.searchParams.get('include-titles'), 'false');
+        assert.equal(call.url.searchParams.get('include-titles'), 'true', 'headings for the picker');
         assert.equal(call.url.searchParams.get('include-verse-numbers'), 'true');
         // Only allowlisted parameters (content-type and include-*) are sent.
         for (const key of call.url.searchParams.keys()) assert.match(key, /^(content-type|include-[a-z-]+)$/);

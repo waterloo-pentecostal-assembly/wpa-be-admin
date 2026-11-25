@@ -27,7 +27,12 @@ export function fetchBibleChapters(book, bibleId) {
     return fetchJson(`${bibleBase(bibleId)}/books/${encodeURIComponent(book)}/chapters`);
 }
 
-/** @returns {Promise<{ version: string, book: string, chapter: number, verses: Array<{ verse: number, text: string }> }>} */
+/**
+ * A chapter's verses, plus the translation's section headings (each with the
+ * verse it comes before) for display: they are not verse text.
+ * @returns {Promise<{ version: string, book: string, chapter: number, verses: Array<{ verse: number, text: string }>,
+ *   headings: Array<{ verse: string, text: string }> }>}
+ */
 export function fetchBibleVerses(book, chapter, bibleId) {
     return fetchJson(
         `${bibleBase(bibleId)}/books/${encodeURIComponent(book)}/chapters/${encodeURIComponent(chapter)}/verses`,

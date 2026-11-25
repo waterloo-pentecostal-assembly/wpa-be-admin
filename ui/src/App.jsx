@@ -8,6 +8,7 @@ import NotificationHubPage from './notifications/NotificationHubPage';
 import UserManagerPage from './users/UserManagerPage';
 import ScriptureProxyPage from './scriptureProxy/ScriptureProxyPage';
 import MaintenancePage from './maintenance/MaintenancePage';
+import FeaturedContentPage from './featured/FeaturedContentPage';
 import EnvGate from './components/EnvGate';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
@@ -74,6 +75,14 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <MaintenancePage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/featured"
+                                element={
+                                    <ProtectedRoute>
+                                        <FeaturedContentPage />
                                     </ProtectedRoute>
                                 }
                             />

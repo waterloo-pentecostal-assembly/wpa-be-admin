@@ -20,9 +20,11 @@ const FILTERS = [
     { key: 'pending_approval', label: 'Awaiting approval', title: 'Profiles an admin hasn\'t approved yet (is_verified off)' },
     { key: 'email_unverified', label: 'Email not verified', title: 'Users who haven\'t clicked the link in their verification email' },
     { key: 'admins', label: 'Admins' },
+    { key: 'pastors', label: 'Pastors', title: 'Users tagged as pastors (profile is_pastor), who can author featured content' },
     { key: 'reported', label: 'Reported' },
     { key: 'missing_profile', label: 'No profile', title: 'Sign-in accounts without a Firestore profile' },
     { key: 'missing_account', label: 'No account', title: 'Firestore profiles without a sign-in account' },
+    { key: 'not_searchable', label: 'Not in app search', title: 'Profiles whose search_tokens are missing or don’t match their name, so the app’s people search can’t find them (or finds them by an old name)' },
 ];
 
 const SORTS = [
@@ -155,6 +157,7 @@ export default function UserManagerPage() {
                             autoFocus
                             className="input pl-9 pr-9 py-2.5"
                             placeholder="Search by name, email or user ID"
+                            title="Names match by the start of each word, like the app’s search (“jo smi” finds John Smith); email, user ID and phone match anywhere"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && update({ q: search.trim() })}

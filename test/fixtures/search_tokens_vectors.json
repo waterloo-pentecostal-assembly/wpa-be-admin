@@ -1,0 +1,14 @@
+[
+  {"input": "Night Owls", "tokens": ["ni", "nig", "nigh", "night", "ow", "owl", "owls"]},
+  {"input": "Stephen  Gawne", "tokens": ["ga", "gaw", "gawn", "gawne", "st", "ste", "step", "steph", "stephe", "stephen"]},
+  {"input": "Stephen  Gawne ", "tokens": ["ga", "gaw", "gawn", "gawne", "st", "ste", "step", "steph", "stephe", "stephen"]},
+  {"input": "Mary Ann Smith-Jones", "tokens": ["an", "ann", "jo", "jon", "jone", "jones", "ma", "mar", "mary", "sm", "smi", "smit", "smith"]},
+  {"input": "O'Brien", "tokens": ["br", "bri", "brie", "brien"]},
+  {"input": "Late-night readers, 9pm! Readers", "tokens": ["9p", "9pm", "la", "lat", "late", "ni", "nig", "nigh", "night", "re", "rea", "read", "reade", "reader", "readers"]},
+  {"input": "A wonderfullylongname", "tokens": ["wo", "won", "wond", "wonde", "wonder", "wonderf", "wonderfu", "wonderful", "wonderfull", "wonderfully", "wonderfullyl", "wonderfullylo", "wonderfullylon", "wonderfullylong"]},
+  {"input": "Élan Ñu", "tokens": ["él", "éla", "élan", "ñu"]},
+  {"input": "ZOË Ångström", "tokens": ["zo", "zoë", "ån", "ång", "ångs", "ångst", "ångstr", "ångströ", "ångström"]},
+  {"input": "", "tokens": []},
+  {"input": "   ", "tokens": []},
+  {"input": "Psalms at noon Lunch break readers", "tokens": ["at", "br", "bre", "brea", "break", "lu", "lun", "lunc", "lunch", "no", "noo", "noon", "ps", "psa", "psal", "psalm", "psalms", "re", "rea", "read", "reade", "reader", "readers"]}
+]

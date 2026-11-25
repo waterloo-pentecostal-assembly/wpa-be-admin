@@ -10,11 +10,11 @@
 // the original titles (and the IDs of the comments added) are first saved to
 // a backup file, which --restore puts back.
 //
-//   node scripts/fix-thread-titles.js --env dev
-//   node scripts/fix-thread-titles.js --env dev --series <seriesId> --apply
-//   node scripts/fix-thread-titles.js --env prod --thread <threadId> --apply
-//   node scripts/fix-thread-titles.js --env prod --apply
-//   node scripts/fix-thread-titles.js --env prod --restore backups/thread-titles-prod-....json
+//   npm run fix:thread-titles -- --env dev
+//   npm run fix:thread-titles -- --env dev --series <seriesId> --apply
+//   npm run fix:thread-titles -- --env prod --thread <threadId> --apply
+//   npm run fix:thread-titles -- --env prod --apply
+//   npm run fix:thread-titles -- --env prod --restore backups/thread-titles-prod-....json
 //
 // Options:
 //   --env prod|dev|local_dev  Firebase project (local_dev = Firestore emulator on localhost:8081)

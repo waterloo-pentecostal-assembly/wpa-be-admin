@@ -60,12 +60,15 @@ export function StatusBadges({ user }) {
         <div className="flex flex-wrap gap-1">
             {user.disabled && <Badge tone="red" title="Firebase Authentication account is disabled">Deactivated</Badge>}
             {user.isAdmin && <Badge tone="brand" title="is_admin is set on the profile">Admin</Badge>}
+            {user.isPastor && <Badge tone="green" title="Tagged as a pastor (profile is_pastor): can be the author of featured content">Pastor</Badge>}
             {awaitingApproval(user) && <Badge tone="amber" title="An admin hasn't approved this user yet (profile is_verified is off)">Awaiting approval</Badge>}
             {emailUnverified(user) && <Badge tone="violet" title="The user hasn't clicked the link in their verification email (Auth emailVerified is off)">Email not verified</Badge>}
             {user.reports > 0 && <Badge tone="amber" title="Times this user has been reported">{user.reports} report{user.reports === 1 ? '' : 's'}</Badge>}
             {!user.hasProfile && <Badge title="Has a sign-in account but no users/{uid} profile in Firestore">No profile</Badge>}
             {!user.hasAccount && <Badge title="Has a Firestore profile but no Firebase Authentication account">No account</Badge>}
             {user.emailMismatch && <Badge tone="amber" title="The Auth email and the profile email differ">Email mismatch</Badge>}
+            {user.searchStatus === 'missing' && <Badge title="The profile has no search_tokens, so the app's people search can't find this user (run the search token backfill)">Not in app search</Badge>}
+            {user.searchStatus === 'stale' && <Badge title="The profile's search_tokens don't match the current name, so the app's people search finds this user by an old name">Search tokens out of date</Badge>}
         </div>
     );
 }

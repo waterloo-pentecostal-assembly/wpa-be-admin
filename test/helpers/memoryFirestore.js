@@ -85,6 +85,20 @@ export function memoryFirestore() {
                 },
             };
         },
+        // Firestore's BulkWriter: update fails on a missing document, like Firestore.
+        bulkWriter: () => {
+            const pending = [];
+            return {
+                update: (ref, data) => {
+                    const write = ref.update(data).catch((error) => {
+                        throw Object.assign(new Error(error.message), { code: 5 });
+                    });
+                    pending.push(write.catch(() => {}));
+                    return write;
+                },
+                close: async () => { await Promise.all(pending); },
+            };
+        },
         // Deletes a document and everything under it.
         recursiveDelete: async (ref) => {
             for (const key of [...store.keys()]) if (key === ref.path || key.startsWith(`${ref.path}/`)) store.delete(key);

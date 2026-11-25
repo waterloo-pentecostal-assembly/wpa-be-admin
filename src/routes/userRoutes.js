@@ -92,6 +92,9 @@ export function createUserRouter(getUsers) {
     router.post('/:uid/admin', handle('set admin on', async (service, req, { actorUid }) =>
         service.setAdmin(req.params.uid, flag(req.body?.isAdmin, 'isAdmin'), { actorUid })));
 
+    router.post('/:uid/pastor', handle('set pastor on', async (service, req) =>
+        ({ user: await service.setPastor(req.params.uid, flag(req.body?.isPastor, 'isPastor')) })));
+
     router.post('/:uid/clear-reports', handle('cleared reports of', async (service, req) =>
         ({ user: await service.clearReports(req.params.uid) })));
 

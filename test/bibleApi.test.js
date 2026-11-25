@@ -544,3 +544,18 @@ describe('Bible proxy admin routes (/api/bible-proxy)', () => {
         assert.match(body.error, /Not an admin/);
     });
 });
+
+describe('verses endpoint headings', () => {
+    test('a chapter\'s headings come back with its verses, for the picker to show', async () => {
+        const { ApiBibleService } = await import('../src/services/apiBibleService.js');
+        const { createTestBible, TEST_BIBLE } = await import('./helpers/fakeApiBible.js');
+        const { client } = createTestBible();
+        const getChapter = client.getChapter.bind(client);
+        client.getChapter = async (bibleId, chapterId) => ({ ...(await getChapter(bibleId, chapterId)), headings: [{ verse: '1', text: 'The Beginning' }] });
+        const service = new ApiBibleService(client, { defaultBibleId: TEST_BIBLE.id });
+        const result = await service.getVerses('default', 'Genesis', 1);
+        assert.deepEqual(result.headings, [{ verse: '1', text: 'The Beginning' }]);
+        assert.equal(result.verses[0].verse, 1);
+        assert.ok(!result.verses.some((v) => v.text.includes('The Beginning')), 'not verse text');
+    });
+});
