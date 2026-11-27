@@ -320,11 +320,14 @@ environment. It replaces the old single-token Notification Tester.
   series is active. `{key|fallback}` gives a fallback for anyone without a value (e.g.
   `{first_name|friend}`). An empty value with no fallback is dropped, with the space before it.
   Unknown placeholders are rejected before sending. The phone preview can show the message as
-  any previewed recipient (*Preview as*), and the history keeps the message as written, with its
+  any previewed recipient (*Preview as*), with example values for the progress placeholders
+  (admins never see a user's progress), and the history keeps the message as written, with its
   placeholders. The placeholder code is `ui/src/notifications/placeholders.js`, which the server
   also uses.
-- **Preview:** shows how many users and devices an audience reaches, who they are (with progress
-  while a series is active), and who was skipped and why. Choosing another group clears it. A
+- **Preview:** shows how many users and devices an audience reaches, who they are, and who was
+  skipped and why. Users' series progress is never shown or sent to the browser: it's too
+  personal for admins to see. The progress groups use it only to choose who's in them, and list
+  users by name rather than by how far behind or ahead they are. Choosing another group clears it. A
   token shared by two accounts is only sent once. Clicking **Review & send** previews again, then asks you to confirm. If the send reaches 10
   or more devices, you type the device count to confirm.
 - **Test on my devices** sends the message only to the devices of the admin account you're signed

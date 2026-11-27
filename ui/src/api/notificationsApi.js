@@ -5,9 +5,9 @@ import { authed } from './usersApi';
 /** { series: { id, title, today, startDate, endDate, totalEntries, dueEntries, dueIncludingToday } | null } */
 export const getSeriesStatus = () => authed('/api/notifications/series');
 /** { audience, label, series, userCount, deviceCount, skipped, users, truncated, tokens? } */
-/** withProgress: include users' series progress (a read per user; progress audiences always include it). */
-export const previewAudience = (audience, { withProgress = false } = {}) =>
-    authed('/api/notifications/preview', { method: 'POST', json: { audience, withProgress } });
+/** Who an audience reaches. Users' series progress is never included (admins don't see it). */
+export const previewAudience = (audience) =>
+    authed('/api/notifications/preview', { method: 'POST', json: { audience } });
 /** { sent, failed, errors, invalidTokens, removedDevices, label, userCount, deviceCount, dryRun, ... } */
 export const sendNotification = ({ audience, message, dryRun = false, removeInvalidTokens = false }) =>
     authed('/api/notifications/send', { method: 'POST', json: { audience, message, dryRun, removeInvalidTokens } });

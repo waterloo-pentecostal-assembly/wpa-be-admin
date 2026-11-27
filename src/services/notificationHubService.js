@@ -296,6 +296,13 @@ const deviceInfo = (deviceId, data) => ({
     platform: data.platform ?? data.os ?? data.device_type ?? null,
 });
 
+/** A user row without their series progress, for showing to admins. */
+function withoutProgress(user) {
+    const shown = { ...user };
+    delete shown.progress;
+    return shown;
+}
+
 export class NotificationHubService {
     /**
      * @param {import('firebase-admin').firestore.Firestore} firestore
@@ -514,10 +521,10 @@ export class NotificationHubService {
             users.push(row(uid, summary, { devices: count }));
         }
 
+        // By name, not by how far behind or ahead: the order would give away
+        // users' progress, which admins don't see.
         const byName = (x, y) => (x.name || x.email || '').localeCompare(y.name || y.email || '');
-        if (audience.type === 'behind') users.sort((x, y) => y.progress.behindPoints - x.progress.behindPoints || byName(x, y));
-        else if (audience.type === 'ahead') users.sort((x, y) => y.progress.aheadPoints - x.progress.aheadPoints || byName(x, y));
-        else if (audience.type === 'recent') users.sort((x, y) => (y.createdAt ?? '').localeCompare(x.createdAt ?? ''));
+        if (audience.type === 'recent') users.sort((x, y) => (y.createdAt ?? '').localeCompare(x.createdAt ?? ''));
         else users.sort(byName);
         return done();
     }
@@ -536,21 +543,21 @@ export class NotificationHubService {
 
     /**
      * What sending to an audience would do, without sending. Tokens are
-     * masked. Users' progress is included for progress audiences, or with
-     * `withProgress` (the message uses progress placeholders).
+     * masked. Users' series progress is never included: it's too personal
+     * for admins to see. Progress audiences still use it to choose users,
+     * and sending still fills in progress placeholders, but the preview only
+     * says who is in the group.
      */
-    async preview(rawAudience, { withProgress = false } = {}) {
-        const resolved = await this.resolve(rawAudience, { withProgress });
-        const { audience, label, series, users, recipients, skipped } = resolved;
+    async preview(rawAudience) {
+        const { audience, label, series, users, recipients, skipped } = await this.resolve(rawAudience);
         return {
             audience: maskedAudience(audience),
             label,
             series,
-            withProgress: resolved.withProgress,
             userCount: users.length,
             deviceCount: recipients.length,
             skipped,
-            users: users.slice(0, MAX_PREVIEW_USERS),
+            users: users.slice(0, MAX_PREVIEW_USERS).map(withoutProgress),
             truncated: users.length > MAX_PREVIEW_USERS,
             ...(audience.type === 'tokens' && { tokens: recipients.map((r) => ({ token: maskToken(r.token), uid: r.uid })) }),
         };

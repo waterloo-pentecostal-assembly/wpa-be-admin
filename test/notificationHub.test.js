@@ -8,7 +8,7 @@ import {
 } from '../src/services/notificationHubService.js';
 import { createNotificationRouter } from '../src/routes/notificationRoutes.js';
 import { SERIES_ZONE } from '../src/services/publishedSeries.js';
-import { findPlaceholders, placeholderValues, renderTemplate, unknownPlaceholders, usesGroup } from '../ui/src/notifications/placeholders.js';
+import { findPlaceholders, placeholderValues, previewValues, renderTemplate, unknownPlaceholders, usesGroup } from '../ui/src/notifications/placeholders.js';
 
 // ---------- In-memory stand-ins for the Firebase Admin APIs used ----------
 
@@ -284,6 +284,12 @@ describe('notification hub helpers', () => {
             percent: '23%', expected_percent: '40%', percent_behind: '18%', percent_ahead: '0%', percent_left: '78%',
         });
         assert.equal(placeholderValues({}).percent, '');
+        // Previews use a real recipient's name but example progress (admins don't see users' progress).
+        const shown = previewValues({ user: { firstName: 'Mary', progress: { percent: 90 } }, series: { title: 'Matthew', totalDays: 40 } });
+        assert.equal(shown.first_name, 'Mary');
+        assert.equal(shown.series_title, 'Matthew');
+        assert.equal(shown.percent, '35%');
+        assert.equal(shown.percent_behind, '5%');
     });
 
     test('describeAudience', () => {
@@ -315,7 +321,9 @@ describe('NotificationHubService audiences', () => {
         const { service } = fixtures();
         const preview = await service.preview({ type: 'behind' });
         assert.deepEqual(uids(preview), ['behind']);
-        assert.deepEqual(preview.users[0].progress,
+        // Admins never see users' progress; it's only used to choose them.
+        assert.equal(preview.users[0].progress, undefined);
+        assert.deepEqual((await service.resolve({ type: 'behind' })).users[0].progress,
             { percent: 20, expectedPercent: 40, behindPoints: 20, aheadPoints: 0 });
         assert.equal(preview.series.dueDays, 2);
         assert.equal(preview.series.expectedPercent, 40);
@@ -340,8 +348,10 @@ describe('NotificationHubService audiences', () => {
         const { service } = fixtures();
         const ahead = await service.preview({ type: 'ahead' });
         assert.deepEqual(uids(ahead), ['ahead']);
-        assert.equal(ahead.users[0].progress.aheadPoints, 20); // 80% vs 60% due through today
-        assert.equal(ahead.users[0].progress.percent, 80);
+        assert.equal(ahead.users[0].progress, undefined);
+        const aheadProgress = (await service.resolve({ type: 'ahead' })).users[0].progress;
+        assert.equal(aheadProgress.aheadPoints, 20); // 80% vs 60% due through today
+        assert.equal(aheadProgress.percent, 80);
         assert.deepEqual(uids(await service.preview({ type: 'ahead', minAheadPct: 20 })), []);
 
         const notStarted = await service.preview({ type: 'not_started' });
@@ -360,7 +370,8 @@ describe('NotificationHubService audiences', () => {
         directory.set('done', summary('done'));
         const completed = await service.preview({ type: 'completed' });
         assert.deepEqual(uids(completed), ['done']);
-        assert.equal(completed.users[0].progress.percent, 100);
+        assert.equal(completed.users[0].progress, undefined);
+        assert.equal((await service.resolve({ type: 'completed' })).users[0].progress.percent, 100);
         assert.equal(completed.label, 'Completed Romans');
         assert.deepEqual(uids(await service.preview({ type: 'ahead' })), ['ahead']);
     });
@@ -377,13 +388,12 @@ describe('NotificationHubService audiences', () => {
         assert.equal(recent.label, 'Signed up in the last 7 days');
         assert.equal(recent.users[0].createdAt, daysAgo(0.5));
         assert.deepEqual((await service.preview({ type: 'recent', withinDays: 1 })).users.map((u) => u.uid), ['new2']);
-        // Progress is shown for any audience while a series is active.
-        // Other audiences only read completions when asked (progress placeholders).
-        assert.equal(recent.withProgress, false);
+        // Other audiences only read completions when asked (progress placeholders when sending).
         assert.equal(recent.users[0].progress, undefined);
-        const recentWithProgress = await service.preview({ type: 'recent' }, { withProgress: true });
-        assert.equal(recentWithProgress.withProgress, true);
+        const recentWithProgress = await service.resolve({ type: 'recent' }, { withProgress: true });
         assert.equal(recentWithProgress.users[0].progress.percent, 0);
+        // Never in a preview, even if a client asks.
+        assert.equal((await service.preview({ type: 'recent' }, { withProgress: true })).users[0].progress, undefined);
     });
 
     test('progress audiences need an active series', async () => {
@@ -403,10 +413,11 @@ describe('NotificationHubService audiences', () => {
         await service.send({ audience: { type: 'all' }, message: { title: 'Hi {first_name}', body: 'Day 1 of {series_title}' }, dryRun: true });
         assert.equal(reads, 0);
 
-        await service.preview({ type: 'all' }, { withProgress: true });
+        await service.preview({ type: 'all' }, { withProgress: true }); // ignored: previews never show progress
+        assert.equal(reads, 0);
         await service.send({ audience: { type: 'all' }, message: { title: 'Hi', body: 'You are at {percent}' }, dryRun: true });
         await service.preview({ type: 'behind' });
-        assert.equal(reads, 3);
+        assert.equal(reads, 2);
     });
 
     test('all and admins', async () => {

@@ -11,7 +11,7 @@ function sendError(res, error) {
  * Notification Hub API. Mount at `/api/notifications` behind `createRequireAdmin`.
  *
  *   GET  /series          the current series, how much of it is due, and the audiences this server supports
- *   POST /preview         { audience, withProgress? } -> who it reaches (tokens masked)
+ *   POST /preview         { audience } -> who it reaches (tokens masked, no one's progress)
  *   POST /send            { audience, message, dryRun?, removeInvalidTokens? }
  *   POST /send-test       { message } -> the signed-in admin's own devices
  *   GET  /history         recent sends; DELETE /history/:id removes one
@@ -38,7 +38,7 @@ export function createNotificationRouter(getHub) {
     // `audiences` lets the page notice a server started before a group was added.
     router.get('/series', handle(async (service) => ({ ...(await service.seriesStatus()), audiences: AUDIENCE_TYPES })));
 
-    router.post('/preview', handle((service, req) => service.preview(req.body?.audience, { withProgress: req.body?.withProgress === true })));
+    router.post('/preview', handle((service, req) => service.preview(req.body?.audience)));
 
     router.post('/send', handle(async (service, req, { env, actor }) => {
         const { audience, message, dryRun, removeInvalidTokens } = req.body ?? {};

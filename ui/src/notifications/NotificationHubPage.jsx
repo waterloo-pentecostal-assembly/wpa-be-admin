@@ -14,7 +14,7 @@ import * as api from '../api/notificationsApi';
 import { RelativeTime } from '../users/shared';
 import { formatDate } from '../users/format';
 import UserPicker from './UserPicker';
-import { EXAMPLE_VALUES, PLACEHOLDERS, PLACEHOLDER_GROUPS, placeholderValues, renderTemplate, unknownPlaceholders, usesGroup } from './placeholders';
+import { EXAMPLE_VALUES, PLACEHOLDERS, PLACEHOLDER_GROUPS, previewValues, renderTemplate, unknownPlaceholders, usesGroup } from './placeholders';
 import appIcon from '../assets/app-icon.png';
 import { ManageTemplatesDialog, TemplateDialog, TemplatesBar } from './templates';
 
@@ -167,9 +167,8 @@ export default function NotificationHubPage() {
     const needsSeries = usesGroup('series', title, body) || usesGroup('progress', title, body);
     const seriesPlaceholdersBlocked = noSeries && needsSeries;
     const messageReady = !!message.title && !!message.body && !unknown.length && !seriesPlaceholdersBlocked;
-    // Progress costs a read per user (their achievements), so the preview only
-    // asks for it when the message shows it (progress audiences always get it).
-    const needsProgress = usesGroup('progress', title, body);
+    // Admins never see users' progress, so previews fill progress placeholders with examples.
+    const usesProgress = usesGroup('progress', title, body);
 
     // Switching group starts over: a preview of another group would mislead.
     const chooseType = (next) => {
@@ -195,13 +194,8 @@ export default function NotificationHubPage() {
 
     // The phone preview shows the message as one recipient would get it.
     const sampleUser = preview?.users.find((u) => u.uid === sampleUid) ?? null;
-    const sampleValues = sampleUser
-        ? placeholderValues({ user: sampleUser, progress: sampleUser.progress, series: preview.series })
-        : EXAMPLE_VALUES;
+    const sampleValues = sampleUser ? previewValues({ user: sampleUser, series: preview.series }) : EXAMPLE_VALUES;
     const audienceCurrent = preview && previewKey === audienceKey;
-    // Progress placeholders added after previewing need progress the preview lacks.
-    const missingProgress = !!preview && needsProgress && !preview.withProgress;
-    const previewCurrent = audienceCurrent && !missingProgress;
 
     const loadSeries = useCallback(() => {
         setSeriesError(null);
@@ -228,7 +222,7 @@ export default function NotificationHubPage() {
     const runPreview = async () => {
         setBusy('preview');
         try {
-            const p = await api.previewAudience(audience, { withProgress: needsProgress });
+            const p = await api.previewAudience(audience);
             setPreview(p);
             setPreviewKey(audienceKey);
             return p;
@@ -447,10 +441,9 @@ export default function NotificationHubPage() {
                             </button>
                             {problem && <span className="text-sm text-gray-500">{problem}</span>}
                             {preview && !audienceCurrent && !problem && <span className="text-sm text-amber-700">The audience changed since this preview.</span>}
-                            {audienceCurrent && missingProgress && !problem && <span className="text-sm text-amber-700">Preview again to fill in the progress placeholders.</span>}
                         </div>
 
-                        {preview && <PreviewPanel preview={preview} stale={!previewCurrent} />}
+                        {preview && <PreviewPanel preview={preview} stale={!audienceCurrent} />}
                     </section>
 
                     {/* Message */}
@@ -531,6 +524,7 @@ export default function NotificationHubPage() {
                                 </select>
                             </label>
                             {!preview && <p className="text-xs text-gray-400">Preview recipients to see the message as a real recipient would get it.</p>}
+                            {sampleUser && usesProgress && <p className="text-xs text-gray-400">Progress placeholders show example values; each person gets their own.</p>}
                         </div>
 
                         <div className="space-y-2 border-t border-gray-100 pt-4">
@@ -777,7 +771,6 @@ function skippedList(skipped) {
 
 function PreviewPanel({ preview, stale }) {
     const skipped = skippedList(preview.skipped);
-    const showProgress = preview.users.some((u) => u.progress);
     const showSignUp = preview.audience?.type === 'recent';
     return (
         <div className={`rounded-lg border border-gray-200 ${stale ? 'opacity-60' : ''}`}>
@@ -795,7 +788,6 @@ function PreviewPanel({ preview, stale }) {
                                 <th className="px-4 py-2">User</th>
                                 {showSignUp && <th className="px-2 py-2">Signed up</th>}
                                 <th className="px-2 py-2 text-right">Devices</th>
-                                {showProgress && <th className="px-4 py-2" title="Days with at least one engagement completed, as a percentage of the series' days. The tick is the expected percentage.">Progress</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -812,11 +804,6 @@ function PreviewPanel({ preview, stale }) {
                                         </td>
                                     )}
                                     <td className="px-2 py-1.5 text-right tabular-nums">{u.devices}{u.selectedDevices ? <span className="text-xs text-gray-400"> sel.</span> : null}</td>
-                                    {showProgress && (
-                                        <td className="px-4 py-1.5 text-xs tabular-nums text-gray-600">
-                                            {u.progress && <ProgressCell progress={u.progress} />}
-                                        </td>
-                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -827,26 +814,6 @@ function PreviewPanel({ preview, stale }) {
             {preview.tokens && preview.tokens.length > 0 && preview.users.length === 0 && (
                 <p className="px-4 py-2 text-xs text-gray-500">None of these tokens belong to a registered device; they are still sent to.</p>
             )}
-        </div>
-    );
-}
-
-function ProgressCell({ progress: p }) {
-    if (typeof p.percent !== 'number') return <span className="text-gray-400">Restart the server to see progress</span>;
-    return (
-        <div className="min-w-[10rem]">
-            <div className="flex items-baseline justify-between gap-2">
-                <span className="font-semibold text-ink">{p.percent}%</span>
-                <span>
-                    of {p.expectedPercent}% expected
-                    {p.behindPoints > 0 && <span className="text-red-600"> · {p.behindPoints} pts behind</span>}
-                    {p.aheadPoints > 0 && <span className="text-green-700"> · {p.aheadPoints} pts ahead</span>}
-                </span>
-            </div>
-            <div className="relative mt-1 h-1.5 rounded-full bg-gray-100">
-                <div className={`h-1.5 rounded-full ${p.behindPoints > 0 ? 'bg-red-400' : p.aheadPoints > 0 ? 'bg-green-500' : 'bg-brand'}`} style={{ width: `${p.percent}%` }} />
-                <div className="absolute -top-0.5 h-2.5 w-0.5 bg-ink" style={{ left: `${p.expectedPercent}%` }} title={`Expected ${p.expectedPercent}%`} />
-            </div>
         </div>
     );
 }
@@ -941,7 +908,7 @@ function ConfirmSend({ preview, env, message, busy, onCancel, onSend }) {
     const expected = String(preview.deviceCount);
     const ready = !needsTyping || typed.trim() === expected;
     const example = preview.users[0] ?? null;
-    const exampleValues = placeholderValues({ user: example, progress: example?.progress, series: preview.series });
+    const exampleValues = previewValues({ user: example, series: preview.series });
     const personalized = renderTemplate(message.title, exampleValues) !== message.title || renderTemplate(message.body, exampleValues) !== message.body;
     return (
         <Dialog
@@ -964,7 +931,11 @@ function ConfirmSend({ preview, env, message, busy, onCancel, onSend }) {
                     {env === 'prod' ? ' in production' : env ? ` in ${env}` : ''}. This can&apos;t be undone.
                 </p>
                 <PhonePreview title={renderTemplate(message.title, exampleValues)} body={renderTemplate(message.body, exampleValues)} />
-                {example && personalized && <p className="-mt-2 text-xs text-gray-500">As {example.name || example.email || 'the first recipient'} will see it; each person gets their own values.</p>}
+                {example && personalized && (
+                    <p className="-mt-2 text-xs text-gray-500">
+                        As {example.name || example.email || 'the first recipient'} will see it{usesGroup('progress', message.title, message.body) ? ', with example progress' : ''}; each person gets their own values.
+                    </p>
+                )}
                 {Object.keys(message.data).length > 0 && (
                     <p className="text-xs text-gray-500 font-mono break-all">data: {JSON.stringify(message.data)}</p>
                 )}

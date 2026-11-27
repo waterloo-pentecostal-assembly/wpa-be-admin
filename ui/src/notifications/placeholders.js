@@ -95,3 +95,14 @@ export function placeholderValues({ user = null, progress = null, series = null 
 
 /** The example values shown before a real recipient is picked. */
 export const EXAMPLE_VALUES = Object.fromEntries(PLACEHOLDERS.map((p) => [p.key, p.example]));
+
+/**
+ * A real recipient's values for previews, with the progress placeholders
+ * showing example values: admins don't see users' progress, so only the
+ * sent notification has the recipient's own.
+ */
+export function previewValues({ user = null, series = null } = {}) {
+    const values = placeholderValues({ user, series });
+    for (const p of PLACEHOLDERS) if (p.group === 'progress') values[p.key] = p.example;
+    return values;
+}
